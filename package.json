@@ -1,0 +1,12 @@
+{
+  "name": "welcome-screen-calculators",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Strength training calculators (One-Rep Max, Training %, Wilks Score, Plate Loading) served as a static site.",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strength Calculators</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header>
+  <h1>Strength Training Calculators</h1>
+</header>
+
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="orm">One-Rep Max</button>
+  <button class="tab-btn" data-tab="percent">Training %</button>
+  <button class="tab-btn" data-tab="wilks">Strength Score</button>
+  <button class="tab-btn" data-tab="plates">Plate Loading</button>
+</nav>
+
+<main>
+
+  <section id="orm" class="tab-panel active">
+    <h2>One-Rep Max Estimator</h2>
+    <p class="hint">Enter the weight you lifted and how many reps you completed.</p>
+    <div class="field">
+      <label for="orm-weight">Weight lifted</label>
+      <input type="number" id="orm-weight" min="0" step="0.5" placeholder="e.g. 100">
+    </div>
+    <div class="field">
+      <label for="orm-reps">Reps completed</label>
+      <input type="number" id="orm-reps" min="1" max="15" step="1" placeholder="e.g. 5">
+    </div>
+    <div class="field">
+      <label for="orm-unit">Unit</label>
+      <select id="orm-unit">
+        <option value="kg">kg</option>
+        <option value="lb">lb</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="orm-calc">Calculate</button>
+    <div class="result" id="orm-result"></div>
+  </section>
+
+  <section id="percent" class="tab-panel">
+    <h2>Percentage-Based Training Table</h2>
+    <p class="hint">Enter your one-rep max to see suggested weights at common training percentages.</p>
+    <div class="field">
+      <label for="pct-orm">One-rep max</label>
+      <input type="number" id="pct-orm" min="0" step="0.5" placeholder="e.g. 120">
+    </div>
+    <div class="field">
+      <label for="pct-unit">Unit</label>
+      <select id="pct-unit">
+        <option value="kg">kg</option>
+        <option value="lb">lb</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="pct-calc">Calculate</button>
+    <div class="result" id="pct-result"></div>
+  </section>
+
+  <section id="wilks" class="tab-panel">
+    <h2>Strength Score (Wilks)</h2>
+    <p class="hint">Compare relative strength across bodyweights using the Wilks formula.</p>
+    <div class="field">
+      <label for="wilks-bw">Bodyweight (kg)</label>
+      <input type="number" id="wilks-bw" min="0" step="0.1" placeholder="e.g. 80">
+    </div>
+    <div class="field">
+      <label for="wilks-lift">Total lifted (kg)</label>
+      <input type="number" id="wilks-lift" min="0" step="0.5" placeholder="e.g. 300">
+    </div>
+    <div class="field">
+      <label for="wilks-sex">Sex</label>
+      <select id="wilks-sex">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="wilks-calc">Calculate</button>
+    <div class="result" id="wilks-result"></div>
+  </section>
+
+  <section id="plates" class="tab-panel">
+    <h2>Plate Loading Calculator</h2>
+    <p class="hint">Enter the target weight and bar weight to see plates needed per side.</p>
+    <div class="field">
+      <label for="plate-target">Target weight (kg)</label>
+      <input type="number" id="plate-target" min="0" step="0.5" placeholder="e.g. 100">
+    </div>
+    <div class="field">
+      <label for="plate-bar">Bar weight (kg)</label>
+      <input type="number" id="plate-bar" min="0" step="0.5" value="20">
+    </div>
+    <button class="calc-btn" id="plate-calc">Calculate</button>
+    <div class="result" id="plate-result"></div>
+  </section>
+
+</main>
+
+<script src="js/calc-lib.js"></script>
+<script src="js/calculators.js"></script>
+</body>
+</html>
