@@ -176,3 +176,86 @@ main {
   padding: 0.3rem 0;
   border-bottom: 1px solid var(--border);
 }
+
+main:has(#wendler.tab-panel.active) {
+  max-width: 640px;
+}
+
+.wendler-lift-grid {
+  margin-bottom: 1rem;
+}
+
+.wendler-lift-row {
+  display: grid;
+  grid-template-columns: 5rem 1fr 4.5rem;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.wendler-lift-header {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-bottom: 0.35rem;
+}
+
+.wendler-lift-row label {
+  font-size: 0.9rem;
+}
+
+.wendler-lift-row input {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 0.95rem;
+}
+
+.wendler-lift-row input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.secondary-btn {
+  margin-top: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+
+.secondary-btn:hover {
+  background: rgba(79, 140, 255, 0.12);
+}
+
+.wendler-tm-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.wendler-tm-summary strong {
+  color: var(--text);
+}
+
+.wendler-day {
+  margin-bottom: 1.25rem;
+}
+
+.wendler-day h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.wendler-day .warmup-row td {
+  color: var(--muted);
+}
+
+.wendler-day .amrap-row td {
+  color: var(--accent);
+  font-weight: 600;
+}

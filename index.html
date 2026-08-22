@@ -16,6 +16,7 @@
   <button class="tab-btn" data-tab="percent">Training %</button>
   <button class="tab-btn" data-tab="wilks">Strength Score</button>
   <button class="tab-btn" data-tab="plates">Plate Loading</button>
+  <button class="tab-btn" data-tab="wendler">5/3/1 Planner</button>
 </nav>
 
 <main>
@@ -95,6 +96,67 @@
     </div>
     <button class="calc-btn" id="plate-calc">Calculate</button>
     <div class="result" id="plate-result"></div>
+  </section>
+
+  <section id="wendler" class="tab-panel">
+    <h2>5/3/1 Training Planner</h2>
+    <p class="hint">Enter a recent weight/rep set for each lift to estimate your one-rep max, then generate a training-max-based plan (Jim Wendler's 5/3/1).</p>
+
+    <div class="field">
+      <label for="wendler-unit">Unit</label>
+      <select id="wendler-unit">
+        <option value="kg">kg</option>
+        <option value="lb">lb</option>
+      </select>
+    </div>
+
+    <div class="wendler-lift-grid">
+      <div class="wendler-lift-row wendler-lift-header">
+        <span>Lift</span><span>Weight</span><span>Reps</span>
+      </div>
+      <div class="wendler-lift-row">
+        <label for="wendler-squat-weight">Squat</label>
+        <input type="number" id="wendler-squat-weight" min="0" step="0.5" placeholder="e.g. 140">
+        <input type="number" id="wendler-squat-reps" min="1" max="15" step="1" placeholder="e.g. 3">
+      </div>
+      <div class="wendler-lift-row">
+        <label for="wendler-bench-weight">Bench</label>
+        <input type="number" id="wendler-bench-weight" min="0" step="0.5" placeholder="e.g. 100">
+        <input type="number" id="wendler-bench-reps" min="1" max="15" step="1" placeholder="e.g. 3">
+      </div>
+      <div class="wendler-lift-row">
+        <label for="wendler-deadlift-weight">Deadlift</label>
+        <input type="number" id="wendler-deadlift-weight" min="0" step="0.5" placeholder="e.g. 160">
+        <input type="number" id="wendler-deadlift-reps" min="1" max="15" step="1" placeholder="e.g. 3">
+      </div>
+      <div class="wendler-lift-row">
+        <label for="wendler-press-weight">OH Press</label>
+        <input type="number" id="wendler-press-weight" min="0" step="0.5" placeholder="e.g. 60">
+        <input type="number" id="wendler-press-reps" min="1" max="15" step="1" placeholder="e.g. 3">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="wendler-tm-percent">Training max (% of estimated 1RM)</label>
+      <input type="number" id="wendler-tm-percent" min="50" max="100" step="1" value="90">
+    </div>
+    <div class="field">
+      <label for="wendler-cycle">Cycle number</label>
+      <input type="number" id="wendler-cycle" min="1" step="1" value="1">
+    </div>
+    <div class="field">
+      <label for="wendler-week">Week to display</label>
+      <select id="wendler-week">
+        <option value="1">Week 1 (5/5/5+)</option>
+        <option value="2">Week 2 (3/3/3+)</option>
+        <option value="3">Week 3 (5/3/1+)</option>
+        <option value="4">Week 4 (Deload)</option>
+      </select>
+    </div>
+
+    <button class="calc-btn" id="wendler-calc">Generate Plan</button>
+    <div class="result" id="wendler-result"></div>
+    <button class="calc-btn secondary-btn" id="wendler-export" style="display:none;">Export Full Cycle (CSV)</button>
   </section>
 
 </main>

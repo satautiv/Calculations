@@ -103,3 +103,129 @@ document.getElementById('plate-calc').addEventListener('click', () => {
     ${leftoverHtml}
   `;
 });
+
+// --- 5/3/1 Training Planner ---
+const WENDLER_DAYS = [
+  { lift: 'squat', label: 'Squat' },
+  { lift: 'bench', label: 'Bench Press' },
+  { lift: 'deadlift', label: 'Deadlift' },
+  { lift: 'press', label: 'Overhead Press' },
+];
+
+function wendlerRoundingIncrement(unit) {
+  return unit === 'kg' ? 2.5 : 5;
+}
+
+function readWendlerInputs() {
+  const unit = document.getElementById('wendler-unit').value;
+  const tmPercent = parseFloat(document.getElementById('wendler-tm-percent').value) || 90;
+  const cycle = parseInt(document.getElementById('wendler-cycle').value, 10) || 1;
+  const week = parseInt(document.getElementById('wendler-week').value, 10);
+
+  const lifts = {};
+  WENDLER_DAYS.forEach(({ lift }) => {
+    lifts[lift] = {
+      weight: parseFloat(document.getElementById(`wendler-${lift}-weight`).value),
+      reps: parseInt(document.getElementById(`wendler-${lift}-reps`).value, 10),
+    };
+  });
+
+  return { unit, tmPercent, cycle, week, lifts };
+}
+
+function wendlerInputsAreValid(lifts) {
+  return WENDLER_DAYS.every(({ lift }) => {
+    const { weight, reps } = lifts[lift];
+    return weight > 0 && reps >= 1;
+  });
+}
+
+function buildWendlerDayPlans({ unit, tmPercent, cycle, lifts }, week) {
+  const roundingIncrement = wendlerRoundingIncrement(unit);
+
+  return WENDLER_DAYS.map(({ lift, label }) => {
+    const { weight, reps } = lifts[lift];
+    const oneRepMax = epleyOneRepMax(weight, reps);
+    const baseTrainingMax = trainingMax(oneRepMax, tmPercent);
+    const currentTrainingMax = projectedTrainingMax(baseTrainingMax, lift, unit, cycle);
+    const sets = wendler531Sets(currentTrainingMax, week, roundingIncrement);
+    return { lift, label, oneRepMax, currentTrainingMax, sets };
+  });
+}
+
+function renderWendlerPlan(dayPlans, unit) {
+  const summary = dayPlans.map(d => `
+    <span><strong>${d.label}</strong>: TM ${d.currentTrainingMax.toFixed(1)} ${unit} (1RM ${d.oneRepMax.toFixed(1)})</span>
+  `).join('');
+
+  const dayCards = dayPlans.map(d => {
+    const rows = d.sets.map(s => {
+      const rowClass = s.warmup ? 'warmup-row' : (s.amrap ? 'amrap-row' : '');
+      const repsLabel = s.amrap ? `${s.reps}+` : s.reps;
+      return `<tr class="${rowClass}"><td>${s.percent}%</td><td>${s.weight.toFixed(1)} ${unit}</td><td>${repsLabel}</td></tr>`;
+    }).join('');
+
+    return `
+      <div class="wendler-day">
+        <h3>${d.label}</h3>
+        <table>
+          <thead><tr><th>% TM</th><th>Weight</th><th>Reps</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }).join('');
+
+  return `<div class="wendler-tm-summary">${summary}</div>${dayCards}`;
+}
+
+function csvEscape(value) {
+  const str = String(value);
+  return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+}
+
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportWendlerCycleCsv(input) {
+  const rows = [['Week', 'Day', 'Set Type', '% TM', 'Weight', 'Reps']];
+
+  for (let week = 1; week <= 4; week++) {
+    buildWendlerDayPlans(input, week).forEach(d => {
+      d.sets.forEach(s => {
+        const setType = s.warmup ? 'Warmup' : (s.amrap ? 'Work (AMRAP)' : 'Work');
+        const repsLabel = s.amrap ? `${s.reps}+` : s.reps;
+        rows.push([`Week ${week}`, d.label, setType, `${s.percent}%`, s.weight.toFixed(1), repsLabel]);
+      });
+    });
+  }
+
+  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
+  downloadFile(`531-cycle-${input.cycle}.csv`, csv, 'text/csv;charset=utf-8');
+}
+
+document.getElementById('wendler-calc').addEventListener('click', () => {
+  const input = readWendlerInputs();
+  const exportBtn = document.getElementById('wendler-export');
+
+  if (!wendlerInputsAreValid(input.lifts)) {
+    showError('wendler-result', 'Enter a valid weight and rep count for all four lifts.');
+    exportBtn.style.display = 'none';
+    return;
+  }
+
+  const dayPlans = buildWendlerDayPlans(input, input.week);
+  document.getElementById('wendler-result').innerHTML = renderWendlerPlan(dayPlans, input.unit);
+
+  exportBtn.style.display = 'block';
+  exportBtn.onclick = () => exportWendlerCycleCsv(input);
+});
