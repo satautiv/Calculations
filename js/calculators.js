@@ -112,6 +112,8 @@ const WENDLER_DAYS = [
   { lift: 'press', label: 'Overhead Press' },
 ];
 
+const WENDLER_WEEK_SCHEMES = ['5 / 5 / 5+', '3 / 3 / 3+', '5 / 3 / 1+', null];
+
 function wendlerRoundingIncrement(unit) {
   return unit === 'kg' ? 2.5 : 5;
 }
@@ -120,7 +122,6 @@ function readWendlerInputs() {
   const unit = document.getElementById('wendler-unit').value;
   const tmPercent = parseFloat(document.getElementById('wendler-tm-percent').value) || 90;
   const cycle = parseInt(document.getElementById('wendler-cycle').value, 10) || 1;
-  const week = parseInt(document.getElementById('wendler-week').value, 10);
 
   const lifts = {};
   WENDLER_DAYS.forEach(({ lift }) => {
@@ -130,7 +131,7 @@ function readWendlerInputs() {
     };
   });
 
-  return { unit, tmPercent, cycle, week, lifts };
+  return { unit, tmPercent, cycle, lifts };
 }
 
 function wendlerInputsAreValid(lifts) {
@@ -140,7 +141,7 @@ function wendlerInputsAreValid(lifts) {
   });
 }
 
-function buildWendlerDayPlans({ unit, tmPercent, cycle, lifts }, week) {
+function buildWendlerDayPlans({ unit, tmPercent, cycle, lifts }) {
   const roundingIncrement = wendlerRoundingIncrement(unit);
 
   return WENDLER_DAYS.map(({ lift, label }) => {
@@ -148,35 +149,71 @@ function buildWendlerDayPlans({ unit, tmPercent, cycle, lifts }, week) {
     const oneRepMax = epleyOneRepMax(weight, reps);
     const baseTrainingMax = trainingMax(oneRepMax, tmPercent);
     const currentTrainingMax = projectedTrainingMax(baseTrainingMax, lift, unit, cycle);
-    const sets = wendler531Sets(currentTrainingMax, week, roundingIncrement);
-    return { lift, label, oneRepMax, currentTrainingMax, sets };
+    const weeks = [1, 2, 3, 4].map(week => wendler531Sets(currentTrainingMax, week, roundingIncrement));
+    const warmup = weeks[0].filter(s => s.warmup);
+    const workByWeek = weeks.map(sets => sets.filter(s => !s.warmup));
+    return { lift, label, oneRepMax, currentTrainingMax, warmup, workByWeek };
   });
 }
 
-function renderWendlerPlan(dayPlans, unit) {
-  const summary = dayPlans.map(d => `
-    <span><strong>${d.label}</strong>: TM ${d.currentTrainingMax.toFixed(1)} ${unit} (1RM ${d.oneRepMax.toFixed(1)})</span>
+function formatWendlerWeight(weight, unit) {
+  return `${weight % 1 === 0 ? weight : weight.toFixed(1)}<span class="unit">${unit}</span>`;
+}
+
+function renderWendlerCard(d, unit) {
+  const warmupText = d.warmup
+    .map(s => `${s.weight % 1 === 0 ? s.weight : s.weight.toFixed(1)} ${unit} &times; ${s.reps}`)
+    .join(' &nbsp;&middot;&nbsp; ');
+
+  const weekHeads = WENDLER_WEEK_SCHEMES.map((scheme, i) => `
+    <div class="wendler-week-head">
+      <span class="wk">Week ${i + 1}</span>
+      ${scheme ? `<span class="scheme">${scheme}</span>` : '<span class="wendler-badge wendler-badge-deload">Deload</span>'}
+    </div>
   `).join('');
 
-  const dayCards = dayPlans.map(d => {
-    const rows = d.sets.map(s => {
-      const rowClass = s.warmup ? 'warmup-row' : (s.amrap ? 'amrap-row' : '');
-      const repsLabel = s.amrap ? `${s.reps}+` : s.reps;
-      return `<tr class="${rowClass}"><td>${s.percent}%</td><td>${s.weight.toFixed(1)} ${unit}</td><td>${repsLabel}</td></tr>`;
+  const setRows = [0, 1, 2].map(setIndex => {
+    const cells = d.workByWeek.map((sets, weekIndex) => {
+      const s = sets[setIndex];
+      const isDeload = weekIndex === 3;
+      const cellClass = s.amrap ? 'amrap' : (isDeload ? 'deload' : '');
+      const repsLabel = s.amrap ? `${s.reps}+ reps` : `${s.reps} reps`;
+      const badge = s.amrap ? '<span class="wendler-badge wendler-badge-amrap">AMRAP</span>' : '';
+      return `
+        <div class="wendler-set-cell ${cellClass}">
+          <span class="weight">${formatWendlerWeight(s.weight, unit)}</span>
+          <span class="reps">${repsLabel}</span>
+          ${badge}
+        </div>
+      `;
     }).join('');
-
-    return `
-      <div class="wendler-day">
-        <h3>${d.label}</h3>
-        <table>
-          <thead><tr><th>% TM</th><th>Weight</th><th>Reps</th></tr></thead>
-          <tbody>${rows}</tbody>
-        </table>
-      </div>
-    `;
+    return `<div class="wendler-set-label">Set ${setIndex + 1}</div>${cells}`;
   }).join('');
 
-  return `<div class="wendler-tm-summary">${summary}</div>${dayCards}`;
+  return `
+    <div class="wendler-card">
+      <div class="wendler-card-head">
+        <h3>${d.label}</h3>
+        <div class="wendler-card-stats">
+          <div><span class="stat-label">Training Max</span><span class="stat-tm">${formatWendlerWeight(d.currentTrainingMax, unit)}</span></div>
+          <div><span class="stat-label">Est. 1RM</span><span class="stat-1rm">${formatWendlerWeight(d.oneRepMax, unit)}</span></div>
+        </div>
+      </div>
+      <div class="wendler-warmup-strip">
+        <span class="wendler-badge wendler-badge-warmup">Warm-up</span>
+        <span>${warmupText} &nbsp;<span class="dim">(weeks 1&ndash;3)</span></span>
+      </div>
+      <div class="wendler-set-grid">
+        <div></div>
+        ${weekHeads}
+        ${setRows}
+      </div>
+    </div>
+  `;
+}
+
+function renderWendlerPlan(dayPlans, unit) {
+  return dayPlans.map(d => renderWendlerCard(d, unit)).join('');
 }
 
 function csvEscape(value) {
@@ -196,21 +233,26 @@ function downloadFile(filename, content, mimeType) {
   URL.revokeObjectURL(url);
 }
 
-function exportWendlerCycleCsv(input) {
+function exportWendlerCycleCsv(dayPlans) {
   const rows = [['Week', 'Day', 'Set Type', '% TM', 'Weight', 'Reps']];
 
-  for (let week = 1; week <= 4; week++) {
-    buildWendlerDayPlans(input, week).forEach(d => {
-      d.sets.forEach(s => {
-        const setType = s.warmup ? 'Warmup' : (s.amrap ? 'Work (AMRAP)' : 'Work');
+  dayPlans.forEach(d => {
+    for (let week = 1; week <= 4; week++) {
+      if (week <= 3) {
+        d.warmup.forEach(s => {
+          rows.push([`Week ${week}`, d.label, 'Warmup', `${s.percent}%`, s.weight.toFixed(1), s.reps]);
+        });
+      }
+      d.workByWeek[week - 1].forEach(s => {
+        const setType = s.amrap ? 'Work (AMRAP)' : 'Work';
         const repsLabel = s.amrap ? `${s.reps}+` : s.reps;
         rows.push([`Week ${week}`, d.label, setType, `${s.percent}%`, s.weight.toFixed(1), repsLabel]);
       });
-    });
-  }
+    }
+  });
 
   const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
-  downloadFile(`531-cycle-${input.cycle}.csv`, csv, 'text/csv;charset=utf-8');
+  downloadFile(`531-cycle-${document.getElementById('wendler-cycle').value}.csv`, csv, 'text/csv;charset=utf-8');
 }
 
 document.getElementById('wendler-calc').addEventListener('click', () => {
@@ -223,9 +265,9 @@ document.getElementById('wendler-calc').addEventListener('click', () => {
     return;
   }
 
-  const dayPlans = buildWendlerDayPlans(input, input.week);
+  const dayPlans = buildWendlerDayPlans(input);
   document.getElementById('wendler-result').innerHTML = renderWendlerPlan(dayPlans, input.unit);
 
   exportBtn.style.display = 'block';
-  exportBtn.onclick = () => exportWendlerCycleCsv(input);
+  exportBtn.onclick = () => exportWendlerCycleCsv(dayPlans);
 });
