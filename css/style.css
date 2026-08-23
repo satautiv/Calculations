@@ -229,6 +229,16 @@ main:has(#wendler.tab-panel.active) {
   background: rgba(79, 140, 255, 0.12);
 }
 
+.wendler-export-row {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.wendler-export-row .calc-btn {
+  width: auto;
+  flex: 1;
+}
+
 .wendler-card {
   background: var(--bg);
   border: 1px solid var(--border);
