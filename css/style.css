@@ -239,6 +239,36 @@ main:has(#wendler.tab-panel.active) {
   flex: 1;
 }
 
+.wendler-cycle-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+}
+
+.wendler-cycle-tab {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.wendler-cycle-tab:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.wendler-cycle-tab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .wendler-card {
   background: var(--bg);
   border: 1px solid var(--border);
