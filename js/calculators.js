@@ -255,13 +255,138 @@ function exportWendlerCycleCsv(dayPlans) {
   downloadFile(`531-cycle-${document.getElementById('wendler-cycle').value}.csv`, csv, 'text/csv;charset=utf-8');
 }
 
+function xmlEscape(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function xlsCell(data, styleId, mergeAcross) {
+  const type = typeof data === 'number' ? 'Number' : 'String';
+  const style = styleId ? ` ss:StyleID="${styleId}"` : '';
+  const merge = mergeAcross ? ` ss:MergeAcross="${mergeAcross}"` : '';
+  return `<Cell${style}${merge}><Data ss:Type="${type}">${xmlEscape(data)}</Data></Cell>`;
+}
+
+function xlsRow(cells, height) {
+  const h = height ? ` ss:Height="${height}"` : '';
+  return `<Row${h}>${cells.join('')}</Row>`;
+}
+
+function formatPlainWeight(weight, unit) {
+  return `${weight % 1 === 0 ? weight : weight.toFixed(1)} ${unit}`;
+}
+
+function buildWendlerLiftRows(d, unit) {
+  const warmupText = d.warmup
+    .map(s => `${formatPlainWeight(s.weight, unit)} × ${s.reps}`)
+    .join('  ·  ');
+
+  const rows = [];
+
+  rows.push(xlsRow([xlsCell(d.label, 'sTitle', 4)]));
+
+  rows.push(xlsRow([
+    xlsCell('Training Max', 'sStatLabel'),
+    xlsCell(formatPlainWeight(d.currentTrainingMax, unit), 'sStatValue'),
+    xlsCell('Est. 1RM', 'sStatLabel'),
+    xlsCell(formatPlainWeight(d.oneRepMax, unit), 'sStatValue'),
+    xlsCell(''),
+  ]));
+
+  rows.push(xlsRow([
+    xlsCell('Warm-up (wks 1–3)', 'sWarmupLabel'),
+    xlsCell(warmupText, 'sWarmupText', 3),
+  ]));
+
+  rows.push(xlsRow([
+    xlsCell(''),
+    ...WENDLER_WEEK_SCHEMES.map((scheme, i) => xlsCell(
+      scheme ? `Week ${i + 1} (${scheme})` : `Week ${i + 1} (Deload)`,
+      scheme ? 'sWeekHead' : 'sWeekHeadDeload'
+    )),
+  ]));
+
+  for (let setIndex = 0; setIndex < 3; setIndex++) {
+    const cells = [xlsCell(`Set ${setIndex + 1}`, 'sSetLabel')];
+    d.workByWeek.forEach((sets, weekIndex) => {
+      const s = sets[setIndex];
+      const isDeload = weekIndex === 3;
+      const repsLabel = s.amrap ? `${s.reps}+` : s.reps;
+      const style = s.amrap ? 'sCellAmrap' : (isDeload ? 'sCellDeload' : 'sCell');
+      cells.push(xlsCell(`${formatPlainWeight(s.weight, unit)} × ${repsLabel}`, style));
+    });
+    rows.push(xlsRow(cells));
+  }
+
+  rows.push(xlsRow([], 8));
+
+  return rows;
+}
+
+const XLS_STYLES = `
+<Style ss:ID="Default" ss:Name="Normal"><Alignment ss:Vertical="Center"/><Borders/><Font ss:FontName="Calibri" ss:Size="11"/><Interior/><NumberFormat/><Protection/></Style>
+<Style ss:ID="sTitle"><Font ss:Bold="1" ss:Size="14" ss:Color="#FFFFFF"/><Interior ss:Color="#4F8CFF" ss:Pattern="Solid"/><Alignment ss:Vertical="Center"/></Style>
+<Style ss:ID="sStatLabel"><Font ss:Bold="1" ss:Color="#4B5563"/></Style>
+<Style ss:ID="sStatValue"><Font ss:Bold="1"/></Style>
+<Style ss:ID="sWarmupLabel"><Font ss:Bold="1" ss:Color="#6B7280"/></Style>
+<Style ss:ID="sWarmupText"><Font ss:Color="#6B7280" ss:Italic="1"/></Style>
+<Style ss:ID="sWeekHead"><Font ss:Bold="1"/><Interior ss:Color="#E8F0FE" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C7D2E0"/></Borders></Style>
+<Style ss:ID="sWeekHeadDeload"><Font ss:Bold="1" ss:Color="#6B7280"/><Interior ss:Color="#ECECEC" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C7D2E0"/></Borders></Style>
+<Style ss:ID="sSetLabel"><Font ss:Bold="1" ss:Color="#6B7280"/></Style>
+<Style ss:ID="sCell"><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/></Borders></Style>
+<Style ss:ID="sCellAmrap"><Font ss:Bold="1" ss:Color="#1D5FD6"/><Interior ss:Color="#DCE9FF" ss:Pattern="Solid"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C7D2E0"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C7D2E0"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C7D2E0"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#C7D2E0"/></Borders></Style>
+<Style ss:ID="sCellDeload"><Font ss:Color="#8A8F98"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/></Borders></Style>
+`.trim();
+
+function exportWendlerCycleExcel(dayPlans, unit) {
+  const cycle = document.getElementById('wendler-cycle').value;
+  const rows = dayPlans.flatMap(d => buildWendlerLiftRows(d, unit));
+
+  const xml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>${XLS_STYLES}</Styles>
+ <Worksheet ss:Name="${xmlEscape(`Cycle ${cycle}`)}">
+  <Table>
+   <Column ss:Width="120"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="110"/>
+   <Column ss:Width="110"/>
+   ${rows.join('\n   ')}
+  </Table>
+  <WorksheetOptions xmlns="urn:schemas-microsoft-com:office:excel">
+   <PageSetup>
+    <Layout x:Orientation="Landscape"/>
+    <PageMargins x:Bottom="0.5" x:Left="0.5" x:Right="0.5" x:Top="0.5"/>
+   </PageSetup>
+   <Print>
+    <FitWidth>1</FitWidth>
+    <FitHeight>0</FitHeight>
+   </Print>
+  </WorksheetOptions>
+ </Worksheet>
+</Workbook>`;
+
+  downloadFile(`531-cycle-${cycle}.xls`, xml, 'application/vnd.ms-excel');
+}
+
 document.getElementById('wendler-calc').addEventListener('click', () => {
   const input = readWendlerInputs();
   const exportBtn = document.getElementById('wendler-export');
+  const exportExcelBtn = document.getElementById('wendler-export-excel');
 
   if (!wendlerInputsAreValid(input.lifts)) {
     showError('wendler-result', 'Enter a valid weight and rep count for all four lifts.');
     exportBtn.style.display = 'none';
+    exportExcelBtn.style.display = 'none';
     return;
   }
 
@@ -270,4 +395,7 @@ document.getElementById('wendler-calc').addEventListener('click', () => {
 
   exportBtn.style.display = 'block';
   exportBtn.onclick = () => exportWendlerCycleCsv(dayPlans);
+
+  exportExcelBtn.style.display = 'block';
+  exportExcelBtn.onclick = () => exportWendlerCycleExcel(dayPlans, input.unit);
 });
