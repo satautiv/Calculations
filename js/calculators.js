@@ -113,6 +113,7 @@ const WENDLER_DAYS = [
 ];
 
 const WENDLER_WEEK_SCHEMES = ['5 / 5 / 5+', '3 / 3 / 3+', '5 / 3 / 1+', null];
+const WENDLER_CYCLE_COUNT = 7;
 
 function wendlerRoundingIncrement(unit) {
   return unit === 'kg' ? 2.5 : 5;
@@ -121,7 +122,6 @@ function wendlerRoundingIncrement(unit) {
 function readWendlerInputs() {
   const unit = document.getElementById('wendler-unit').value;
   const tmPercent = parseFloat(document.getElementById('wendler-tm-percent').value) || 90;
-  const cycle = parseInt(document.getElementById('wendler-cycle').value, 10) || 1;
 
   const lifts = {};
   WENDLER_DAYS.forEach(({ lift }) => {
@@ -131,7 +131,7 @@ function readWendlerInputs() {
     };
   });
 
-  return { unit, tmPercent, cycle, lifts };
+  return { unit, tmPercent, lifts };
 }
 
 function wendlerInputsAreValid(lifts) {
@@ -154,6 +154,14 @@ function buildWendlerDayPlans({ unit, tmPercent, cycle, lifts }) {
     const workByWeek = weeks.map(sets => sets.filter(s => !s.warmup));
     return { lift, label, oneRepMax, currentTrainingMax, warmup, workByWeek };
   });
+}
+
+function buildWendlerAllCycles({ unit, tmPercent, lifts }) {
+  const cycles = [];
+  for (let cycle = 1; cycle <= WENDLER_CYCLE_COUNT; cycle++) {
+    cycles.push({ cycle, dayPlans: buildWendlerDayPlans({ unit, tmPercent, cycle, lifts }) });
+  }
+  return cycles;
 }
 
 function formatWendlerWeight(weight, unit) {
@@ -216,6 +224,24 @@ function renderWendlerPlan(dayPlans, unit) {
   return dayPlans.map(d => renderWendlerCard(d, unit)).join('');
 }
 
+let wendlerAllCycles = [];
+let wendlerActiveCycleIndex = 0;
+let wendlerUnit = 'kg';
+
+function renderWendlerCyclesUI() {
+  const tabs = wendlerAllCycles.map((c, i) => `
+    <button class="wendler-cycle-tab ${i === wendlerActiveCycleIndex ? 'active' : ''}" data-cycle-index="${i}">Cycle ${c.cycle}</button>
+  `).join('');
+
+  const active = wendlerAllCycles[wendlerActiveCycleIndex];
+  const panel = active ? renderWendlerPlan(active.dayPlans, wendlerUnit) : '';
+
+  return `
+    <div class="wendler-cycle-tabs">${tabs}</div>
+    <div class="wendler-cycle-panel">${panel}</div>
+  `;
+}
+
 function csvEscape(value) {
   const str = String(value);
   return /[",\r\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
@@ -233,7 +259,7 @@ function downloadFile(filename, content, mimeType) {
   URL.revokeObjectURL(url);
 }
 
-function exportWendlerCycleCsv(dayPlans) {
+function exportWendlerCycleCsv(dayPlans, cycle) {
   const rows = [['Week', 'Day', 'Set Type', '% TM', 'Weight', 'Reps']];
 
   dayPlans.forEach(d => {
@@ -252,7 +278,7 @@ function exportWendlerCycleCsv(dayPlans) {
   });
 
   const csv = rows.map(r => r.map(csvEscape).join(',')).join('\r\n');
-  downloadFile(`531-cycle-${document.getElementById('wendler-cycle').value}.csv`, csv, 'text/csv;charset=utf-8');
+  downloadFile(`531-cycle-${cycle}.csv`, csv, 'text/csv;charset=utf-8');
 }
 
 function xmlEscape(value) {
@@ -341,19 +367,10 @@ const XLS_STYLES = `
 <Style ss:ID="sCellDeload"><Font ss:Color="#8A8F98"/><Alignment ss:Horizontal="Center" ss:Vertical="Center"/><Borders><Border ss:Position="Bottom" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Left" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Right" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/><Border ss:Position="Top" ss:LineStyle="Continuous" ss:Weight="1" ss:Color="#E2E5EA"/></Borders></Style>
 `.trim();
 
-function exportWendlerCycleExcel(dayPlans, unit) {
-  const cycle = document.getElementById('wendler-cycle').value;
+function buildWendlerWorksheetXml(cycle, dayPlans, unit) {
   const rows = dayPlans.flatMap(d => buildWendlerLiftRows(d, unit));
 
-  const xml = `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:html="http://www.w3.org/TR/REC-html40">
- <Styles>${XLS_STYLES}</Styles>
- <Worksheet ss:Name="${xmlEscape(`Cycle ${cycle}`)}">
+  return `<Worksheet ss:Name="${xmlEscape(`Cycle ${cycle}`)}">
   <Table>
    <Column ss:Width="120"/>
    <Column ss:Width="110"/>
@@ -372,10 +389,24 @@ function exportWendlerCycleExcel(dayPlans, unit) {
     <FitHeight>0</FitHeight>
    </Print>
   </WorksheetOptions>
- </Worksheet>
+ </Worksheet>`;
+}
+
+function exportWendlerAllCyclesExcel(allCycles, unit) {
+  const worksheets = allCycles.map(({ cycle, dayPlans }) => buildWendlerWorksheetXml(cycle, dayPlans, unit)).join('\n ');
+
+  const xml = `<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>${XLS_STYLES}</Styles>
+ ${worksheets}
 </Workbook>`;
 
-  downloadFile(`531-cycle-${cycle}.xls`, xml, 'application/vnd.ms-excel');
+  downloadFile('531-plan.xls', xml, 'application/vnd.ms-excel');
 }
 
 document.getElementById('wendler-calc').addEventListener('click', () => {
@@ -390,12 +421,24 @@ document.getElementById('wendler-calc').addEventListener('click', () => {
     return;
   }
 
-  const dayPlans = buildWendlerDayPlans(input);
-  document.getElementById('wendler-result').innerHTML = renderWendlerPlan(dayPlans, input.unit);
+  wendlerAllCycles = buildWendlerAllCycles(input);
+  wendlerActiveCycleIndex = 0;
+  wendlerUnit = input.unit;
+  document.getElementById('wendler-result').innerHTML = renderWendlerCyclesUI();
 
   exportBtn.style.display = 'block';
-  exportBtn.onclick = () => exportWendlerCycleCsv(dayPlans);
+  exportBtn.onclick = () => {
+    const active = wendlerAllCycles[wendlerActiveCycleIndex];
+    exportWendlerCycleCsv(active.dayPlans, active.cycle);
+  };
 
   exportExcelBtn.style.display = 'block';
-  exportExcelBtn.onclick = () => exportWendlerCycleExcel(dayPlans, input.unit);
+  exportExcelBtn.onclick = () => exportWendlerAllCyclesExcel(wendlerAllCycles, wendlerUnit);
+});
+
+document.getElementById('wendler-result').addEventListener('click', (e) => {
+  const tab = e.target.closest('.wendler-cycle-tab');
+  if (!tab) return;
+  wendlerActiveCycleIndex = parseInt(tab.dataset.cycleIndex, 10);
+  document.getElementById('wendler-result').innerHTML = renderWendlerCyclesUI();
 });
