@@ -9,6 +9,7 @@ const {
   roundToIncrement,
   wendler531Sets,
   compoundInterest,
+  scaleRecipe,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -139,5 +140,30 @@ describe('compoundInterest', () => {
     const { futureValue, interestEarned } = compoundInterest(1000, 0, 12, 10);
     expect(futureValue).toBeCloseTo(1000, 5);
     expect(interestEarned).toBeCloseTo(0, 5);
+  });
+});
+
+describe('scaleRecipe', () => {
+  test('matches the worked example: 4 servings scaled to 10', () => {
+    const { scaleFactor, ingredients } = scaleRecipe(4, 10, [
+      { name: 'flour', quantity: 300, unit: 'g' },
+      { name: 'eggs', quantity: 2, unit: '' },
+      { name: 'milk', quantity: 150, unit: 'ml' },
+      { name: 'salt', quantity: 5, unit: 'g' },
+    ]);
+
+    expect(scaleFactor).toBe(2.5);
+    expect(ingredients).toEqual([
+      { name: 'flour', quantity: 300, unit: 'g', scaledQuantity: 750 },
+      { name: 'eggs', quantity: 2, unit: '', scaledQuantity: 5 },
+      { name: 'milk', quantity: 150, unit: 'ml', scaledQuantity: 375 },
+      { name: 'salt', quantity: 5, unit: 'g', scaledQuantity: 12.5 },
+    ]);
+  });
+
+  test('scaling down uses a factor below 1', () => {
+    const { scaleFactor, ingredients } = scaleRecipe(4, 2, [{ name: 'flour', quantity: 300, unit: 'g' }]);
+    expect(scaleFactor).toBe(0.5);
+    expect(ingredients[0].scaledQuantity).toBe(150);
   });
 });

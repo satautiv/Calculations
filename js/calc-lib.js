@@ -119,6 +119,15 @@ function compoundInterest(principal, annualRatePercent, compoundsPerYear, years)
   return { futureValue, interestEarned: futureValue - principal };
 }
 
+// scale factor = target servings / original servings, applied independently to every ingredient
+function scaleRecipe(originalServings, targetServings, ingredients) {
+  const scaleFactor = targetServings / originalServings;
+  return {
+    scaleFactor,
+    ingredients: ingredients.map(ing => ({ ...ing, scaledQuantity: ing.quantity * scaleFactor })),
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -136,5 +145,6 @@ if (typeof module !== 'undefined' && module.exports) {
     wendler531Sets,
     COMPOUNDING_FREQUENCIES,
     compoundInterest,
+    scaleRecipe,
   };
 }
