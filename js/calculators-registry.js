@@ -38,6 +38,20 @@ const CALCULATOR_REGISTRY = [
     description: "Generate a full training cycle plan using Jim Wendler's 5/3/1.",
     keywords: ['531', 'wendler', 'training plan', 'cycle'],
   },
+  {
+    id: 'compound-interest',
+    name: 'Compound Interest',
+    category: 'Finance',
+    description: 'See how a lump sum grows over time when interest compounds on itself.',
+    keywords: ['compound interest', 'future value', 'savings', 'investing'],
+  },
+  {
+    id: 'recipe-scaling',
+    name: 'Recipe Scaling',
+    category: 'Cooking',
+    description: 'Scale every ingredient in a recipe up or down to a new serving size.',
+    keywords: ['recipe', 'scale', 'servings', 'cooking', 'baking'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
