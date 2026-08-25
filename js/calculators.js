@@ -516,3 +516,114 @@ document.getElementById('wendler-result').addEventListener('click', (e) => {
   wendlerActiveCycleIndex = parseInt(tab.dataset.cycleIndex, 10);
   document.getElementById('wendler-result').innerHTML = renderWendlerCyclesUI();
 });
+
+// --- Compound interest calculator ---
+document.getElementById('compound-calc').addEventListener('click', () => {
+  const principal = parseFloat(document.getElementById('compound-principal').value);
+  const rate = parseFloat(document.getElementById('compound-rate').value);
+  const frequency = parseInt(document.getElementById('compound-frequency').value, 10);
+  const years = parseFloat(document.getElementById('compound-years').value);
+
+  const isValidFrequency = COMPOUNDING_FREQUENCIES.some(f => f.value === frequency);
+
+  if (!principal || principal <= 0 || isNaN(rate) || rate < 0 || !isValidFrequency || !years || years <= 0) {
+    showError('compound-result', 'Enter a valid principal, rate, and time period.');
+    return;
+  }
+
+  const { futureValue, interestEarned } = compoundInterest(principal, rate, frequency, years);
+
+  document.getElementById('compound-result').innerHTML = `
+    <div class="headline">${futureValue.toFixed(2)}</div>
+    <div>Future value after ${years} year${years === 1 ? '' : 's'}</div>
+    <div class="hint">Interest earned: ${interestEarned.toFixed(2)}</div>
+  `;
+});
+
+// --- Recipe scaling calculator ---
+const RECIPE_INITIAL_ROWS = 3;
+
+function addRecipeIngredientRow() {
+  const row = document.createElement('div');
+  row.className = 'recipe-ingredient-row';
+  row.innerHTML = `
+    <input type="text" class="recipe-ing-name" aria-label="Ingredient name" placeholder="e.g. Flour">
+    <input type="number" class="recipe-ing-qty" aria-label="Quantity" min="0" step="0.1" placeholder="e.g. 300">
+    <input type="text" class="recipe-ing-unit" aria-label="Unit" placeholder="g">
+    <button type="button" class="recipe-remove-btn" aria-label="Remove ingredient">&times;</button>
+  `;
+  document.getElementById('recipe-ingredient-list').appendChild(row);
+}
+
+for (let i = 0; i < RECIPE_INITIAL_ROWS; i++) addRecipeIngredientRow();
+
+document.getElementById('recipe-add-ingredient').addEventListener('click', () => addRecipeIngredientRow());
+
+document.getElementById('recipe-ingredient-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.recipe-remove-btn');
+  if (!btn) return;
+  btn.closest('.recipe-ingredient-row').remove();
+});
+
+function formatRecipeQuantity(qty) {
+  return qty % 1 === 0 ? String(qty) : qty.toFixed(2);
+}
+
+document.getElementById('recipe-calc').addEventListener('click', () => {
+  const originalServings = parseFloat(document.getElementById('recipe-original-servings').value);
+  const targetServings = parseFloat(document.getElementById('recipe-target-servings').value);
+
+  if (!originalServings || originalServings <= 0 || !targetServings || targetServings <= 0) {
+    showError('recipe-result', 'Enter a valid original and target number of servings.');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#recipe-ingredient-list .recipe-ingredient-row');
+  const ingredients = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const name = row.querySelector('.recipe-ing-name').value.trim();
+    const qtyRaw = row.querySelector('.recipe-ing-qty').value;
+    const unit = row.querySelector('.recipe-ing-unit').value.trim();
+    const quantity = parseFloat(qtyRaw);
+
+    if (!name && qtyRaw === '') return; // blank row, skip silently
+
+    if (!name || qtyRaw === '' || isNaN(quantity) || quantity < 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    ingredients.push({ name, quantity, unit });
+  });
+
+  if (hasInvalidRow) {
+    showError('recipe-result', 'Enter a valid name and non-negative quantity for every ingredient row, or leave the row blank.');
+    return;
+  }
+
+  if (ingredients.length === 0) {
+    showError('recipe-result', 'Add at least one ingredient.');
+    return;
+  }
+
+  const { scaleFactor, ingredients: scaled } = scaleRecipe(originalServings, targetServings, ingredients);
+
+  const rowsHtml = scaled.map(ing => `
+    <tr>
+      <td>${ing.name}</td>
+      <td>${formatRecipeQuantity(ing.quantity)} ${ing.unit}</td>
+      <td>${formatRecipeQuantity(ing.scaledQuantity)} ${ing.unit}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('recipe-result').innerHTML = `
+    <div class="headline">${formatRecipeQuantity(scaleFactor)}x</div>
+    <div>Scale factor (${targetServings} &divide; ${originalServings} servings)</div>
+    <table>
+      <thead><tr><th>Ingredient</th><th>Original</th><th>Scaled</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+});
