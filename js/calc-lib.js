@@ -104,6 +104,21 @@ function calculatePlates(target, bar, availablePlates = AVAILABLE_PLATES) {
   return { used, leftover: perSide };
 }
 
+const COMPOUNDING_FREQUENCIES = [
+  { label: 'Annually', value: 1 },
+  { label: 'Semi-annually', value: 2 },
+  { label: 'Quarterly', value: 4 },
+  { label: 'Monthly', value: 12 },
+  { label: 'Daily', value: 365 },
+];
+
+// FV = P * (1 + r/n)^(n*t)
+function compoundInterest(principal, annualRatePercent, compoundsPerYear, years) {
+  const rate = annualRatePercent / 100;
+  const futureValue = principal * Math.pow(1 + rate / compoundsPerYear, compoundsPerYear * years);
+  return { futureValue, interestEarned: futureValue - principal };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -119,5 +134,7 @@ if (typeof module !== 'undefined' && module.exports) {
     projectedTrainingMax,
     roundToIncrement,
     wendler531Sets,
+    COMPOUNDING_FREQUENCIES,
+    compoundInterest,
   };
 }

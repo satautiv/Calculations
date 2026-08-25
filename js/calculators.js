@@ -516,3 +516,26 @@ document.getElementById('wendler-result').addEventListener('click', (e) => {
   wendlerActiveCycleIndex = parseInt(tab.dataset.cycleIndex, 10);
   document.getElementById('wendler-result').innerHTML = renderWendlerCyclesUI();
 });
+
+// --- Compound interest calculator ---
+document.getElementById('compound-calc').addEventListener('click', () => {
+  const principal = parseFloat(document.getElementById('compound-principal').value);
+  const rate = parseFloat(document.getElementById('compound-rate').value);
+  const frequency = parseInt(document.getElementById('compound-frequency').value, 10);
+  const years = parseFloat(document.getElementById('compound-years').value);
+
+  const isValidFrequency = COMPOUNDING_FREQUENCIES.some(f => f.value === frequency);
+
+  if (!principal || principal <= 0 || isNaN(rate) || rate < 0 || !isValidFrequency || !years || years <= 0) {
+    showError('compound-result', 'Enter a valid principal, rate, and time period.');
+    return;
+  }
+
+  const { futureValue, interestEarned } = compoundInterest(principal, rate, frequency, years);
+
+  document.getElementById('compound-result').innerHTML = `
+    <div class="headline">${futureValue.toFixed(2)}</div>
+    <div>Future value after ${years} year${years === 1 ? '' : 's'}</div>
+    <div class="hint">Interest earned: ${interestEarned.toFixed(2)}</div>
+  `;
+});

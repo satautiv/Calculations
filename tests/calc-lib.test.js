@@ -8,6 +8,7 @@ const {
   projectedTrainingMax,
   roundToIncrement,
   wendler531Sets,
+  compoundInterest,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -119,5 +120,24 @@ describe('wendler531Sets', () => {
 
   test('throws for an invalid week', () => {
     expect(() => wendler531Sets(300, 5)).toThrow();
+  });
+});
+
+describe('compoundInterest', () => {
+  test('matches the worked example: €1000 at 5% monthly for 10 years', () => {
+    const { futureValue, interestEarned } = compoundInterest(1000, 5, 12, 10);
+    expect(futureValue).toBeCloseTo(1647.01, 1);
+    expect(interestEarned).toBeCloseTo(647.01, 1);
+  });
+
+  test('annual compounding for one year adds exactly the rate', () => {
+    const { futureValue } = compoundInterest(1000, 10, 1, 1);
+    expect(futureValue).toBeCloseTo(1100, 5);
+  });
+
+  test('0% rate leaves the principal unchanged', () => {
+    const { futureValue, interestEarned } = compoundInterest(1000, 0, 12, 10);
+    expect(futureValue).toBeCloseTo(1000, 5);
+    expect(interestEarned).toBeCloseTo(0, 5);
   });
 });
