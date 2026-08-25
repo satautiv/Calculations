@@ -3,25 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Strength Calculators</title>
+<title>Calculator Suite</title>
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 <header>
-  <h1>Strength Training Calculators</h1>
+  <button class="back-btn" id="back-to-index" hidden>&larr; All calculators</button>
+  <h1>Calculator Suite</h1>
 </header>
-
-<nav class="tabs">
-  <button class="tab-btn active" data-tab="orm">One-Rep Max</button>
-  <button class="tab-btn" data-tab="percent">Training %</button>
-  <button class="tab-btn" data-tab="wilks">Strength Score</button>
-  <button class="tab-btn" data-tab="plates">Plate Loading</button>
-  <button class="tab-btn" data-tab="wendler">5/3/1 Planner</button>
-</nav>
 
 <main>
 
-  <section id="orm" class="tab-panel active">
+  <section id="calculator-index" class="view active">
+    <div class="search-wrap">
+      <label for="calc-search" class="visually-hidden">Search calculators</label>
+      <input type="search" id="calc-search" placeholder="Search calculators&hellip;" autocomplete="off">
+    </div>
+    <div id="calc-categories"></div>
+    <p class="hint" id="calc-no-results" hidden>No calculators match your search.</p>
+  </section>
+
+  <section id="orm" class="view tab-panel">
     <h2>One-Rep Max Estimator</h2>
     <p class="hint">Enter the weight you lifted and how many reps you completed.</p>
     <div class="field">
@@ -43,7 +45,7 @@
     <div class="result" id="orm-result"></div>
   </section>
 
-  <section id="percent" class="tab-panel">
+  <section id="percent" class="view tab-panel">
     <h2>Percentage-Based Training Table</h2>
     <p class="hint">Enter your one-rep max to see suggested weights at common training percentages.</p>
     <div class="field">
@@ -61,7 +63,7 @@
     <div class="result" id="pct-result"></div>
   </section>
 
-  <section id="wilks" class="tab-panel">
+  <section id="wilks" class="view tab-panel">
     <h2>Strength Score (Wilks)</h2>
     <p class="hint">Compare relative strength across bodyweights using the Wilks formula.</p>
     <div class="field">
@@ -83,7 +85,7 @@
     <div class="result" id="wilks-result"></div>
   </section>
 
-  <section id="plates" class="tab-panel">
+  <section id="plates" class="view tab-panel">
     <h2>Plate Loading Calculator</h2>
     <p class="hint">Enter the target weight and bar weight to see plates needed per side.</p>
     <div class="field">
@@ -98,7 +100,7 @@
     <div class="result" id="plate-result"></div>
   </section>
 
-  <section id="wendler" class="tab-panel">
+  <section id="wendler" class="view tab-panel">
     <h2>5/3/1 Training Planner</h2>
     <p class="hint">Enter a recent weight/rep set for each lift to estimate your one-rep max, then generate a training-max-based plan (Jim Wendler's 5/3/1).</p>
 
@@ -152,6 +154,7 @@
 </main>
 
 <script src="js/calc-lib.js"></script>
+<script src="js/calculators-registry.js"></script>
 <script src="js/calculators.js"></script>
 </body>
 </html>

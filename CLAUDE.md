@@ -16,10 +16,11 @@ To view changes, open `index.html` directly in a browser, or serve the directory
 
 ## Architecture
 
-- `index.html` — all four calculators live as sibling `<section class="tab-panel">` elements inside `<main>`, each paired with a `.tab-btn` in the nav whose `data-tab` matches the section's `id`. Adding a new calculator means adding both a tab button and a panel with matching ids.
+- `index.html` — a `#calculator-index` section (search input + category grid, built from the registry) sits alongside every calculator's `<section class="view tab-panel">` inside `<main>`. Adding a new calculator means adding a panel with a unique `id`, wiring it in `calculators.js`, and adding one entry to `js/calculators-registry.js` — no manual nav markup to touch.
+- `js/calculators-registry.js` — the single source of truth listing every calculator (`id`, `name`, `category`, `description`, `keywords`). Both the index/search UI and the router read from this list.
 - `js/calc-lib.js` — pure calculation functions (Epley formula, Wilks coefficients, plate-loading greedy algorithm, etc.), no DOM access. Exported via a `typeof module !== 'undefined'` guard so the same file works as a plain browser `<script>` and as a CommonJS `require()` target in tests.
-- `js/calculators.js` — one self-contained block per calculator, each wiring a `-calc` button's click handler: reads inputs, validates, calls into `calc-lib.js`, writes to its own `-result` div via `showError()` or a template string. Tab switching (toggling `.active` on buttons/panels by `data-tab` id) is handled once at the top and applies generically to any panel/button pair. There's no shared state between calculators.
-- `css/style.css` — dark theme via CSS custom properties on `:root` (`--bg`, `--panel`, `--accent`, etc.). Reuse these variables rather than hardcoding colors.
+- `js/calculators.js` — top section renders the category/search index from the registry and does hash-based routing (`#calc/<id>`): toggling `.active` on whichever `.view` matches the current hash (or `#calculator-index` when there's none), and showing/hiding the header's "back to calculators" button accordingly. Below that, one self-contained block per calculator wires its own `-calc` button's click handler: reads inputs, validates, calls into `calc-lib.js`, writes to its own `-result` div via `showError()` or a template string. There's no shared state between calculators.
+- `css/style.css` — dark theme via CSS custom properties on `:root` (`--bg`, `--panel`, `--accent`, etc.). Reuse these variables rather than hardcoding colors. `.view` controls show/hide (used by both the index and every calculator panel); `.tab-panel` only adds the calculator's boxed card styling.
 
 ## Docker
 
