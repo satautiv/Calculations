@@ -1,11 +1,85 @@
-// --- Tab switching ---
-document.querySelectorAll('.tab-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    btn.classList.add('active');
-    document.getElementById(btn.dataset.tab).classList.add('active');
+// --- Calculator index, search, and hash-based routing ---
+function groupCalculatorsByCategory(calculators) {
+  const groups = new Map();
+  calculators.forEach(calc => {
+    if (!groups.has(calc.category)) groups.set(calc.category, []);
+    groups.get(calc.category).push(calc);
   });
+  return groups;
+}
+
+function renderCalculatorIndex() {
+  const groups = groupCalculatorsByCategory(CALCULATOR_REGISTRY);
+  const html = [...groups.entries()].map(([category, calcs]) => `
+    <div class="category-group" data-category="${category}">
+      <h2 class="category-title">${category}</h2>
+      <div class="calc-grid">
+        ${calcs.map(c => `
+          <button class="calc-card" data-calc-id="${c.id}" data-search-text="${(c.name + ' ' + c.description + ' ' + c.category + ' ' + c.keywords.join(' ')).toLowerCase()}">
+            <h3>${c.name}</h3>
+            <p>${c.description}</p>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  document.getElementById('calc-categories').innerHTML = html;
+}
+
+function filterCalculatorIndex(query) {
+  const term = query.trim().toLowerCase();
+  let anyVisible = false;
+
+  document.querySelectorAll('.category-group').forEach(group => {
+    let groupHasVisibleCard = false;
+    group.querySelectorAll('.calc-card').forEach(card => {
+      const matches = !term || card.dataset.searchText.includes(term);
+      card.hidden = !matches;
+      if (matches) groupHasVisibleCard = true;
+    });
+    group.hidden = !groupHasVisibleCard;
+    if (groupHasVisibleCard) anyVisible = true;
+  });
+
+  document.getElementById('calc-no-results').hidden = anyVisible;
+}
+
+function showView(calcId) {
+  const isValidCalc = calcId && CALCULATOR_REGISTRY.some(c => c.id === calcId);
+
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(isValidCalc ? calcId : 'calculator-index').classList.add('active');
+  document.getElementById('back-to-index').hidden = !isValidCalc;
+
+  if (!isValidCalc) window.scrollTo(0, 0);
+}
+
+function currentCalcIdFromHash() {
+  const match = /^#calc\/(.+)$/.exec(window.location.hash);
+  return match ? decodeURIComponent(match[1]) : null;
+}
+
+renderCalculatorIndex();
+showView(currentCalcIdFromHash());
+window.addEventListener('hashchange', () => showView(currentCalcIdFromHash()));
+
+document.getElementById('calc-categories').addEventListener('click', (e) => {
+  const card = e.target.closest('.calc-card');
+  if (!card) return;
+  window.location.hash = `#calc/${encodeURIComponent(card.dataset.calcId)}`;
+});
+
+document.getElementById('calc-search').addEventListener('input', (e) => {
+  filterCalculatorIndex(e.target.value);
+});
+
+document.getElementById('back-to-index').addEventListener('click', () => {
+  if (window.location.hash) {
+    window.location.hash = '';
+  } else {
+    showView(null);
+  }
 });
 
 function showError(elId, message) {
