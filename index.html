@@ -572,6 +572,36 @@
     <div class="result" id="meat-result"></div>
   </section>
 
+  <section id="coffee-brew-ratio" class="view tab-panel">
+    <h2>Coffee Brew Ratio Calculator</h2>
+    <p class="hint">Calculate coffee dose or water/yield from a dose:water ratio, with sensible defaults per brew method.</p>
+    <div class="field">
+      <label for="coffee-method">Brew method</label>
+      <select id="coffee-method">
+        <option value="pourover">Pour-over / Drip</option>
+        <option value="espresso">Espresso</option>
+        <option value="coldbrew">Cold Brew (concentrate)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="coffee-ratio">Ratio (1:N)</label>
+      <input type="number" id="coffee-ratio" min="0" step="0.1" value="16">
+    </div>
+    <div class="field">
+      <label for="coffee-direction">Solve for</label>
+      <select id="coffee-direction">
+        <option value="doseToWater">Water/yield, from coffee dose</option>
+        <option value="waterToDose">Coffee dose, from water/yield</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="coffee-amount" id="coffee-amount-label">Coffee dose (g)</label>
+      <input type="number" id="coffee-amount" min="0" step="0.1" placeholder="e.g. 20">
+    </div>
+    <button class="calc-btn" id="coffee-calc">Calculate</button>
+    <div class="result" id="coffee-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

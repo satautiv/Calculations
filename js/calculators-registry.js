@@ -136,6 +136,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Find the pull temperature and rest time for your target steak or roast doneness.',
     keywords: ['meat doneness', 'steak', 'roast', 'pull temperature', 'carryover', 'resting'],
   },
+  {
+    id: 'coffee-brew-ratio',
+    name: 'Coffee Brew Ratio',
+    category: 'Cooking',
+    description: 'Calculate coffee dose or water/yield from a brew ratio for pour-over, espresso, or cold brew.',
+    keywords: ['coffee', 'brew ratio', 'pour over', 'espresso', 'cold brew'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

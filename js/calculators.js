@@ -1349,3 +1349,44 @@ document.getElementById('meat-calc').addEventListener('click', () => {
     ${safetyNote}
   `;
 });
+
+// --- Coffee brew ratio calculator ---
+document.getElementById('coffee-method').addEventListener('change', (e) => {
+  const method = COFFEE_BREW_METHODS.find(m => m.id === e.target.value);
+  document.getElementById('coffee-ratio').value = method.defaultRatio;
+});
+
+document.getElementById('coffee-direction').addEventListener('change', (e) => {
+  const isDoseToWater = e.target.value === 'doseToWater';
+  document.getElementById('coffee-amount-label').textContent = isDoseToWater ? 'Coffee dose (g)' : 'Water/yield (g)';
+});
+
+document.getElementById('coffee-calc').addEventListener('click', () => {
+  const ratio = parseFloat(document.getElementById('coffee-ratio').value);
+  const direction = document.getElementById('coffee-direction').value;
+  const amount = parseFloat(document.getElementById('coffee-amount').value);
+
+  if (!ratio || ratio <= 0) {
+    showError('coffee-result', 'Enter a valid ratio greater than zero.');
+    return;
+  }
+
+  if (!amount || amount <= 0) {
+    showError('coffee-result', 'Enter a valid amount greater than zero.');
+    return;
+  }
+
+  if (direction === 'doseToWater') {
+    const water = coffeeWaterForDose(amount, ratio);
+    document.getElementById('coffee-result').innerHTML = `
+      <div class="headline">${water % 1 === 0 ? water : water.toFixed(1)} g water/yield</div>
+      <div>${amount} g coffee at a 1:${ratio} ratio</div>
+    `;
+  } else {
+    const dose = coffeeDoseForWater(amount, ratio);
+    document.getElementById('coffee-result').innerHTML = `
+      <div class="headline">${dose % 1 === 0 ? dose : dose.toFixed(1)} g coffee dose</div>
+      <div>${amount} g water/yield at a 1:${ratio} ratio</div>
+    `;
+  }
+});

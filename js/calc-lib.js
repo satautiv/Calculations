@@ -476,6 +476,22 @@ function meatPullTemperature(donenessId, cutSize, unit) {
   return { target, pullTemperature: target - rise, rise, restMinutes: carryover.restMinutes };
 }
 
+// Standard brew ratios (the "N" in 1:N, dose:water/yield by weight) used as
+// selectable per-method presets; the ratio itself is always user-overridable.
+const COFFEE_BREW_METHODS = [
+  { id: 'pourover', label: 'Pour-over / Drip', defaultRatio: 16 },
+  { id: 'espresso', label: 'Espresso', defaultRatio: 2 },
+  { id: 'coldbrew', label: 'Cold Brew (concentrate)', defaultRatio: 7 },
+];
+
+function coffeeWaterForDose(dose, ratio) {
+  return dose * ratio;
+}
+
+function coffeeDoseForWater(water, ratio) {
+  return water / ratio;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -521,5 +537,8 @@ if (typeof module !== 'undefined' && module.exports) {
     MEAT_DONENESS_LEVELS,
     MEAT_CARRYOVER_RISE,
     meatPullTemperature,
+    COFFEE_BREW_METHODS,
+    coffeeWaterForDose,
+    coffeeDoseForWater,
   };
 }
