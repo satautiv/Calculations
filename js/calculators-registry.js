@@ -66,6 +66,13 @@ const CALCULATOR_REGISTRY = [
     description: "Convert a recipe between ingredient weights and baker's percentages.",
     keywords: ['bakers percentage', 'baking', 'hydration', 'dough', 'bread formula'],
   },
+  {
+    id: 'calories-per-serving',
+    name: 'Calories Per Serving',
+    category: 'Cooking',
+    description: 'Sum the calories of every ingredient in a recipe and divide by the number of servings.',
+    keywords: ['calories', 'kcal', 'servings', 'nutrition', 'cooking', 'recipe'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

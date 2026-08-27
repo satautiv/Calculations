@@ -193,6 +193,17 @@ function bakersWeightsFromPercentages(ingredients, { flourWeight, targetDoughWei
   return { totalFlourWeight, totalDoughWeight, ingredients: withWeights };
 }
 
+// total recipe calories = sum of every ingredient's contributed calories
+// calories per serving = total recipe calories / number of servings
+function caloriesPerServing(ingredients, servings) {
+  const totalCalories = ingredients.reduce((sum, ing) => sum + ing.calories, 0);
+  return {
+    totalCalories,
+    caloriesPerServing: totalCalories / servings,
+    ingredients,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -215,5 +226,6 @@ if (typeof module !== 'undefined' && module.exports) {
     investmentGrowth,
     bakersPercentagesFromWeights,
     bakersWeightsFromPercentages,
+    caloriesPerServing,
   };
 }
