@@ -32,6 +32,8 @@ const {
   gasMarkToTemps,
   celsiusToGasMark,
   meatPullTemperature,
+  coffeeWaterForDose,
+  coffeeDoseForWater,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -620,5 +622,24 @@ describe('meatPullTemperature', () => {
 
   test('throws for an unknown doneness level', () => {
     expect(() => meatPullTemperature('extra-crispy', 'steak', 'f')).toThrow();
+  });
+});
+
+describe('coffeeWaterForDose / coffeeDoseForWater', () => {
+  test('matches the pour-over worked example: 20 g @ 1:16 -> 320 g water', () => {
+    expect(coffeeWaterForDose(20, 16)).toBe(320);
+  });
+
+  test('matches the espresso worked example: 18 g @ 1:2 -> 36 g yield', () => {
+    expect(coffeeWaterForDose(18, 2)).toBe(36);
+  });
+
+  test('matches the cold brew worked example: 100 g @ 1:7 -> 700 g water', () => {
+    expect(coffeeWaterForDose(100, 7)).toBe(700);
+  });
+
+  test('coffeeDoseForWater is the inverse of coffeeWaterForDose', () => {
+    expect(coffeeDoseForWater(320, 16)).toBe(20);
+    expect(coffeeDoseForWater(36, 2)).toBe(18);
   });
 });
