@@ -13,6 +13,10 @@ const {
   investmentGrowth,
   bakersPercentagesFromWeights,
   bakersWeightsFromPercentages,
+  roundPanArea,
+  rectangularPanArea,
+  panSizeCookingTime,
+  batchQuantityCookingTime,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -257,5 +261,59 @@ describe('bakersWeightsFromPercentages', () => {
 
   test('throws when neither a flour weight nor a target dough weight is given', () => {
     expect(() => bakersWeightsFromPercentages([{ name: 'Flour', percent: 100, isFlour: true }], {})).toThrow();
+  });
+});
+
+describe('roundPanArea', () => {
+  test('area = pi * (d/2)^2', () => {
+    expect(roundPanArea(8)).toBeCloseTo(Math.PI * 16, 5);
+  });
+});
+
+describe('rectangularPanArea', () => {
+  test('area = length * width', () => {
+    expect(rectangularPanArea(9, 13)).toBe(117);
+  });
+});
+
+describe('panSizeCookingTime', () => {
+  test('moving from an 8-inch to a 10-inch round pan shrinks the estimated time (bigger pan bakes faster)', () => {
+    const { areaRatio, newTime } = panSizeCookingTime(30, roundPanArea(8), roundPanArea(10));
+    expect(areaRatio).toBeCloseTo(1.5625, 4);
+    expect(newTime).toBeCloseTo(19.2, 4);
+    expect(newTime).toBeLessThan(30);
+  });
+
+  test('moving to a smaller pan increases the estimated time', () => {
+    const { areaRatio, newTime } = panSizeCookingTime(30, roundPanArea(10), roundPanArea(8));
+    expect(areaRatio).toBeCloseTo(0.64, 4);
+    expect(newTime).toBeCloseTo(46.875, 3);
+    expect(newTime).toBeGreaterThan(30);
+  });
+
+  test('identical pan size returns the original time unchanged (ratio = 1)', () => {
+    const area = rectangularPanArea(9, 13);
+    const { areaRatio, newTime } = panSizeCookingTime(45, area, area);
+    expect(areaRatio).toBe(1);
+    expect(newTime).toBe(45);
+  });
+});
+
+describe('batchQuantityCookingTime', () => {
+  test('matches the worked example: doubling a stew (60 min -> ~75.6 min)', () => {
+    const { quantityRatio, newTime } = batchQuantityCookingTime(60, 1, 2);
+    expect(quantityRatio).toBe(2);
+    expect(newTime).toBeCloseTo(75.6, 1);
+  });
+
+  test('identical quantity returns the original time unchanged (ratio = 1)', () => {
+    const { quantityRatio, newTime } = batchQuantityCookingTime(50, 4, 4);
+    expect(quantityRatio).toBe(1);
+    expect(newTime).toBe(50);
+  });
+
+  test('a smaller batch shortens the estimated time', () => {
+    const { newTime } = batchQuantityCookingTime(60, 2, 1);
+    expect(newTime).toBeLessThan(60);
   });
 });

@@ -66,6 +66,13 @@ const CALCULATOR_REGISTRY = [
     description: "Convert a recipe between ingredient weights and baker's percentages.",
     keywords: ['bakers percentage', 'baking', 'hydration', 'dough', 'bread formula'],
   },
+  {
+    id: 'cooktime-conversion',
+    name: 'Cooking Time Conversion',
+    category: 'Cooking',
+    description: 'Estimate a new cooking time when a pan/dish size or batch quantity changes.',
+    keywords: ['cooking time', 'pan size', 'baking time', 'batch scaling', 'oven', 'conversion'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
