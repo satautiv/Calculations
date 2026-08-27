@@ -369,6 +369,19 @@ function emergencyFundTarget(monthlyExpenses, monthsOfCoverage, currentSavings =
   return { target, shortfall, percentFunded };
 }
 
+// Inflation impact: the future cost of today's amount and the future
+// purchasing power (real value) of today's amount are the same compound
+// formula in opposite directions, both derived from one shared calculation.
+function inflationImpact(amount, inflationRatePercent, years) {
+  const i = inflationRatePercent / 100;
+  const growth = Math.pow(1 + i, years);
+  const futureCost = amount * growth;
+  const realValue = amount / growth;
+  const percentPurchasingPowerLost = (1 - realValue / amount) * 100;
+
+  return { futureCost, realValue, percentPurchasingPowerLost };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -403,5 +416,6 @@ if (typeof module !== 'undefined' && module.exports) {
     creditCardPayoffMinimum,
     requiredSavingsContribution,
     emergencyFundTarget,
+    inflationImpact,
   };
 }

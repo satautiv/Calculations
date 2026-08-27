@@ -1194,3 +1194,43 @@ document.getElementById('ef-calc').addEventListener('click', () => {
     ${progressHtml}
   `;
 });
+
+// --- Inflation impact calculator ---
+document.getElementById('inflation-calc').addEventListener('click', () => {
+  const amount = parseFloat(document.getElementById('inflation-amount').value);
+  const rate = parseFloat(document.getElementById('inflation-rate').value);
+  const years = parseFloat(document.getElementById('inflation-years').value);
+  const direction = document.getElementById('inflation-direction').value;
+
+  if (!amount || amount <= 0) {
+    showError('inflation-result', 'Enter a valid amount greater than zero.');
+    return;
+  }
+
+  if (isNaN(rate) || rate < 0) {
+    showError('inflation-result', 'Enter a valid inflation rate (0 or greater).');
+    return;
+  }
+
+  if (!years || years <= 0) {
+    showError('inflation-result', 'Enter a valid number of years greater than zero.');
+    return;
+  }
+
+  const { futureCost, realValue, percentPurchasingPowerLost } = inflationImpact(amount, rate, years);
+
+  const resultHtml = direction === 'futureCost'
+    ? `
+      <div class="headline">${formatMoney(futureCost)}</div>
+      <div>You'd need this much in ${years} year${years === 1 ? '' : 's'} to match the buying power of ${formatMoney(amount)} today</div>
+    `
+    : `
+      <div class="headline">${formatMoney(realValue)}</div>
+      <div>${formatMoney(amount)} received in ${years} year${years === 1 ? '' : 's'} would have this much buying power in today's terms</div>
+    `;
+
+  document.getElementById('inflation-result').innerHTML = `
+    ${resultHtml}
+    <div class="hint">Purchasing power lost over the period: ${percentPurchasingPowerLost.toFixed(1)}%</div>
+  `;
+});

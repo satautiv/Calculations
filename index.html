@@ -458,6 +458,32 @@
     <div class="result" id="ef-result"></div>
   </section>
 
+  <section id="inflation-impact" class="view tab-panel">
+    <h2>Inflation Impact Calculator</h2>
+    <p class="hint">See how inflation erodes purchasing power over time &mdash; both directions use the same underlying math.</p>
+    <div class="field">
+      <label for="inflation-amount">Amount</label>
+      <input type="number" id="inflation-amount" min="0" step="0.01" placeholder="e.g. 10000">
+    </div>
+    <div class="field">
+      <label for="inflation-rate">Expected annual inflation rate (%)</label>
+      <input type="number" id="inflation-rate" min="0" step="0.01" value="3" placeholder="e.g. 3">
+    </div>
+    <div class="field">
+      <label for="inflation-years">Number of years</label>
+      <input type="number" id="inflation-years" min="0" step="1" placeholder="e.g. 20">
+    </div>
+    <div class="field">
+      <label for="inflation-direction">What to show</label>
+      <select id="inflation-direction">
+        <option value="futureCost">Future cost of this amount today</option>
+        <option value="realValue">Today's purchasing power of this future amount</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="inflation-calc">Calculate</button>
+    <div class="result" id="inflation-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

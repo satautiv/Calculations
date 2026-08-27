@@ -108,6 +108,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Recommend an emergency fund size from your essential monthly expenses.',
     keywords: ['emergency fund', 'expenses', 'cash reserve', 'months of coverage'],
   },
+  {
+    id: 'inflation-impact',
+    name: 'Inflation Impact',
+    category: 'Finance',
+    description: "See how inflation erodes money's purchasing power over time.",
+    keywords: ['inflation', 'purchasing power', 'real value', 'future cost'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
