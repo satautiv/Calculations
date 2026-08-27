@@ -1160,3 +1160,37 @@ document.getElementById('savings-calc').addEventListener('click', () => {
     <div class="hint">Total contributed: ${formatMoney(totalContributed)} &middot; Growth earned: ${formatMoney(totalGrowth)}</div>
   `;
 });
+
+// --- Emergency fund calculator ---
+document.getElementById('ef-calc').addEventListener('click', () => {
+  const expenses = parseFloat(document.getElementById('ef-expenses').value);
+  const months = parseFloat(document.getElementById('ef-months').value);
+  const current = parseFloat(document.getElementById('ef-current').value) || 0;
+
+  if (!expenses || expenses <= 0) {
+    showError('ef-result', 'Enter a valid monthly expenses amount greater than zero.');
+    return;
+  }
+
+  if (!months || months <= 0) {
+    showError('ef-result', 'Enter a valid number of months of coverage greater than zero.');
+    return;
+  }
+
+  if (current < 0) {
+    showError('ef-result', 'Amount already saved cannot be negative.');
+    return;
+  }
+
+  const { target, shortfall, percentFunded } = emergencyFundTarget(expenses, months, current);
+
+  const progressHtml = current > 0 ? `
+    <div class="hint">Already saved: ${formatMoney(current)} (${percentFunded.toFixed(1)}% funded) &middot; Shortfall: ${formatMoney(shortfall)}</div>
+  ` : '';
+
+  document.getElementById('ef-result').innerHTML = `
+    <div class="headline">${formatMoney(target)}</div>
+    <div>Recommended emergency fund (${months} month${months === 1 ? '' : 's'} of expenses)</div>
+    ${progressHtml}
+  `;
+});

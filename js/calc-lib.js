@@ -357,6 +357,18 @@ function requiredSavingsContribution(goal, currentSavings, annualRatePercent, pe
   return { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth };
 }
 
+// Recommended emergency fund = essential monthly expenses * months of coverage.
+// If currentSavings is given, also reports the shortfall and percent funded
+// (capped at 0/100 so an already-fully-funded case doesn't show a negative
+// shortfall or over 100%).
+function emergencyFundTarget(monthlyExpenses, monthsOfCoverage, currentSavings = 0) {
+  const target = monthlyExpenses * monthsOfCoverage;
+  const shortfall = Math.max(0, target - currentSavings);
+  const percentFunded = target > 0 ? Math.min(100, (currentSavings / target) * 100) : 0;
+
+  return { target, shortfall, percentFunded };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -390,5 +402,6 @@ if (typeof module !== 'undefined' && module.exports) {
     creditCardPayoffFixed,
     creditCardPayoffMinimum,
     requiredSavingsContribution,
+    emergencyFundTarget,
   };
 }

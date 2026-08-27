@@ -101,6 +101,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Find the monthly contribution needed to reach a savings target by a target date.',
     keywords: ['savings goal', 'target', 'contribution', 'future value', 'investing'],
   },
+  {
+    id: 'emergency-fund',
+    name: 'Emergency Fund',
+    category: 'Finance',
+    description: 'Recommend an emergency fund size from your essential monthly expenses.',
+    keywords: ['emergency fund', 'expenses', 'cash reserve', 'months of coverage'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

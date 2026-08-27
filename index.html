@@ -439,6 +439,25 @@
     <div class="result" id="savings-result"></div>
   </section>
 
+  <section id="emergency-fund" class="view tab-panel">
+    <h2>Emergency Fund Calculator</h2>
+    <p class="hint">Recommends how large your emergency fund should be, based on essential monthly expenses and how many months of coverage you want.</p>
+    <div class="field">
+      <label for="ef-expenses">Essential monthly expenses</label>
+      <input type="number" id="ef-expenses" min="0" step="0.01" placeholder="e.g. 1800">
+    </div>
+    <div class="field">
+      <label for="ef-months">Months of coverage</label>
+      <input type="number" id="ef-months" min="1" max="24" step="1" value="6" placeholder="e.g. 6">
+    </div>
+    <div class="field">
+      <label for="ef-current">Already saved (optional)</label>
+      <input type="number" id="ef-current" min="0" step="0.01" value="0" placeholder="e.g. 4000">
+    </div>
+    <button class="calc-btn" id="ef-calc">Calculate</button>
+    <div class="result" id="ef-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
