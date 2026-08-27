@@ -24,6 +24,7 @@ const {
   creditCardPayoffMinimum,
   requiredSavingsContribution,
   emergencyFundTarget,
+  inflationImpact,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -493,5 +494,27 @@ describe('emergencyFundTarget', () => {
     const { shortfall, percentFunded } = emergencyFundTarget(1800, 6, 20000);
     expect(shortfall).toBe(0);
     expect(percentFunded).toBe(100);
+  });
+});
+
+describe('inflationImpact', () => {
+  test('matches the worked example: €10,000, 3% inflation, 20 years', () => {
+    const { futureCost, realValue, percentPurchasingPowerLost } = inflationImpact(10000, 3, 20);
+    expect(futureCost).toBeCloseTo(18061.11, 1);
+    expect(realValue).toBeCloseTo(5536.76, 1);
+    expect(percentPurchasingPowerLost).toBeCloseTo(44.63, 1);
+  });
+
+  test('futureCost and realValue are inverse: realValue of a futureCost recovers the original amount', () => {
+    const { futureCost } = inflationImpact(10000, 3, 20);
+    const { realValue } = inflationImpact(futureCost, 3, 20);
+    expect(realValue).toBeCloseTo(10000, 5);
+  });
+
+  test('0% inflation leaves both values unchanged', () => {
+    const { futureCost, realValue, percentPurchasingPowerLost } = inflationImpact(5000, 0, 10);
+    expect(futureCost).toBe(5000);
+    expect(realValue).toBe(5000);
+    expect(percentPurchasingPowerLost).toBe(0);
   });
 });
