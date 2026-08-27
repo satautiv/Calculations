@@ -74,6 +74,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['loan', 'mortgage', 'amortization', 'amortisation', 'payment', 'schedule', 'overpayment'],
   },
   {
+    id: 'cooktime-conversion',
+    name: 'Cooking Time Conversion',
+    category: 'Cooking',
+    description: 'Estimate a new cooking time when a pan/dish size or batch quantity changes.',
+    keywords: ['cooking time', 'pan size', 'baking time', 'batch scaling', 'oven', 'conversion'],
+  },
+  {
     id: 'calories-per-serving',
     name: 'Calories Per Serving',
     category: 'Cooking',

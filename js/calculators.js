@@ -871,6 +871,96 @@ document.getElementById('loan-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Cooking time conversion calculator ---
+document.getElementById('cooktime-mode').addEventListener('change', (e) => {
+  const isBatch = e.target.value === 'batch';
+  document.getElementById('cooktime-pan-fields').hidden = isBatch;
+  document.getElementById('cooktime-batch-fields').hidden = !isBatch;
+});
+
+document.getElementById('cooktime-shape').addEventListener('change', (e) => {
+  const isRectangular = e.target.value === 'rectangular';
+  document.getElementById('cooktime-round-fields').hidden = isRectangular;
+  document.getElementById('cooktime-rectangular-fields').hidden = !isRectangular;
+});
+
+function formatCooktimeMinutes(minutes) {
+  return minutes % 1 === 0 ? String(minutes) : minutes.toFixed(1);
+}
+
+const COOKTIME_DONENESS_HINT = 'This is a rule-of-thumb estimate &mdash; start checking for doneness about 15&ndash;25% before the estimated new time.';
+
+document.getElementById('cooktime-calc').addEventListener('click', () => {
+  const mode = document.getElementById('cooktime-mode').value;
+
+  if (mode === 'pan') {
+    const shape = document.getElementById('cooktime-shape').value;
+    const originalTime = parseFloat(document.getElementById('cooktime-pan-time').value);
+
+    if (isNaN(originalTime) || originalTime <= 0) {
+      showError('cooktime-result', 'Enter a valid original cooking time.');
+      return;
+    }
+
+    let originalArea, newArea;
+
+    if (shape === 'round') {
+      const origDiameter = parseFloat(document.getElementById('cooktime-orig-diameter').value);
+      const newDiameter = parseFloat(document.getElementById('cooktime-new-diameter').value);
+
+      if (isNaN(origDiameter) || origDiameter <= 0 || isNaN(newDiameter) || newDiameter <= 0) {
+        showError('cooktime-result', 'Enter valid original and new pan diameters.');
+        return;
+      }
+
+      originalArea = roundPanArea(origDiameter);
+      newArea = roundPanArea(newDiameter);
+    } else {
+      const origLength = parseFloat(document.getElementById('cooktime-orig-length').value);
+      const origWidth = parseFloat(document.getElementById('cooktime-orig-width').value);
+      const newLength = parseFloat(document.getElementById('cooktime-new-length').value);
+      const newWidth = parseFloat(document.getElementById('cooktime-new-width').value);
+
+      if ([origLength, origWidth, newLength, newWidth].some(v => isNaN(v) || v <= 0)) {
+        showError('cooktime-result', 'Enter valid original and new pan lengths and widths.');
+        return;
+      }
+
+      originalArea = rectangularPanArea(origLength, origWidth);
+      newArea = rectangularPanArea(newLength, newWidth);
+    }
+
+    const { areaRatio, newTime } = panSizeCookingTime(originalTime, originalArea, newArea);
+
+    document.getElementById('cooktime-result').innerHTML = `
+      <div class="headline">${formatCooktimeMinutes(newTime)} min</div>
+      <div>Estimated new cooking time (area ratio: ${areaRatio.toFixed(2)}x)</div>
+      <div class="hint">${COOKTIME_DONENESS_HINT}</div>
+    `;
+  } else {
+    const originalQuantity = parseFloat(document.getElementById('cooktime-orig-qty').value);
+    const newQuantity = parseFloat(document.getElementById('cooktime-new-qty').value);
+    const originalTime = parseFloat(document.getElementById('cooktime-batch-time').value);
+
+    if (
+      isNaN(originalQuantity) || originalQuantity <= 0 ||
+      isNaN(newQuantity) || newQuantity <= 0 ||
+      isNaN(originalTime) || originalTime <= 0
+    ) {
+      showError('cooktime-result', 'Enter valid original and new quantities and an original cooking time.');
+      return;
+    }
+
+    const { quantityRatio, newTime } = batchQuantityCookingTime(originalTime, originalQuantity, newQuantity);
+
+    document.getElementById('cooktime-result').innerHTML = `
+      <div class="headline">${formatCooktimeMinutes(newTime)} min</div>
+      <div>Estimated new cooking time (quantity ratio: ${quantityRatio.toFixed(2)}x)</div>
+      <div class="hint">${COOKTIME_DONENESS_HINT}</div>
+    `;
+  }
+});
+
 // --- Calories per serving calculator ---
 const CALORIE_INITIAL_ROWS = 3;
 

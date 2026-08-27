@@ -193,6 +193,32 @@ function bakersWeightsFromPercentages(ingredients, { flourWeight, targetDoughWei
   return { totalFlourWeight, totalDoughWeight, ingredients: withWeights };
 }
 
+// Area of a round pan given its diameter (area = pi * (d/2)^2).
+function roundPanArea(diameter) {
+  return Math.PI * (diameter / 2) ** 2;
+}
+
+// Area of a rectangular pan given its length and width.
+function rectangularPanArea(length, width) {
+  return length * width;
+}
+
+// Pan-size / area-based scaling rule of thumb: spreading the same batter/dough
+// over a bigger pan makes it thinner, so it bakes faster (and vice versa for a
+// smaller pan). new time = original time / area ratio — this one formula
+// handles both directions since a smaller new pan gives an area ratio < 1.
+function panSizeCookingTime(originalTime, originalArea, newArea) {
+  const areaRatio = newArea / originalArea;
+  return { areaRatio, newTime: originalTime / areaRatio };
+}
+
+// Batch-quantity scaling rule of thumb (same pan/pot shape, more volume, e.g.
+// a stew or roast): new time = original time * (new quantity / original quantity)^(1/3).
+function batchQuantityCookingTime(originalTime, originalQuantity, newQuantity) {
+  const quantityRatio = newQuantity / originalQuantity;
+  return { quantityRatio, newTime: originalTime * Math.cbrt(quantityRatio) };
+}
+
 // total recipe calories = sum of every ingredient's contributed calories
 // calories per serving = total recipe calories / number of servings
 function caloriesPerServing(ingredients, servings) {
@@ -279,6 +305,10 @@ if (typeof module !== 'undefined' && module.exports) {
     bakersWeightsFromPercentages,
     loanMonthlyPayment,
     amortizationSchedule,
+    roundPanArea,
+    rectangularPanArea,
+    panSizeCookingTime,
+    batchQuantityCookingTime,
     caloriesPerServing,
   };
 }
