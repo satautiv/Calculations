@@ -23,6 +23,7 @@ const {
   creditCardPayoffFixed,
   creditCardPayoffMinimum,
   requiredSavingsContribution,
+  emergencyFundTarget,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -470,5 +471,27 @@ describe('requiredSavingsContribution', () => {
     expect(goalAlreadyMet).toBe(true);
     expect(requiredContribution).toBe(0);
     expect(finalBalance).toBeGreaterThan(5000);
+  });
+});
+
+describe('emergencyFundTarget', () => {
+  test('matches the worked example: €1,800/month expenses, 6 months coverage, €4,000 already saved', () => {
+    const { target, shortfall, percentFunded } = emergencyFundTarget(1800, 6, 4000);
+    expect(target).toBe(10800);
+    expect(shortfall).toBe(6800);
+    expect(percentFunded).toBeCloseTo(37.037, 2);
+  });
+
+  test('defaults current savings to 0, giving the full target as the shortfall', () => {
+    const { target, shortfall, percentFunded } = emergencyFundTarget(1800, 6);
+    expect(target).toBe(10800);
+    expect(shortfall).toBe(10800);
+    expect(percentFunded).toBe(0);
+  });
+
+  test('caps percentFunded at 100 and shortfall at 0 when already fully funded', () => {
+    const { shortfall, percentFunded } = emergencyFundTarget(1800, 6, 20000);
+    expect(shortfall).toBe(0);
+    expect(percentFunded).toBe(100);
   });
 });
