@@ -627,3 +627,177 @@ document.getElementById('recipe-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Investment / DCA growth calculator ---
+function formatMoney(value) {
+  return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+document.getElementById('invest-calc').addEventListener('click', () => {
+  const lumpSum = parseFloat(document.getElementById('invest-lump-sum').value) || 0;
+  const contribution = parseFloat(document.getElementById('invest-contribution').value) || 0;
+  const frequency = parseInt(document.getElementById('invest-frequency').value, 10);
+  const rate = parseFloat(document.getElementById('invest-rate').value);
+  const years = parseInt(document.getElementById('invest-years').value, 10);
+
+  const isValidFrequency = CONTRIBUTION_FREQUENCIES.some(f => f.value === frequency);
+
+  if (lumpSum < 0 || contribution < 0 || (lumpSum === 0 && contribution === 0)) {
+    showError('invest-result', 'Enter an initial lump sum or a recurring contribution greater than zero.');
+    return;
+  }
+
+  if (!isValidFrequency || isNaN(rate) || !years || years < 1 || !Number.isInteger(years)) {
+    showError('invest-result', 'Enter a valid contribution frequency, expected return, and a whole number of years.');
+    return;
+  }
+
+  const { futureValue, totalContributed, totalGrowth, yearly } = investmentGrowth(lumpSum, contribution, frequency, rate, years);
+
+  const rows = yearly.map(y => `
+    <tr>
+      <td>${y.year}</td>
+      <td>${formatMoney(y.endingBalance)}</td>
+      <td>${formatMoney(y.cumulativeContributions)}</td>
+      <td>${formatMoney(y.cumulativeGrowth)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('invest-result').innerHTML = `
+    <div class="headline">${formatMoney(futureValue)}</div>
+    <div>Projected balance after ${years} year${years === 1 ? '' : 's'}</div>
+    <div class="hint">Contributed: ${formatMoney(totalContributed)} &middot; Growth: ${formatMoney(totalGrowth)}</div>
+    <table>
+      <thead><tr><th>Year</th><th>Balance</th><th>Contributed</th><th>Growth</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+});
+
+// --- Baker's percentage calculator ---
+const BAKER_INITIAL_ROWS = 4;
+
+function addBakerIngredientRow() {
+  const row = document.createElement('div');
+  row.className = 'baker-ingredient-row';
+  row.innerHTML = `
+    <input type="text" class="baker-ing-name" aria-label="Ingredient name" placeholder="e.g. Flour">
+    <input type="checkbox" class="baker-ing-flour" aria-label="Is flour">
+    <input type="number" class="baker-ing-value" aria-label="Weight or percent" min="0" step="0.1" placeholder="e.g. 500">
+    <button type="button" class="baker-remove-btn" aria-label="Remove ingredient">&times;</button>
+  `;
+  document.getElementById('baker-ingredient-list').appendChild(row);
+}
+
+for (let i = 0; i < BAKER_INITIAL_ROWS; i++) addBakerIngredientRow();
+
+document.getElementById('baker-add-ingredient').addEventListener('click', () => addBakerIngredientRow());
+
+document.getElementById('baker-ingredient-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.baker-remove-btn');
+  if (!btn) return;
+  btn.closest('.baker-ingredient-row').remove();
+});
+
+document.getElementById('baker-mode').addEventListener('change', (e) => {
+  const isPercentToWeights = e.target.value === 'percent-to-weights';
+  document.getElementById('baker-basis-fields').hidden = !isPercentToWeights;
+  document.getElementById('baker-value-col-label').textContent = isPercentToWeights ? 'Percent (%)' : 'Weight (g)';
+});
+
+function formatBakerNumber(value) {
+  return value % 1 === 0 ? String(value) : value.toFixed(2);
+}
+
+function readBakerIngredientRows() {
+  const rows = document.querySelectorAll('#baker-ingredient-list .baker-ingredient-row');
+  const ingredients = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const name = row.querySelector('.baker-ing-name').value.trim();
+    const isFlour = row.querySelector('.baker-ing-flour').checked;
+    const valueRaw = row.querySelector('.baker-ing-value').value;
+    const value = parseFloat(valueRaw);
+
+    if (!name && valueRaw === '') return; // blank row, skip silently
+
+    if (!name || valueRaw === '' || isNaN(value) || value < 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    ingredients.push({ name, isFlour, value });
+  });
+
+  return { ingredients, hasInvalidRow };
+}
+
+document.getElementById('baker-calc').addEventListener('click', () => {
+  const mode = document.getElementById('baker-mode').value;
+  const { ingredients, hasInvalidRow } = readBakerIngredientRows();
+
+  if (hasInvalidRow) {
+    showError('baker-result', 'Enter a valid name and non-negative number for every ingredient row, or leave the row blank.');
+    return;
+  }
+
+  if (ingredients.length === 0) {
+    showError('baker-result', 'Add at least one ingredient.');
+    return;
+  }
+
+  try {
+    if (mode === 'weights-to-percent') {
+      const { totalFlourWeight, ingredients: computed } = bakersPercentagesFromWeights(
+        ingredients.map(i => ({ name: i.name, isFlour: i.isFlour, weight: i.value }))
+      );
+
+      const rows = computed.map(i => `
+        <tr><td>${i.name}${i.isFlour ? ' (flour)' : ''}</td><td>${formatBakerNumber(i.weight)} g</td><td>${formatBakerNumber(i.percent)}%</td></tr>
+      `).join('');
+
+      document.getElementById('baker-result').innerHTML = `
+        <div class="headline">${formatBakerNumber(totalFlourWeight)} g flour</div>
+        <div>Total flour weight (100% base)</div>
+        <table>
+          <thead><tr><th>Ingredient</th><th>Weight</th><th>Baker's %</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    } else {
+      const flourWeightRaw = document.getElementById('baker-flour-weight').value;
+      const doughWeightRaw = document.getElementById('baker-dough-weight').value;
+      const flourWeight = parseFloat(flourWeightRaw);
+      const targetDoughWeight = parseFloat(doughWeightRaw);
+
+      if ((flourWeightRaw === '' || isNaN(flourWeight)) && (doughWeightRaw === '' || isNaN(targetDoughWeight))) {
+        showError('baker-result', 'Enter a total flour weight or a target total dough weight.');
+        return;
+      }
+
+      const { totalFlourWeight, totalDoughWeight, ingredients: computed } = bakersWeightsFromPercentages(
+        ingredients.map(i => ({ name: i.name, isFlour: i.isFlour, percent: i.value })),
+        {
+          flourWeight: flourWeightRaw !== '' && !isNaN(flourWeight) ? flourWeight : undefined,
+          targetDoughWeight: doughWeightRaw !== '' && !isNaN(targetDoughWeight) ? targetDoughWeight : undefined,
+        }
+      );
+
+      const rows = computed.map(i => `
+        <tr><td>${i.name}${i.isFlour ? ' (flour)' : ''}</td><td>${formatBakerNumber(i.percent)}%</td><td>${formatBakerNumber(i.weight)} g</td></tr>
+      `).join('');
+
+      document.getElementById('baker-result').innerHTML = `
+        <div class="headline">${formatBakerNumber(totalDoughWeight)} g dough</div>
+        <div>Total flour weight used: ${formatBakerNumber(totalFlourWeight)} g</div>
+        <table>
+          <thead><tr><th>Ingredient</th><th>Baker's %</th><th>Weight</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      `;
+    }
+  } catch (err) {
+    showError('baker-result', err.message);
+  }
+});

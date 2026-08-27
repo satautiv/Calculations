@@ -10,6 +10,9 @@ const {
   wendler531Sets,
   compoundInterest,
   scaleRecipe,
+  investmentGrowth,
+  bakersPercentagesFromWeights,
+  bakersWeightsFromPercentages,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -165,5 +168,94 @@ describe('scaleRecipe', () => {
     const { scaleFactor, ingredients } = scaleRecipe(4, 2, [{ name: 'flour', quantity: 300, unit: 'g' }]);
     expect(scaleFactor).toBe(0.5);
     expect(ingredients[0].scaledQuantity).toBe(150);
+  });
+});
+
+describe('investmentGrowth', () => {
+  test('matches the closed-form ordinary annuity formula: €5000 + €200/mo at 7% for 20 years', () => {
+    const { futureValue, totalContributed, totalGrowth, yearly } = investmentGrowth(5000, 200, 12, 7, 20);
+    expect(futureValue).toBeCloseTo(124379.03, 1);
+    expect(totalContributed).toBe(53000);
+    expect(totalGrowth).toBeCloseTo(71379.03, 1);
+    expect(yearly).toHaveLength(20);
+    expect(yearly[19].endingBalance).toBeCloseTo(futureValue, 6);
+  });
+
+  test('0% rate leaves growth at zero (FV = P + C*n)', () => {
+    const { futureValue, totalGrowth } = investmentGrowth(1000, 100, 12, 0, 1);
+    expect(futureValue).toBeCloseTo(2200, 5);
+    expect(totalGrowth).toBeCloseTo(0, 5);
+  });
+
+  test('negative rate models a loss scenario', () => {
+    const { futureValue } = investmentGrowth(1000, 0, 1, -10, 1);
+    expect(futureValue).toBeCloseTo(900, 5);
+  });
+
+  test('year-by-year breakdown accumulates contributions and growth', () => {
+    const { yearly } = investmentGrowth(0, 100, 1, 10, 3);
+    expect(yearly[0].cumulativeContributions).toBe(100);
+    expect(yearly[2].cumulativeContributions).toBe(300);
+    expect(yearly[2].endingBalance).toBeCloseTo(yearly[2].cumulativeContributions + yearly[2].cumulativeGrowth, 6);
+  });
+});
+
+describe('bakersPercentagesFromWeights', () => {
+  test('matches the worked example: flour 500g, water 350g, salt 10g, yeast 5g', () => {
+    const { totalFlourWeight, ingredients } = bakersPercentagesFromWeights([
+      { name: 'Flour', weight: 500, isFlour: true },
+      { name: 'Water', weight: 350, isFlour: false },
+      { name: 'Salt', weight: 10, isFlour: false },
+      { name: 'Yeast', weight: 5, isFlour: false },
+    ]);
+
+    expect(totalFlourWeight).toBe(500);
+    expect(ingredients.map(i => i.percent)).toEqual([100, 70, 2, 1]);
+  });
+
+  test('sums multiple flour types into the 100% base', () => {
+    const { totalFlourWeight, ingredients } = bakersPercentagesFromWeights([
+      { name: 'Bread flour', weight: 400, isFlour: true },
+      { name: 'Whole wheat', weight: 100, isFlour: true },
+      { name: 'Water', weight: 350, isFlour: false },
+    ]);
+
+    expect(totalFlourWeight).toBe(500);
+    expect(ingredients.map(i => i.percent)).toEqual([80, 20, 70]);
+  });
+
+  test('throws when there is no flour weight to use as the base', () => {
+    expect(() => bakersPercentagesFromWeights([{ name: 'Water', weight: 350, isFlour: false }])).toThrow();
+  });
+});
+
+describe('bakersWeightsFromPercentages', () => {
+  test('matches the worked example: flour weight given directly', () => {
+    const { totalFlourWeight, ingredients } = bakersWeightsFromPercentages([
+      { name: 'Flour', percent: 100, isFlour: true },
+      { name: 'Water', percent: 70, isFlour: false },
+      { name: 'Salt', percent: 2, isFlour: false },
+      { name: 'Yeast', percent: 1, isFlour: false },
+    ], { flourWeight: 800 });
+
+    expect(totalFlourWeight).toBe(800);
+    expect(ingredients.map(i => i.weight)).toEqual([800, 560, 16, 8]);
+  });
+
+  test('back-solves flour weight from a target total dough weight', () => {
+    const { totalFlourWeight, totalDoughWeight, ingredients } = bakersWeightsFromPercentages([
+      { name: 'Flour', percent: 100, isFlour: true },
+      { name: 'Water', percent: 70, isFlour: false },
+      { name: 'Salt', percent: 2, isFlour: false },
+      { name: 'Yeast', percent: 1, isFlour: false },
+    ], { targetDoughWeight: 1384 });
+
+    expect(totalFlourWeight).toBeCloseTo(800, 5);
+    expect(totalDoughWeight).toBeCloseTo(1384, 5);
+    expect(ingredients.map(i => Math.round(i.weight))).toEqual([800, 560, 16, 8]);
+  });
+
+  test('throws when neither a flour weight nor a target dough weight is given', () => {
+    expect(() => bakersWeightsFromPercentages([{ name: 'Flour', percent: 100, isFlour: true }], {})).toThrow();
   });
 });

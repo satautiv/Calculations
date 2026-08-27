@@ -128,6 +128,71 @@ function scaleRecipe(originalServings, targetServings, ingredients) {
   };
 }
 
+const CONTRIBUTION_FREQUENCIES = [
+  { label: 'Monthly', value: 12 },
+  { label: 'Quarterly', value: 4 },
+  { label: 'Annually', value: 1 },
+];
+
+// Ordinary annuity: each period, the running balance compounds first, then that
+// period's contribution is added (so the first contribution starts growing the
+// following period). Equivalent to FV = P*(1+i)^n + C*[((1+i)^n - 1) / i].
+function investmentGrowth(initialLumpSum, contribution, periodsPerYear, annualRatePercent, years) {
+  const periodicRate = annualRatePercent / 100 / periodsPerYear;
+  const totalPeriods = periodsPerYear * years;
+
+  let balance = initialLumpSum;
+  let contributed = initialLumpSum;
+  const yearly = [];
+
+  for (let period = 1; period <= totalPeriods; period++) {
+    balance = periodicRate === 0 ? balance : balance * (1 + periodicRate);
+    balance += contribution;
+    contributed += contribution;
+
+    if (period % periodsPerYear === 0) {
+      yearly.push({
+        year: period / periodsPerYear,
+        endingBalance: balance,
+        cumulativeContributions: contributed,
+        cumulativeGrowth: balance - contributed,
+      });
+    }
+  }
+
+  return { futureValue: balance, totalContributed: contributed, totalGrowth: balance - contributed, yearly };
+}
+
+// Baker's percentage, weights -> percentages: every ingredient (including each
+// flour) expressed as a percentage of the combined flour weight.
+function bakersPercentagesFromWeights(ingredients) {
+  const totalFlourWeight = ingredients.filter(i => i.isFlour).reduce((sum, i) => sum + i.weight, 0);
+  if (!(totalFlourWeight > 0)) throw new Error('Add at least one flour ingredient with a weight greater than zero.');
+
+  return {
+    totalFlourWeight,
+    ingredients: ingredients.map(i => ({ ...i, percent: (i.weight / totalFlourWeight) * 100 })),
+  };
+}
+
+// Baker's percentage, percentages -> weights: given a flour weight (or a target
+// total dough weight, back-solved into a flour weight), apply each percentage.
+function bakersWeightsFromPercentages(ingredients, { flourWeight, targetDoughWeight } = {}) {
+  let totalFlourWeight = flourWeight;
+
+  if (!totalFlourWeight && targetDoughWeight) {
+    const totalPercent = ingredients.reduce((sum, i) => sum + i.percent, 0);
+    totalFlourWeight = targetDoughWeight / (totalPercent / 100);
+  }
+
+  if (!(totalFlourWeight > 0)) throw new Error('Provide a total flour weight or a target total dough weight.');
+
+  const withWeights = ingredients.map(i => ({ ...i, weight: (i.percent / 100) * totalFlourWeight }));
+  const totalDoughWeight = withWeights.reduce((sum, i) => sum + i.weight, 0);
+
+  return { totalFlourWeight, totalDoughWeight, ingredients: withWeights };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -146,5 +211,9 @@ if (typeof module !== 'undefined' && module.exports) {
     COMPOUNDING_FREQUENCIES,
     compoundInterest,
     scaleRecipe,
+    CONTRIBUTION_FREQUENCIES,
+    investmentGrowth,
+    bakersPercentagesFromWeights,
+    bakersWeightsFromPercentages,
   };
 }

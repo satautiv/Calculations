@@ -52,6 +52,20 @@ const CALCULATOR_REGISTRY = [
     description: 'Scale every ingredient in a recipe up or down to a new serving size.',
     keywords: ['recipe', 'scale', 'servings', 'cooking', 'baking'],
   },
+  {
+    id: 'investment-growth',
+    name: 'Investment / DCA Growth',
+    category: 'Finance',
+    description: 'Project how a lump sum plus regular contributions grows over time.',
+    keywords: ['investment', 'dca', 'dollar cost averaging', 'etf', 'future value', 'compounding'],
+  },
+  {
+    id: 'bakers-percentage',
+    name: "Baker's Percentage",
+    category: 'Cooking',
+    description: "Convert a recipe between ingredient weights and baker's percentages.",
+    keywords: ['bakers percentage', 'baking', 'hydration', 'dough', 'bread formula'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
