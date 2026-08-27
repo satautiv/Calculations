@@ -94,6 +94,13 @@ const CALCULATOR_REGISTRY = [
     description: 'See how long it takes to pay off a credit card balance and how much interest it costs.',
     keywords: ['credit card', 'payoff', 'interest', 'minimum payment', 'debt'],
   },
+  {
+    id: 'savings-goal',
+    name: 'Savings Goal',
+    category: 'Finance',
+    description: 'Find the monthly contribution needed to reach a savings target by a target date.',
+    keywords: ['savings goal', 'target', 'contribution', 'future value', 'investing'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
