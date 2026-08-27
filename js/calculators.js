@@ -1274,3 +1274,54 @@ document.getElementById('drive-calc').addEventListener('click', () => {
     ${totalHtml}
   `;
 });
+
+// --- Oven temperature converter ---
+document.getElementById('oven-unit').addEventListener('change', (e) => {
+  const isGasMark = e.target.value === 'gasmark';
+  document.getElementById('oven-value-field').hidden = isGasMark;
+  document.getElementById('oven-gasmark-field').hidden = !isGasMark;
+});
+
+function formatGasMarkLabel(mark) {
+  if (mark === 0.25) return '&frac14;';
+  if (mark === 0.5) return '&frac12;';
+  return String(mark);
+}
+
+document.getElementById('oven-calc').addEventListener('click', () => {
+  const unit = document.getElementById('oven-unit').value;
+  let celsius, fahrenheit, gasMark;
+
+  if (unit === 'gasmark') {
+    const mark = parseFloat(document.getElementById('oven-gasmark-value').value);
+    const temps = gasMarkToTemps(mark);
+    celsius = temps.celsius;
+    fahrenheit = temps.fahrenheit;
+    gasMark = mark;
+  } else {
+    const value = parseFloat(document.getElementById('oven-value').value);
+
+    if (isNaN(value)) {
+      showError('oven-result', 'Enter a valid temperature.');
+      return;
+    }
+
+    if (unit === 'celsius') {
+      celsius = value;
+      fahrenheit = celsiusToFahrenheit(value);
+    } else {
+      fahrenheit = value;
+      celsius = fahrenheitToCelsius(value);
+    }
+    gasMark = celsiusToGasMark(celsius);
+  }
+
+  const gasMarkLine = gasMark === null
+    ? '<div>Gas Mark: outside standard range</div>'
+    : `<div>Gas Mark: ${formatGasMarkLabel(gasMark)}</div>`;
+
+  document.getElementById('oven-result').innerHTML = `
+    <div class="headline">${celsius.toFixed(0)}&deg;C / ${fahrenheit.toFixed(0)}&deg;F</div>
+    ${gasMarkLine}
+  `;
+});

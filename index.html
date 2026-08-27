@@ -503,6 +503,44 @@
     <div class="result" id="drive-result"></div>
   </section>
 
+  <section id="oven-temperature" class="view tab-panel">
+    <h2>Oven Temperature Converter</h2>
+    <p class="hint">Convert between Celsius, Fahrenheit, and UK Gas Mark. Fan/convection ovens typically run about 20&deg;C (1 gas mark) cooler than these conventional-oven figures.</p>
+    <div class="field">
+      <label for="oven-unit">From</label>
+      <select id="oven-unit">
+        <option value="celsius">Celsius (&deg;C)</option>
+        <option value="fahrenheit">Fahrenheit (&deg;F)</option>
+        <option value="gasmark">Gas Mark</option>
+      </select>
+    </div>
+
+    <div class="field" id="oven-value-field">
+      <label for="oven-value">Temperature</label>
+      <input type="number" id="oven-value" step="0.1" placeholder="e.g. 200">
+    </div>
+
+    <div class="field" id="oven-gasmark-field" hidden>
+      <label for="oven-gasmark-value">Gas Mark</label>
+      <select id="oven-gasmark-value">
+        <option value="0.25">&frac14;</option>
+        <option value="0.5">&frac12;</option>
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="3">3</option>
+        <option value="4" selected>4</option>
+        <option value="5">5</option>
+        <option value="6">6</option>
+        <option value="7">7</option>
+        <option value="8">8</option>
+        <option value="9">9</option>
+      </select>
+    </div>
+
+    <button class="calc-btn" id="oven-calc">Convert</button>
+    <div class="result" id="oven-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
