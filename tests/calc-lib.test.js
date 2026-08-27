@@ -19,6 +19,7 @@ const {
   rectangularPanArea,
   panSizeCookingTime,
   batchQuantityCookingTime,
+  caloriesPerServing,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -374,5 +375,37 @@ describe('batchQuantityCookingTime', () => {
   test('a smaller batch shortens the estimated time', () => {
     const { newTime } = batchQuantityCookingTime(60, 2, 1);
     expect(newTime).toBeLessThan(60);
+  });
+});
+
+describe('caloriesPerServing', () => {
+  test('matches the worked example: 412.5 + 132.6 + 390 kcal over 4 servings', () => {
+    const { totalCalories, caloriesPerServing: perServing, ingredients } = caloriesPerServing([
+      { name: 'Ingredient A', calories: 412.5 },
+      { name: 'Ingredient B', calories: 132.6 },
+      { name: 'Ingredient C', calories: 390 },
+    ], 4);
+
+    expect(totalCalories).toBeCloseTo(935.1, 5);
+    expect(perServing).toBeCloseTo(233.775, 5);
+    expect(ingredients).toHaveLength(3);
+  });
+
+  test('a single ingredient equals total calories divided by servings', () => {
+    const { totalCalories, caloriesPerServing: perServing } = caloriesPerServing(
+      [{ name: 'Solo', calories: 500 }], 2
+    );
+
+    expect(totalCalories).toBe(500);
+    expect(perServing).toBe(250);
+  });
+
+  test('servings that do not divide evenly still produce the exact quotient', () => {
+    const { caloriesPerServing: perServing } = caloriesPerServing([
+      { name: 'A', calories: 100 },
+      { name: 'B', calories: 50 },
+    ], 3);
+
+    expect(perServing).toBeCloseTo(50, 5);
   });
 });

@@ -219,6 +219,17 @@ function batchQuantityCookingTime(originalTime, originalQuantity, newQuantity) {
   return { quantityRatio, newTime: originalTime * Math.cbrt(quantityRatio) };
 }
 
+// total recipe calories = sum of every ingredient's contributed calories
+// calories per serving = total recipe calories / number of servings
+function caloriesPerServing(ingredients, servings) {
+  const totalCalories = ingredients.reduce((sum, ing) => sum + ing.calories, 0);
+  return {
+    totalCalories,
+    caloriesPerServing: totalCalories / servings,
+    ingredients,
+  };
+}
+
 // Standard amortizing loan payment: M = P * [ r * (1+r)^n ] / [ (1+r)^n - 1 ],
 // where r is the monthly rate (decimal) and n is the term in months.
 // Handled specially when r = 0, since the formula divides by zero there: M = P / n.
@@ -298,5 +309,6 @@ if (typeof module !== 'undefined' && module.exports) {
     rectangularPanArea,
     panSizeCookingTime,
     batchQuantityCookingTime,
+    caloriesPerServing,
   };
 }

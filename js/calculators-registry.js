@@ -80,6 +80,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate a new cooking time when a pan/dish size or batch quantity changes.',
     keywords: ['cooking time', 'pan size', 'baking time', 'batch scaling', 'oven', 'conversion'],
   },
+  {
+    id: 'calories-per-serving',
+    name: 'Calories Per Serving',
+    category: 'Cooking',
+    description: 'Sum the calories of every ingredient in a recipe and divide by the number of servings.',
+    keywords: ['calories', 'kcal', 'servings', 'nutrition', 'cooking', 'recipe'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

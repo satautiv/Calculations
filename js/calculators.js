@@ -960,3 +960,87 @@ document.getElementById('cooktime-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Calories per serving calculator ---
+const CALORIE_INITIAL_ROWS = 3;
+
+function addCalorieIngredientRow() {
+  const row = document.createElement('div');
+  row.className = 'calorie-ingredient-row';
+  row.innerHTML = `
+    <input type="text" class="calorie-ing-name" aria-label="Ingredient name" placeholder="e.g. Chicken breast">
+    <input type="number" class="calorie-ing-cal" aria-label="Calories" min="0" step="0.1" placeholder="e.g. 412.5">
+    <button type="button" class="calorie-remove-btn" aria-label="Remove ingredient">&times;</button>
+  `;
+  document.getElementById('calorie-ingredient-list').appendChild(row);
+}
+
+for (let i = 0; i < CALORIE_INITIAL_ROWS; i++) addCalorieIngredientRow();
+
+document.getElementById('calorie-add-ingredient').addEventListener('click', () => addCalorieIngredientRow());
+
+document.getElementById('calorie-ingredient-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.calorie-remove-btn');
+  if (!btn) return;
+  btn.closest('.calorie-ingredient-row').remove();
+});
+
+function formatCalorieValue(cal) {
+  return cal % 1 === 0 ? String(cal) : cal.toFixed(1);
+}
+
+document.getElementById('calorie-calc').addEventListener('click', () => {
+  const servings = parseFloat(document.getElementById('calorie-servings').value);
+
+  if (!servings || servings <= 0) {
+    showError('calorie-result', 'Enter a valid number of servings.');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#calorie-ingredient-list .calorie-ingredient-row');
+  const ingredients = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const name = row.querySelector('.calorie-ing-name').value.trim();
+    const calRaw = row.querySelector('.calorie-ing-cal').value;
+    const calories = parseFloat(calRaw);
+
+    if (!name && calRaw === '') return; // blank row, skip silently
+
+    if (!name || calRaw === '' || isNaN(calories) || calories < 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    ingredients.push({ name, calories });
+  });
+
+  if (hasInvalidRow) {
+    showError('calorie-result', 'Enter a valid name and non-negative calorie value for every ingredient row, or leave the row blank.');
+    return;
+  }
+
+  if (ingredients.length === 0) {
+    showError('calorie-result', 'Add at least one ingredient.');
+    return;
+  }
+
+  const { totalCalories, caloriesPerServing: perServing, ingredients: listed } = caloriesPerServing(ingredients, servings);
+
+  const rowsHtml = listed.map(ing => `
+    <tr>
+      <td>${ing.name}</td>
+      <td>${formatCalorieValue(ing.calories)} kcal</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('calorie-result').innerHTML = `
+    <div class="headline">&asymp;${Math.round(perServing)} kcal / serving</div>
+    <div>Total recipe calories: ${formatCalorieValue(totalCalories)} kcal &divide; ${servings} servings</div>
+    <table>
+      <thead><tr><th>Ingredient</th><th>Calories</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+});
