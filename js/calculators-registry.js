@@ -87,6 +87,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Sum the calories of every ingredient in a recipe and divide by the number of servings.',
     keywords: ['calories', 'kcal', 'servings', 'nutrition', 'cooking', 'recipe'],
   },
+  {
+    id: 'credit-card-payoff',
+    name: 'Credit Card Interest & Payoff',
+    category: 'Finance',
+    description: 'See how long it takes to pay off a credit card balance and how much interest it costs.',
+    keywords: ['credit card', 'payoff', 'interest', 'minimum payment', 'debt'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

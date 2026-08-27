@@ -377,6 +377,45 @@
     <div class="result" id="calorie-result"></div>
   </section>
 
+  <section id="credit-card-payoff" class="view tab-panel">
+    <h2>Credit Card Interest &amp; Payoff Calculator</h2>
+    <p class="hint">See how long it takes to pay off a credit card balance and how much interest it costs, with a fixed payment or a shrinking minimum payment.</p>
+    <div class="field">
+      <label for="cc-balance">Current balance</label>
+      <input type="number" id="cc-balance" min="0" step="0.01" placeholder="e.g. 3000">
+    </div>
+    <div class="field">
+      <label for="cc-apr">Annual percentage rate (APR %)</label>
+      <input type="number" id="cc-apr" min="0" step="0.01" placeholder="e.g. 22">
+    </div>
+    <div class="field">
+      <label for="cc-mode">Payment type</label>
+      <select id="cc-mode">
+        <option value="fixed">Fixed monthly payment</option>
+        <option value="minimum">Minimum payment (illustrates the trap)</option>
+      </select>
+    </div>
+
+    <div class="field" id="cc-fixed-fields">
+      <label for="cc-payment">Fixed monthly payment</label>
+      <input type="number" id="cc-payment" min="0" step="0.01" placeholder="e.g. 150">
+    </div>
+
+    <div id="cc-minimum-fields" hidden>
+      <div class="field">
+        <label for="cc-min-percent">Minimum payment (% of balance)</label>
+        <input type="number" id="cc-min-percent" min="0" step="0.1" value="2">
+      </div>
+      <div class="field">
+        <label for="cc-min-floor">Minimum payment floor</label>
+        <input type="number" id="cc-min-floor" min="0" step="0.01" value="25">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="cc-calc">Calculate</button>
+    <div class="result" id="cc-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

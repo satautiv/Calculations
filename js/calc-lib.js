@@ -281,6 +281,57 @@ function amortizationSchedule(principal, annualRatePercent, termMonths, extraPay
   return { schedule, totalInterest, totalPaid, monthsToPayoff: month, monthlyPayment };
 }
 
+const CREDIT_CARD_MIN_PAYMENT_DEFAULTS = { minPercent: 2, minFloor: 25 };
+
+// Month-by-month credit card payoff simulation with a fixed monthly payment.
+// Returns null if the payment doesn't even cover the first month's interest,
+// since the balance would never shrink (would loop forever otherwise).
+function creditCardPayoffFixed(balance, aprPercent, payment, maxMonths = 1200) {
+  const monthlyRate = aprPercent / 100 / 12;
+  if (payment <= balance * monthlyRate) return null;
+
+  let bal = balance;
+  let months = 0;
+  let totalInterest = 0;
+
+  while (bal > 1e-8 && months < maxMonths) {
+    months++;
+    const interest = bal * monthlyRate;
+    let principal = payment - interest;
+    if (principal > bal) principal = bal;
+    bal -= principal;
+    totalInterest += interest;
+  }
+
+  return { months, totalInterest, totalPaid: balance + totalInterest };
+}
+
+// Same simulation, but the payment each month is a shrinking "minimum payment"
+// (max of a percentage of the current balance and a floor amount), modeling
+// the typical credit card minimum-payment trap. Returns null if even the
+// minimum payment never covers a month's interest (balance never shrinks).
+function creditCardPayoffMinimum(balance, aprPercent, minPercent = CREDIT_CARD_MIN_PAYMENT_DEFAULTS.minPercent, minFloor = CREDIT_CARD_MIN_PAYMENT_DEFAULTS.minFloor, maxMonths = 1200) {
+  const monthlyRate = aprPercent / 100 / 12;
+
+  let bal = balance;
+  let months = 0;
+  let totalInterest = 0;
+
+  while (bal > 1e-8 && months < maxMonths) {
+    const payment = Math.max(bal * (minPercent / 100), minFloor);
+    const interest = bal * monthlyRate;
+    if (payment <= interest) return null;
+
+    months++;
+    let principal = payment - interest;
+    if (principal > bal) principal = bal;
+    bal -= principal;
+    totalInterest += interest;
+  }
+
+  return { months, totalInterest, totalPaid: balance + totalInterest };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -310,5 +361,8 @@ if (typeof module !== 'undefined' && module.exports) {
     panSizeCookingTime,
     batchQuantityCookingTime,
     caloriesPerServing,
+    CREDIT_CARD_MIN_PAYMENT_DEFAULTS,
+    creditCardPayoffFixed,
+    creditCardPayoffMinimum,
   };
 }
