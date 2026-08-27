@@ -22,6 +22,7 @@ const {
   caloriesPerServing,
   creditCardPayoffFixed,
   creditCardPayoffMinimum,
+  requiredSavingsContribution,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -447,5 +448,27 @@ describe('creditCardPayoffMinimum', () => {
     const defaultRate = creditCardPayoffMinimum(3000, 22);
     const higherRate = creditCardPayoffMinimum(3000, 22, 5, 25);
     expect(higherRate.months).toBeLessThan(defaultRate.months);
+  });
+});
+
+describe('requiredSavingsContribution', () => {
+  test('matches the worked example: €10,000 goal in 36 months, €1,000 already saved, 4% annual return', () => {
+    const { requiredContribution, goalAlreadyMet, finalBalance } = requiredSavingsContribution(10000, 1000, 4, 12, 36);
+    expect(goalAlreadyMet).toBe(false);
+    expect(requiredContribution).toBeCloseTo(232.38, 1);
+    expect(finalBalance).toBeCloseTo(10000, 5);
+  });
+
+  test('0% return divides the shortfall evenly across the periods', () => {
+    const { requiredContribution, totalGrowth } = requiredSavingsContribution(1000, 0, 0, 12, 10);
+    expect(requiredContribution).toBeCloseTo(100, 5);
+    expect(totalGrowth).toBeCloseTo(0, 5);
+  });
+
+  test('reports the goal as already met when current savings alone will exceed it', () => {
+    const { requiredContribution, goalAlreadyMet, finalBalance } = requiredSavingsContribution(5000, 6000, 4, 12, 12);
+    expect(goalAlreadyMet).toBe(true);
+    expect(requiredContribution).toBe(0);
+    expect(finalBalance).toBeGreaterThan(5000);
   });
 });

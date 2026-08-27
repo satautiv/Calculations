@@ -1120,3 +1120,43 @@ document.getElementById('cc-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Savings goal calculator ---
+document.getElementById('savings-calc').addEventListener('click', () => {
+  const goal = parseFloat(document.getElementById('savings-goal-amount').value);
+  const current = parseFloat(document.getElementById('savings-current').value) || 0;
+  const months = parseInt(document.getElementById('savings-months').value, 10);
+  const rate = parseFloat(document.getElementById('savings-rate').value) || 0;
+
+  if (!goal || goal <= 0) {
+    showError('savings-result', 'Enter a valid savings goal greater than zero.');
+    return;
+  }
+
+  if (current < 0) {
+    showError('savings-result', 'Current savings cannot be negative.');
+    return;
+  }
+
+  if (!months || months < 1 || !Number.isInteger(months)) {
+    showError('savings-result', 'Enter a valid whole number of months until the target date.');
+    return;
+  }
+
+  const { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth } =
+    requiredSavingsContribution(goal, current, rate, 12, months);
+
+  if (goalAlreadyMet) {
+    document.getElementById('savings-result').innerHTML = `
+      <div class="headline">No further contributions needed</div>
+      <div>Your current savings alone are projected to reach ${formatMoney(finalBalance)} by then, meeting the ${formatMoney(goal)} goal.</div>
+    `;
+    return;
+  }
+
+  document.getElementById('savings-result').innerHTML = `
+    <div class="headline">${formatMoney(requiredContribution)} / month</div>
+    <div>Required monthly contribution to reach ${formatMoney(goal)} in ${months} month${months === 1 ? '' : 's'}</div>
+    <div class="hint">Total contributed: ${formatMoney(totalContributed)} &middot; Growth earned: ${formatMoney(totalGrowth)}</div>
+  `;
+});

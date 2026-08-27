@@ -332,6 +332,31 @@ function creditCardPayoffMinimum(balance, aprPercent, minPercent = CREDIT_CARD_M
   return { months, totalInterest, totalPaid: balance + totalInterest };
 }
 
+// Required periodic contribution to reach a savings goal by a target date,
+// given current savings and an expected periodic return: the compound-interest
+// annuity formula (FV = P*(1+i)^n + C*[((1+i)^n-1)/i]) solved for C. Handles
+// i = 0 (C = (goal - P) / n) and the case where current savings alone will
+// already meet or exceed the goal (required contribution is 0, not negative).
+function requiredSavingsContribution(goal, currentSavings, annualRatePercent, periodsPerYear, periods) {
+  const i = annualRatePercent / 100 / periodsPerYear;
+  const n = periods;
+  const growth = i === 0 ? 1 : Math.pow(1 + i, n);
+  const futureValueOfCurrent = currentSavings * growth;
+  const goalAlreadyMet = futureValueOfCurrent >= goal;
+
+  const rawContribution = i === 0
+    ? (goal - currentSavings) / n
+    : (goal - futureValueOfCurrent) * i / (growth - 1);
+
+  const requiredContribution = goalAlreadyMet ? 0 : rawContribution;
+  const contributionsFutureValue = i === 0 ? requiredContribution * n : requiredContribution * ((growth - 1) / i);
+  const finalBalance = futureValueOfCurrent + contributionsFutureValue;
+  const totalContributed = currentSavings + requiredContribution * n;
+  const totalGrowth = finalBalance - totalContributed;
+
+  return { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -364,5 +389,6 @@ if (typeof module !== 'undefined' && module.exports) {
     CREDIT_CARD_MIN_PAYMENT_DEFAULTS,
     creditCardPayoffFixed,
     creditCardPayoffMinimum,
+    requiredSavingsContribution,
   };
 }
