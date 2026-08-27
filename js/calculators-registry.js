@@ -129,6 +129,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert oven temperatures between Celsius, Fahrenheit, and Gas Mark.',
     keywords: ['oven temperature', 'gas mark', 'celsius', 'fahrenheit', 'baking'],
   },
+  {
+    id: 'meat-doneness',
+    name: 'Meat Doneness Guide',
+    category: 'Cooking',
+    description: 'Find the pull temperature and rest time for your target steak or roast doneness.',
+    keywords: ['meat doneness', 'steak', 'roast', 'pull temperature', 'carryover', 'resting'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

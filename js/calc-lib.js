@@ -441,6 +441,41 @@ function celsiusToGasMark(celsius) {
   ).mark;
 }
 
+// Standard doneness-to-temperature bands. targetFahrenheit/targetCelsius is
+// the top of each band (the serving temperature used for the pull-temp math),
+// with rangeLabel kept separately for display since the bands aren't single
+// points.
+const MEAT_DONENESS_LEVELS = [
+  { id: 'rare', label: 'Rare', targetFahrenheit: 125, targetCelsius: 52, rangeLabelF: '125°F', rangeLabelC: '52°C' },
+  { id: 'medium-rare', label: 'Medium-rare', targetFahrenheit: 135, targetCelsius: 57, rangeLabelF: '130-135°F', rangeLabelC: '54-57°C' },
+  { id: 'medium', label: 'Medium', targetFahrenheit: 145, targetCelsius: 63, rangeLabelF: '140-145°F', rangeLabelC: '60-63°C' },
+  { id: 'medium-well', label: 'Medium-well', targetFahrenheit: 155, targetCelsius: 68, rangeLabelF: '150-155°F', rangeLabelC: '65-68°C' },
+  { id: 'well-done', label: 'Well-done', targetFahrenheit: 160, targetCelsius: 71, rangeLabelF: '160°F+', rangeLabelC: '71°C+' },
+];
+
+// Carryover (resting) temperature rise, which scales with the mass/thickness
+// of the cut and length of the rest — a thin steak resting briefly rises much
+// less than a large roast resting longer.
+const MEAT_CARRYOVER_RISE = {
+  steak: { fahrenheit: 5, celsius: 3, restMinutes: '5' },
+  roast: { fahrenheit: 12, celsius: 7, restMinutes: '15-20' },
+};
+
+// Pull temperature = target serving temperature - expected carryover rise,
+// so the cut is removed from heat before it coasts up to the final doneness.
+function meatPullTemperature(donenessId, cutSize, unit) {
+  const doneness = MEAT_DONENESS_LEVELS.find(d => d.id === donenessId);
+  if (!doneness) throw new Error(`Unknown doneness level: ${donenessId}`);
+
+  const carryover = MEAT_CARRYOVER_RISE[cutSize];
+  if (!carryover) throw new Error(`Unknown cut size: ${cutSize}`);
+
+  const target = unit === 'f' ? doneness.targetFahrenheit : doneness.targetCelsius;
+  const rise = unit === 'f' ? carryover.fahrenheit : carryover.celsius;
+
+  return { target, pullTemperature: target - rise, rise, restMinutes: carryover.restMinutes };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -483,5 +518,8 @@ if (typeof module !== 'undefined' && module.exports) {
     fahrenheitToCelsius,
     gasMarkToTemps,
     celsiusToGasMark,
+    MEAT_DONENESS_LEVELS,
+    MEAT_CARRYOVER_RISE,
+    meatPullTemperature,
   };
 }

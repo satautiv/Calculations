@@ -541,6 +541,37 @@
     <div class="result" id="oven-result"></div>
   </section>
 
+  <section id="meat-doneness" class="view tab-panel">
+    <h2>Meat Doneness Guide</h2>
+    <p class="hint">Shows the target internal temperature and pull temperature (before carryover cooking during rest) for your chosen doneness.</p>
+    <div class="field">
+      <label for="meat-doneness-level">Desired doneness</label>
+      <select id="meat-doneness-level">
+        <option value="rare">Rare</option>
+        <option value="medium-rare" selected>Medium-rare</option>
+        <option value="medium">Medium</option>
+        <option value="medium-well">Medium-well</option>
+        <option value="well-done">Well-done</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="meat-cut-size">Cut size</label>
+      <select id="meat-cut-size">
+        <option value="steak">Steak (thin cut, short rest)</option>
+        <option value="roast">Roast (large cut, long rest)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="meat-unit">Unit</label>
+      <select id="meat-unit">
+        <option value="f">&deg;F</option>
+        <option value="c">&deg;C</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="meat-calc">Calculate</button>
+    <div class="result" id="meat-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
