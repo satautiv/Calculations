@@ -27,6 +27,10 @@ const {
   inflationImpact,
   drivingTripTime,
   hoursToHoursMinutes,
+  celsiusToFahrenheit,
+  fahrenheitToCelsius,
+  gasMarkToTemps,
+  celsiusToGasMark,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -546,5 +550,48 @@ describe('hoursToHoursMinutes', () => {
 
   test('rounds minutes that land on 60 up into the next hour', () => {
     expect(hoursToHoursMinutes(5.9992)).toEqual({ hours: 6, minutes: 0 });
+  });
+});
+
+describe('celsiusToFahrenheit / fahrenheitToCelsius', () => {
+  test('200°C converts exactly to 392°F, matching the worked example', () => {
+    expect(celsiusToFahrenheit(200)).toBe(392);
+  });
+
+  test('round-trips back to the original value', () => {
+    expect(fahrenheitToCelsius(celsiusToFahrenheit(180))).toBeCloseTo(180, 10);
+  });
+});
+
+describe('gasMarkToTemps', () => {
+  test('matches the worked example: Gas Mark 4 -> 180°C / 350°F (the table value, not raw 356°F)', () => {
+    expect(gasMarkToTemps(4)).toEqual({ celsius: 180, fahrenheit: 350 });
+  });
+
+  test('supports fractional marks (1/4 and 1/2)', () => {
+    expect(gasMarkToTemps(0.25)).toEqual({ celsius: 110, fahrenheit: 225 });
+    expect(gasMarkToTemps(0.5)).toEqual({ celsius: 120, fahrenheit: 250 });
+  });
+
+  test('returns null for a non-standard mark', () => {
+    expect(gasMarkToTemps(10)).toBeNull();
+  });
+});
+
+describe('celsiusToGasMark', () => {
+  test('200°C is exactly Gas Mark 6, matching the worked example', () => {
+    expect(celsiusToGasMark(200)).toBe(6);
+  });
+
+  test('snaps to the nearest mark for an in-between value', () => {
+    expect(celsiusToGasMark(175)).toBe(4);
+  });
+
+  test('returns null below the table range (under 110°C)', () => {
+    expect(celsiusToGasMark(100)).toBeNull();
+  });
+
+  test('returns null above the table range (over 240°C)', () => {
+    expect(celsiusToGasMark(250)).toBeNull();
   });
 });

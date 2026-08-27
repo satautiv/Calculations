@@ -397,6 +397,50 @@ function hoursToHoursMinutes(hours) {
   return minutes === 60 ? { hours: wholeHours + 1, minutes: 0 } : { hours: wholeHours, minutes };
 }
 
+// Standard UK Gas Mark <-> °C/°F lookup table. The °F column is the
+// conventionally rounded figure used on every UK recipe/appliance, not a raw
+// °C->°F conversion (e.g. Gas Mark 4 is listed as 350°F, not the raw 356°F).
+const GAS_MARK_TABLE = [
+  { mark: 0.25, celsius: 110, fahrenheit: 225 },
+  { mark: 0.5, celsius: 120, fahrenheit: 250 },
+  { mark: 1, celsius: 140, fahrenheit: 275 },
+  { mark: 2, celsius: 150, fahrenheit: 300 },
+  { mark: 3, celsius: 165, fahrenheit: 325 },
+  { mark: 4, celsius: 180, fahrenheit: 350 },
+  { mark: 5, celsius: 190, fahrenheit: 375 },
+  { mark: 6, celsius: 200, fahrenheit: 400 },
+  { mark: 7, celsius: 220, fahrenheit: 425 },
+  { mark: 8, celsius: 230, fahrenheit: 450 },
+  { mark: 9, celsius: 240, fahrenheit: 475 },
+];
+
+function celsiusToFahrenheit(celsius) {
+  return (celsius * 9) / 5 + 32;
+}
+
+function fahrenheitToCelsius(fahrenheit) {
+  return ((fahrenheit - 32) * 5) / 9;
+}
+
+// Exact table lookup for a standard Gas Mark value. Returns null if the mark
+// isn't one of the standard table values.
+function gasMarkToTemps(mark) {
+  const row = GAS_MARK_TABLE.find(r => r.mark === mark);
+  return row ? { celsius: row.celsius, fahrenheit: row.fahrenheit } : null;
+}
+
+// Snaps a Celsius temperature to its nearest standard Gas Mark. Returns null
+// outside the table's 110-240°C range rather than extrapolating.
+function celsiusToGasMark(celsius) {
+  if (celsius < GAS_MARK_TABLE[0].celsius || celsius > GAS_MARK_TABLE[GAS_MARK_TABLE.length - 1].celsius) {
+    return null;
+  }
+
+  return GAS_MARK_TABLE.reduce((closest, row) =>
+    Math.abs(row.celsius - celsius) < Math.abs(closest.celsius - celsius) ? row : closest
+  ).mark;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -434,5 +478,10 @@ if (typeof module !== 'undefined' && module.exports) {
     inflationImpact,
     drivingTripTime,
     hoursToHoursMinutes,
+    GAS_MARK_TABLE,
+    celsiusToFahrenheit,
+    fahrenheitToCelsius,
+    gasMarkToTemps,
+    celsiusToGasMark,
   };
 }

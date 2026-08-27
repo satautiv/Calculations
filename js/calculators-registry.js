@@ -122,6 +122,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate driving time and total trip time from distance, speed, and stops.',
     keywords: ['driving time', 'road trip', 'distance', 'speed', 'travel time'],
   },
+  {
+    id: 'oven-temperature',
+    name: 'Oven Temperature Converter',
+    category: 'Cooking',
+    description: 'Convert oven temperatures between Celsius, Fahrenheit, and Gas Mark.',
+    keywords: ['oven temperature', 'gas mark', 'celsius', 'fahrenheit', 'baking'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
