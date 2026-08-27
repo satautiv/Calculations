@@ -802,6 +802,75 @@ document.getElementById('baker-calc').addEventListener('click', () => {
   }
 });
 
+// --- Loan / Mortgage Amortization calculator ---
+document.getElementById('loan-calc').addEventListener('click', () => {
+  const principal = parseFloat(document.getElementById('loan-principal').value);
+  const rate = parseFloat(document.getElementById('loan-rate').value);
+  const years = parseInt(document.getElementById('loan-years').value, 10);
+  const extraRaw = document.getElementById('loan-extra-payment').value;
+  const extraPayment = extraRaw === '' ? 0 : parseFloat(extraRaw);
+
+  if (!principal || principal <= 0) {
+    showError('loan-result', 'Enter a valid loan principal greater than zero.');
+    return;
+  }
+
+  if (isNaN(rate) || rate < 0) {
+    showError('loan-result', 'Enter a valid annual interest rate (0 or greater).');
+    return;
+  }
+
+  if (!years || years < 1 || !Number.isInteger(years)) {
+    showError('loan-result', 'Enter a valid whole number of years for the loan term.');
+    return;
+  }
+
+  if (isNaN(extraPayment) || extraPayment < 0) {
+    showError('loan-result', 'Enter a valid extra monthly payment (0 or greater).');
+    return;
+  }
+
+  const termMonths = years * 12;
+  const base = amortizationSchedule(principal, rate, termMonths, 0);
+
+  if (!isFinite(base.monthlyPayment) || base.monthlyPayment <= 0) {
+    showError('loan-result', 'This rate and term combination does not produce a valid monthly payment. Try different values.');
+    return;
+  }
+
+  const withExtra = extraPayment > 0 ? amortizationSchedule(principal, rate, termMonths, extraPayment) : null;
+  const active = withExtra || base;
+
+  const rows = active.schedule.map(row => `
+    <tr>
+      <td>${row.month}</td>
+      <td>${formatMoney(row.payment)}</td>
+      <td>${formatMoney(row.interest)}</td>
+      <td>${formatMoney(row.principal)}</td>
+      <td>${formatMoney(row.balance)}</td>
+    </tr>
+  `).join('');
+
+  const monthsSaved = withExtra ? base.monthsToPayoff - withExtra.monthsToPayoff : 0;
+  const savingsHtml = withExtra ? `
+    <div class="hint">Overpaying ${formatMoney(extraPayment)}/month saves ${formatMoney(base.totalInterest - withExtra.totalInterest)} in interest and pays off the loan ${monthsSaved} month${monthsSaved === 1 ? '' : 's'} sooner (${withExtra.monthsToPayoff} vs ${base.monthsToPayoff} months).</div>
+  ` : '';
+
+  document.getElementById('loan-result').innerHTML = `
+    <div class="headline">${formatMoney(base.monthlyPayment)} / month</div>
+    <div>Fixed monthly payment over ${years} year${years === 1 ? '' : 's'} (${termMonths} months)</div>
+    <div class="hint">Total paid: ${formatMoney(active.totalPaid)} &middot; Total interest: ${formatMoney(active.totalInterest)}</div>
+    ${savingsHtml}
+    <div class="hint">Full ${active.schedule.length}-month amortization schedule below &mdash; it can get long for longer terms.</div>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Payment</th><th>Interest</th><th>Principal</th><th>Balance</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+});
+
 // --- Cooking time conversion calculator ---
 document.getElementById('cooktime-mode').addEventListener('change', (e) => {
   const isBatch = e.target.value === 'batch';
