@@ -66,6 +66,13 @@ const CALCULATOR_REGISTRY = [
     description: "Convert a recipe between ingredient weights and baker's percentages.",
     keywords: ['bakers percentage', 'baking', 'hydration', 'dough', 'bread formula'],
   },
+  {
+    id: 'loan-amortization',
+    name: 'Loan / Mortgage Amortization',
+    category: 'Finance',
+    description: 'Compute the fixed monthly payment and full amortization schedule for a loan or mortgage.',
+    keywords: ['loan', 'mortgage', 'amortization', 'amortisation', 'payment', 'schedule', 'overpayment'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
