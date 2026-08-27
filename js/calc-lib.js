@@ -193,6 +193,32 @@ function bakersWeightsFromPercentages(ingredients, { flourWeight, targetDoughWei
   return { totalFlourWeight, totalDoughWeight, ingredients: withWeights };
 }
 
+// Area of a round pan given its diameter (area = pi * (d/2)^2).
+function roundPanArea(diameter) {
+  return Math.PI * (diameter / 2) ** 2;
+}
+
+// Area of a rectangular pan given its length and width.
+function rectangularPanArea(length, width) {
+  return length * width;
+}
+
+// Pan-size / area-based scaling rule of thumb: spreading the same batter/dough
+// over a bigger pan makes it thinner, so it bakes faster (and vice versa for a
+// smaller pan). new time = original time / area ratio — this one formula
+// handles both directions since a smaller new pan gives an area ratio < 1.
+function panSizeCookingTime(originalTime, originalArea, newArea) {
+  const areaRatio = newArea / originalArea;
+  return { areaRatio, newTime: originalTime / areaRatio };
+}
+
+// Batch-quantity scaling rule of thumb (same pan/pot shape, more volume, e.g.
+// a stew or roast): new time = original time * (new quantity / original quantity)^(1/3).
+function batchQuantityCookingTime(originalTime, originalQuantity, newQuantity) {
+  const quantityRatio = newQuantity / originalQuantity;
+  return { quantityRatio, newTime: originalTime * Math.cbrt(quantityRatio) };
+}
+
 // Standard amortizing loan payment: M = P * [ r * (1+r)^n ] / [ (1+r)^n - 1 ],
 // where r is the monthly rate (decimal) and n is the term in months.
 // Handled specially when r = 0, since the formula divides by zero there: M = P / n.
@@ -268,5 +294,9 @@ if (typeof module !== 'undefined' && module.exports) {
     bakersWeightsFromPercentages,
     loanMonthlyPayment,
     amortizationSchedule,
+    roundPanArea,
+    rectangularPanArea,
+    panSizeCookingTime,
+    batchQuantityCookingTime,
   };
 }

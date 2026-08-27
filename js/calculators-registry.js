@@ -73,6 +73,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute the fixed monthly payment and full amortization schedule for a loan or mortgage.',
     keywords: ['loan', 'mortgage', 'amortization', 'amortisation', 'payment', 'schedule', 'overpayment'],
   },
+  {
+    id: 'cooktime-conversion',
+    name: 'Cooking Time Conversion',
+    category: 'Cooking',
+    description: 'Estimate a new cooking time when a pan/dish size or batch quantity changes.',
+    keywords: ['cooking time', 'pan size', 'baking time', 'batch scaling', 'oven', 'conversion'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
