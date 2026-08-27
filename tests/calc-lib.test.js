@@ -13,6 +13,8 @@ const {
   investmentGrowth,
   bakersPercentagesFromWeights,
   bakersWeightsFromPercentages,
+  loanMonthlyPayment,
+  amortizationSchedule,
   caloriesPerServing,
 } = require('../js/calc-lib');
 
@@ -258,6 +260,63 @@ describe('bakersWeightsFromPercentages', () => {
 
   test('throws when neither a flour weight nor a target dough weight is given', () => {
     expect(() => bakersWeightsFromPercentages([{ name: 'Flour', percent: 100, isFlour: true }], {})).toThrow();
+  });
+});
+
+describe('loanMonthlyPayment', () => {
+  test('matches the worked example: €200,000 at 5% annual for 30 years (360 months)', () => {
+    expect(loanMonthlyPayment(200000, 5, 360)).toBeCloseTo(1073.64, 2);
+  });
+
+  test('0% rate divides principal evenly across the term', () => {
+    expect(loanMonthlyPayment(1200, 0, 12)).toBeCloseTo(100, 5);
+  });
+});
+
+describe('amortizationSchedule', () => {
+  test('matches the worked example: €200,000 at 5% annual for 30 years (360 months)', () => {
+    const { totalPaid, totalInterest, monthsToPayoff, monthlyPayment, schedule } =
+      amortizationSchedule(200000, 5, 360);
+
+    expect(monthlyPayment).toBeCloseTo(1073.64, 2);
+    expect(totalPaid).toBeCloseTo(386511.57, 1);
+    expect(totalInterest).toBeCloseTo(186511.57, 1);
+    expect(monthsToPayoff).toBe(360);
+    expect(schedule).toHaveLength(360);
+    expect(schedule[schedule.length - 1].balance).toBeCloseTo(0, 5);
+  });
+
+  test('first month interest and principal split correctly', () => {
+    const { schedule, monthlyPayment } = amortizationSchedule(200000, 5, 360);
+    const first = schedule[0];
+    expect(first.interest).toBeCloseTo(200000 * (0.05 / 12), 5);
+    expect(first.principal).toBeCloseTo(monthlyPayment - first.interest, 5);
+    expect(first.payment).toBeCloseTo(monthlyPayment, 5);
+  });
+
+  test('0% rate: fixed payment applies entirely to principal', () => {
+    const { totalInterest, totalPaid, monthsToPayoff, schedule } = amortizationSchedule(1200, 0, 12);
+    expect(totalInterest).toBeCloseTo(0, 5);
+    expect(totalPaid).toBeCloseTo(1200, 5);
+    expect(monthsToPayoff).toBe(12);
+    expect(schedule.every(row => row.interest === 0)).toBe(true);
+  });
+
+  test('a positive overpayment reduces total interest and payoff time versus no overpayment', () => {
+    const base = amortizationSchedule(200000, 5, 360, 0);
+    const withExtra = amortizationSchedule(200000, 5, 360, 200);
+
+    expect(withExtra.totalInterest).toBeLessThan(base.totalInterest);
+    expect(withExtra.monthsToPayoff).toBeLessThan(base.monthsToPayoff);
+    expect(withExtra.monthsToPayoff).toBe(256);
+    expect(withExtra.totalInterest).toBeCloseTo(125351.06, 1);
+  });
+
+  test('the last payment caps the principal portion so the balance never goes negative', () => {
+    const { schedule } = amortizationSchedule(200000, 5, 360, 200);
+    const last = schedule[schedule.length - 1];
+    expect(last.balance).toBeCloseTo(0, 5);
+    expect(last.payment).toBeLessThanOrEqual(1073.64 + 200 + 1e-6);
   });
 });
 

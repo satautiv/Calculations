@@ -261,6 +261,24 @@ main:has(#calculator-index.active) {
   font-weight: 600;
 }
 
+.table-scroll {
+  max-height: 420px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.table-scroll table {
+  margin: 0;
+}
+
+.table-scroll thead th {
+  position: sticky;
+  top: 0;
+  background: var(--panel);
+}
+
 .plate-row {
   display: flex;
   justify-content: space-between;

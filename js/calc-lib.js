@@ -204,6 +204,57 @@ function caloriesPerServing(ingredients, servings) {
   };
 }
 
+// Standard amortizing loan payment: M = P * [ r * (1+r)^n ] / [ (1+r)^n - 1 ],
+// where r is the monthly rate (decimal) and n is the term in months.
+// Handled specially when r = 0, since the formula divides by zero there: M = P / n.
+function loanMonthlyPayment(principal, annualRatePercent, termMonths) {
+  const monthlyRate = annualRatePercent / 100 / 12;
+  if (monthlyRate === 0) return principal / termMonths;
+
+  const factor = Math.pow(1 + monthlyRate, termMonths);
+  return (principal * monthlyRate * factor) / (factor - 1);
+}
+
+// Month-by-month amortization: each month's interest is the prior balance times
+// the monthly rate, and the rest of the fixed payment (plus any extra overpayment,
+// applied entirely to principal) reduces the balance. The final month is capped so
+// the balance never goes negative. A safety cap on iterations guards against a
+// non-amortizing rate/term/payment combination that would otherwise never reach zero.
+function amortizationSchedule(principal, annualRatePercent, termMonths, extraPayment = 0) {
+  const monthlyRate = annualRatePercent / 100 / 12;
+  const monthlyPayment = loanMonthlyPayment(principal, annualRatePercent, termMonths);
+
+  const schedule = [];
+  let balance = principal;
+  let totalInterest = 0;
+  let totalPaid = 0;
+  let month = 0;
+  const maxIterations = termMonths + 1200;
+
+  while (balance > 1e-8 && month < maxIterations) {
+    month++;
+    const interest = balance * monthlyRate;
+    let principalPortion = (monthlyPayment - interest) + extraPayment;
+    if (principalPortion > balance) principalPortion = balance;
+    if (principalPortion < 0) principalPortion = 0;
+
+    const paymentAmount = interest + principalPortion;
+    balance -= principalPortion;
+    totalInterest += interest;
+    totalPaid += paymentAmount;
+
+    schedule.push({
+      month,
+      payment: paymentAmount,
+      interest,
+      principal: principalPortion,
+      balance: Math.max(balance, 0),
+    });
+  }
+
+  return { schedule, totalInterest, totalPaid, monthsToPayoff: month, monthlyPayment };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -226,6 +277,8 @@ if (typeof module !== 'undefined' && module.exports) {
     investmentGrowth,
     bakersPercentagesFromWeights,
     bakersWeightsFromPercentages,
+    loanMonthlyPayment,
+    amortizationSchedule,
     caloriesPerServing,
   };
 }

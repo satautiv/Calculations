@@ -67,6 +67,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['bakers percentage', 'baking', 'hydration', 'dough', 'bread formula'],
   },
   {
+    id: 'loan-amortization',
+    name: 'Loan / Mortgage Amortization',
+    category: 'Finance',
+    description: 'Compute the fixed monthly payment and full amortization schedule for a loan or mortgage.',
+    keywords: ['loan', 'mortgage', 'amortization', 'amortisation', 'payment', 'schedule', 'overpayment'],
+  },
+  {
     id: 'calories-per-serving',
     name: 'Calories Per Serving',
     category: 'Cooking',
