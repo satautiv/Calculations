@@ -20,6 +20,8 @@ const {
   panSizeCookingTime,
   batchQuantityCookingTime,
   caloriesPerServing,
+  creditCardPayoffFixed,
+  creditCardPayoffMinimum,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -407,5 +409,43 @@ describe('caloriesPerServing', () => {
     ], 3);
 
     expect(perServing).toBeCloseTo(50, 5);
+  });
+});
+
+describe('creditCardPayoffFixed', () => {
+  test('matches a precise simulation: €3,000 at 22% APR paying €150/month', () => {
+    const { months, totalInterest, totalPaid } = creditCardPayoffFixed(3000, 22, 150);
+    expect(months).toBe(26);
+    expect(totalInterest).toBeCloseTo(771.43, 1);
+    expect(totalPaid).toBeCloseTo(3771.43, 1);
+  });
+
+  test('returns null when the payment does not cover the first month interest', () => {
+    // first month interest = 3000 * (22/100/12) ≈ 55
+    expect(creditCardPayoffFixed(3000, 22, 50)).toBeNull();
+  });
+
+  test('a larger payment pays off faster with less total interest', () => {
+    const slower = creditCardPayoffFixed(3000, 22, 150);
+    const faster = creditCardPayoffFixed(3000, 22, 300);
+    expect(faster.months).toBeLessThan(slower.months);
+    expect(faster.totalInterest).toBeLessThan(slower.totalInterest);
+  });
+});
+
+describe('creditCardPayoffMinimum', () => {
+  test('the minimum-payment trap takes far longer and costs far more interest than a fixed payment', () => {
+    const fixed = creditCardPayoffFixed(3000, 22, 150);
+    const minimum = creditCardPayoffMinimum(3000, 22);
+    expect(minimum.months).toBeGreaterThan(fixed.months);
+    expect(minimum.totalInterest).toBeGreaterThan(fixed.totalInterest);
+    expect(minimum.months).toBe(662);
+    expect(minimum.totalInterest).toBeCloseTo(21419.5, 0);
+  });
+
+  test('a higher minPercent pays off faster than the default', () => {
+    const defaultRate = creditCardPayoffMinimum(3000, 22);
+    const higherRate = creditCardPayoffMinimum(3000, 22, 5, 25);
+    expect(higherRate.months).toBeLessThan(defaultRate.months);
   });
 });

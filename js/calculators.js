@@ -1044,3 +1044,79 @@ document.getElementById('calorie-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Credit card interest & payoff calculator ---
+document.getElementById('cc-mode').addEventListener('change', (e) => {
+  const isMinimum = e.target.value === 'minimum';
+  document.getElementById('cc-fixed-fields').hidden = isMinimum;
+  document.getElementById('cc-minimum-fields').hidden = !isMinimum;
+});
+
+function formatCcMonths(months) {
+  const years = Math.floor(months / 12);
+  const remMonths = months % 12;
+  if (years === 0) return `${months} month${months === 1 ? '' : 's'}`;
+  const yearsLabel = `${years} year${years === 1 ? '' : 's'}`;
+  if (remMonths === 0) return yearsLabel;
+  return `${yearsLabel}, ${remMonths} month${remMonths === 1 ? '' : 's'}`;
+}
+
+document.getElementById('cc-calc').addEventListener('click', () => {
+  const balance = parseFloat(document.getElementById('cc-balance').value);
+  const apr = parseFloat(document.getElementById('cc-apr').value);
+  const mode = document.getElementById('cc-mode').value;
+
+  if (!balance || balance <= 0) {
+    showError('cc-result', 'Enter a valid balance greater than zero.');
+    return;
+  }
+
+  if (isNaN(apr) || apr < 0) {
+    showError('cc-result', 'Enter a valid APR (0 or greater).');
+    return;
+  }
+
+  if (mode === 'fixed') {
+    const payment = parseFloat(document.getElementById('cc-payment').value);
+
+    if (!payment || payment <= 0) {
+      showError('cc-result', 'Enter a valid fixed monthly payment greater than zero.');
+      return;
+    }
+
+    const result = creditCardPayoffFixed(balance, apr, payment);
+
+    if (!result) {
+      showError('cc-result', 'This payment does not even cover the first month’s interest, so the balance will never be paid off. Enter a larger payment.');
+      return;
+    }
+
+    document.getElementById('cc-result').innerHTML = `
+      <div class="headline">${formatCcMonths(result.months)}</div>
+      <div>Time to pay off the balance at ${formatMoney(payment)}/month</div>
+      <div class="hint">Total interest: ${formatMoney(result.totalInterest)} &middot; Total paid: ${formatMoney(result.totalPaid)}</div>
+    `;
+  } else {
+    const minPercent = parseFloat(document.getElementById('cc-min-percent').value);
+    const minFloor = parseFloat(document.getElementById('cc-min-floor').value);
+
+    if (isNaN(minPercent) || minPercent <= 0 || isNaN(minFloor) || minFloor <= 0) {
+      showError('cc-result', 'Enter a valid minimum payment percentage and floor amount, both greater than zero.');
+      return;
+    }
+
+    const result = creditCardPayoffMinimum(balance, apr, minPercent, minFloor);
+
+    if (!result) {
+      showError('cc-result', 'This minimum payment does not even cover the first month’s interest, so the balance will never be paid off.');
+      return;
+    }
+
+    document.getElementById('cc-result').innerHTML = `
+      <div class="headline">${formatCcMonths(result.months)}</div>
+      <div>Time to pay off the balance paying only the minimum (${minPercent}% of balance, ${formatMoney(minFloor)} floor)</div>
+      <div class="hint">Total interest: ${formatMoney(result.totalInterest)} &middot; Total paid: ${formatMoney(result.totalPaid)}</div>
+      <div class="hint">Paying only the minimum can take years and cost far more in interest than a fixed higher payment &mdash; try the fixed-payment mode to compare.</div>
+    `;
+  }
+});
