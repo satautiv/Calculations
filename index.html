@@ -206,6 +206,69 @@
     <div class="result" id="recipe-result"></div>
   </section>
 
+  <section id="investment-growth" class="view tab-panel">
+    <h2>Investment / DCA Growth Calculator</h2>
+    <p class="hint">Project how an initial lump sum plus regular contributions grows at an expected annual return.</p>
+    <div class="field">
+      <label for="invest-lump-sum">Initial lump sum</label>
+      <input type="number" id="invest-lump-sum" min="0" step="0.01" placeholder="e.g. 5000">
+    </div>
+    <div class="field">
+      <label for="invest-contribution">Recurring contribution</label>
+      <input type="number" id="invest-contribution" min="0" step="0.01" placeholder="e.g. 200">
+    </div>
+    <div class="field">
+      <label for="invest-frequency">Contribution frequency</label>
+      <select id="invest-frequency">
+        <option value="12" selected>Monthly</option>
+        <option value="4">Quarterly</option>
+        <option value="1">Annually</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="invest-rate">Expected annual return (%)</label>
+      <input type="number" id="invest-rate" step="0.01" placeholder="e.g. 7">
+    </div>
+    <div class="field">
+      <label for="invest-years">Duration (years)</label>
+      <input type="number" id="invest-years" min="1" step="1" placeholder="e.g. 20">
+    </div>
+    <button class="calc-btn" id="invest-calc">Calculate</button>
+    <div class="result" id="invest-result"></div>
+  </section>
+
+  <section id="bakers-percentage" class="view tab-panel">
+    <h2>Baker's Percentage Calculator</h2>
+    <p class="hint">Convert a recipe between ingredient weights and baker's percentages (each ingredient as a % of total flour weight).</p>
+    <div class="field">
+      <label for="baker-mode">Mode</label>
+      <select id="baker-mode">
+        <option value="weights-to-percent">Weights &rarr; Percentages</option>
+        <option value="percent-to-weights">Percentages &rarr; Weights</option>
+      </select>
+    </div>
+
+    <div class="field" id="baker-basis-fields" hidden>
+      <label for="baker-flour-weight">Total flour weight (g)</label>
+      <input type="number" id="baker-flour-weight" min="0" step="0.1" placeholder="e.g. 800">
+      <label for="baker-dough-weight">...or target total dough weight (g)</label>
+      <input type="number" id="baker-dough-weight" min="0" step="0.1" placeholder="e.g. 1384">
+    </div>
+
+    <div class="field">
+      <label>Ingredients</label>
+      <div class="baker-ingredient-grid" id="baker-ingredient-list">
+        <div class="baker-ingredient-row baker-ingredient-header">
+          <span>Name</span><span>Flour?</span><span id="baker-value-col-label">Weight (g)</span><span></span>
+        </div>
+      </div>
+      <button type="button" class="calc-btn secondary-btn" id="baker-add-ingredient">+ Add ingredient</button>
+    </div>
+
+    <button class="calc-btn" id="baker-calc">Calculate</button>
+    <div class="result" id="baker-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
