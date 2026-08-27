@@ -1234,3 +1234,43 @@ document.getElementById('inflation-calc').addEventListener('click', () => {
     <div class="hint">Purchasing power lost over the period: ${percentPurchasingPowerLost.toFixed(1)}%</div>
   `;
 });
+
+// --- Driving distance & time calculator ---
+function formatHM({ hours, minutes }) {
+  return `${hours}h ${minutes}m`;
+}
+
+document.getElementById('drive-calc').addEventListener('click', () => {
+  const distance = parseFloat(document.getElementById('drive-distance').value);
+  const speed = parseFloat(document.getElementById('drive-speed').value);
+  const stopMinutesRaw = document.getElementById('drive-stop-minutes').value;
+  const stopMinutes = stopMinutesRaw === '' ? 0 : parseFloat(stopMinutesRaw);
+
+  if (!distance || distance <= 0) {
+    showError('drive-result', 'Enter a valid distance greater than zero.');
+    return;
+  }
+
+  if (!speed || speed <= 0) {
+    showError('drive-result', 'Enter a valid average speed greater than zero.');
+    return;
+  }
+
+  if (isNaN(stopMinutes) || stopMinutes < 0) {
+    showError('drive-result', 'Stop time cannot be negative.');
+    return;
+  }
+
+  const { drivingHours, totalHours } = drivingTripTime(distance, speed, stopMinutes);
+  const drivingHM = hoursToHoursMinutes(drivingHours);
+
+  const totalHtml = stopMinutes > 0 ? `
+    <div class="hint">Total trip time including stops: ${formatHM(hoursToHoursMinutes(totalHours))}</div>
+  ` : '';
+
+  document.getElementById('drive-result').innerHTML = `
+    <div class="headline">${formatHM(drivingHM)}</div>
+    <div>Estimated driving time</div>
+    ${totalHtml}
+  `;
+});

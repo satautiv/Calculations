@@ -382,6 +382,21 @@ function inflationImpact(amount, inflationRatePercent, years) {
   return { futureCost, realValue, percentPurchasingPowerLost };
 }
 
+// Basic uniform-motion trip time: driving time plus any stop/rest time on top.
+function drivingTripTime(distance, averageSpeed, stopMinutes = 0) {
+  const drivingHours = distance / averageSpeed;
+  const totalHours = drivingHours + stopMinutes / 60;
+  return { drivingHours, totalHours };
+}
+
+// Converts a decimal number of hours into whole hours + rounded minutes,
+// e.g. 5.75 -> { hours: 5, minutes: 45 }.
+function hoursToHoursMinutes(hours) {
+  const wholeHours = Math.floor(hours);
+  const minutes = Math.round((hours - wholeHours) * 60);
+  return minutes === 60 ? { hours: wholeHours + 1, minutes: 0 } : { hours: wholeHours, minutes };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -417,5 +432,7 @@ if (typeof module !== 'undefined' && module.exports) {
     requiredSavingsContribution,
     emergencyFundTarget,
     inflationImpact,
+    drivingTripTime,
+    hoursToHoursMinutes,
   };
 }
