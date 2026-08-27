@@ -25,6 +25,8 @@ const {
   requiredSavingsContribution,
   emergencyFundTarget,
   inflationImpact,
+  drivingTripTime,
+  hoursToHoursMinutes,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -516,5 +518,33 @@ describe('inflationImpact', () => {
     expect(futureCost).toBe(5000);
     expect(realValue).toBe(5000);
     expect(percentPurchasingPowerLost).toBe(0);
+  });
+});
+
+describe('drivingTripTime', () => {
+  test('matches the worked example: 450 km at 90 km/h with a 45-minute stop', () => {
+    const { drivingHours, totalHours } = drivingTripTime(450, 90, 45);
+    expect(drivingHours).toBe(5);
+    expect(totalHours).toBe(5.75);
+  });
+
+  test('defaults stop time to 0', () => {
+    const { drivingHours, totalHours } = drivingTripTime(100, 50);
+    expect(drivingHours).toBe(2);
+    expect(totalHours).toBe(2);
+  });
+});
+
+describe('hoursToHoursMinutes', () => {
+  test('matches the worked example: 5.75 hours -> 5h 45m', () => {
+    expect(hoursToHoursMinutes(5.75)).toEqual({ hours: 5, minutes: 45 });
+  });
+
+  test('a whole number of hours has 0 minutes', () => {
+    expect(hoursToHoursMinutes(5)).toEqual({ hours: 5, minutes: 0 });
+  });
+
+  test('rounds minutes that land on 60 up into the next hour', () => {
+    expect(hoursToHoursMinutes(5.9992)).toEqual({ hours: 6, minutes: 0 });
   });
 });

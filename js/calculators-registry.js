@@ -115,6 +115,13 @@ const CALCULATOR_REGISTRY = [
     description: "See how inflation erodes money's purchasing power over time.",
     keywords: ['inflation', 'purchasing power', 'real value', 'future cost'],
   },
+  {
+    id: 'driving-time',
+    name: 'Driving Distance & Time',
+    category: 'Travel',
+    description: 'Estimate driving time and total trip time from distance, speed, and stops.',
+    keywords: ['driving time', 'road trip', 'distance', 'speed', 'travel time'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

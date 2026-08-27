@@ -484,6 +484,25 @@
     <div class="result" id="inflation-result"></div>
   </section>
 
+  <section id="driving-time" class="view tab-panel">
+    <h2>Driving Distance &amp; Time Calculator</h2>
+    <p class="hint">Estimate driving time and total trip time from distance, average speed, and any planned stops.</p>
+    <div class="field">
+      <label for="drive-distance">Distance (km)</label>
+      <input type="number" id="drive-distance" min="0" step="0.1" placeholder="e.g. 450">
+    </div>
+    <div class="field">
+      <label for="drive-speed">Average speed (km/h)</label>
+      <input type="number" id="drive-speed" min="0" step="0.1" placeholder="e.g. 90">
+    </div>
+    <div class="field">
+      <label for="drive-stop-minutes">Stop/rest time (minutes, optional)</label>
+      <input type="number" id="drive-stop-minutes" min="0" step="1" value="0" placeholder="e.g. 45">
+    </div>
+    <button class="calc-btn" id="drive-calc">Calculate</button>
+    <div class="result" id="drive-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
