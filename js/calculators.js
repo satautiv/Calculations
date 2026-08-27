@@ -1325,3 +1325,27 @@ document.getElementById('oven-calc').addEventListener('click', () => {
     ${gasMarkLine}
   `;
 });
+
+// --- Meat doneness guide ---
+const USDA_SAFE_MINIMUM_FAHRENHEIT = 145;
+
+document.getElementById('meat-calc').addEventListener('click', () => {
+  const donenessId = document.getElementById('meat-doneness-level').value;
+  const cutSize = document.getElementById('meat-cut-size').value;
+  const unit = document.getElementById('meat-unit').value;
+
+  const doneness = MEAT_DONENESS_LEVELS.find(d => d.id === donenessId);
+  const { target, pullTemperature, restMinutes } = meatPullTemperature(donenessId, cutSize, unit);
+  const unitLabel = unit === 'f' ? '&deg;F' : '&deg;C';
+  const rangeLabel = unit === 'f' ? doneness.rangeLabelF : doneness.rangeLabelC;
+
+  const safetyNote = doneness.targetFahrenheit < USDA_SAFE_MINIMUM_FAHRENHEIT ? `
+    <div class="hint">${doneness.label} beef falls below the USDA safe minimum internal temperature (145&deg;F / 63&deg;C). This is a personal risk tolerance choice, not a food-safety recommendation.</div>
+  ` : '';
+
+  document.getElementById('meat-result').innerHTML = `
+    <div class="headline">Pull at ${pullTemperature}${unitLabel}</div>
+    <div>${doneness.label} target: ${rangeLabel} &middot; Rest ${restMinutes} minutes to coast up to temperature</div>
+    ${safetyNote}
+  `;
+});

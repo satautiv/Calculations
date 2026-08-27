@@ -31,6 +31,7 @@ const {
   fahrenheitToCelsius,
   gasMarkToTemps,
   celsiusToGasMark,
+  meatPullTemperature,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -593,5 +594,31 @@ describe('celsiusToGasMark', () => {
 
   test('returns null above the table range (over 240°C)', () => {
     expect(celsiusToGasMark(250)).toBeNull();
+  });
+});
+
+describe('meatPullTemperature', () => {
+  test('matches the worked example: medium-rare steak pulls at 130°F, rests 5 min, final 135°F', () => {
+    const { target, pullTemperature, restMinutes } = meatPullTemperature('medium-rare', 'steak', 'f');
+    expect(target).toBe(135);
+    expect(pullTemperature).toBe(130);
+    expect(restMinutes).toBe('5');
+  });
+
+  test('a roast has a larger carryover rise than a steak for the same doneness', () => {
+    const steak = meatPullTemperature('medium', 'steak', 'f');
+    const roast = meatPullTemperature('medium', 'roast', 'f');
+    expect(roast.rise).toBeGreaterThan(steak.rise);
+    expect(roast.pullTemperature).toBeLessThan(steak.pullTemperature);
+  });
+
+  test('works in Celsius too', () => {
+    const { target, pullTemperature } = meatPullTemperature('medium-rare', 'steak', 'c');
+    expect(target).toBe(57);
+    expect(pullTemperature).toBe(54);
+  });
+
+  test('throws for an unknown doneness level', () => {
+    expect(() => meatPullTemperature('extra-crispy', 'steak', 'f')).toThrow();
   });
 });
