@@ -1004,6 +1004,66 @@
     <div class="result" id="rule72-result"></div>
   </section>
 
+  <section id="ev-vs-petrol-tco" class="view tab-panel">
+    <h2>EV vs Petrol Total Cost of Ownership Calculator</h2>
+    <p class="hint">Compare the total cost of ownership of an EV versus a petrol car over a chosen period, combining net purchase cost, energy/fuel cost, and maintenance.</p>
+    <div class="field">
+      <label for="evtco-years">Ownership period (years)</label>
+      <input type="number" id="evtco-years" min="0.01" step="1" placeholder="e.g. 5">
+    </div>
+    <div class="field">
+      <label for="evtco-annual-mileage">Annual mileage (km/year)</label>
+      <input type="number" id="evtco-annual-mileage" min="0.01" step="1" placeholder="e.g. 15000">
+    </div>
+
+    <h3>Electric vehicle</h3>
+    <div class="field">
+      <label for="evtco-ev-price">Purchase price</label>
+      <input type="number" id="evtco-ev-price" min="0" step="0.01" placeholder="e.g. 35000">
+    </div>
+    <div class="field">
+      <label for="evtco-ev-resale">Resale value after the period</label>
+      <input type="number" id="evtco-ev-resale" min="0" step="0.01" placeholder="e.g. 18000">
+    </div>
+    <div class="field">
+      <label for="evtco-ev-efficiency">Efficiency (kWh/100km)</label>
+      <input type="number" id="evtco-ev-efficiency" min="0" step="0.1" placeholder="e.g. 16">
+    </div>
+    <div class="field">
+      <label for="evtco-electricity-price">Electricity price (per kWh)</label>
+      <input type="number" id="evtco-electricity-price" min="0" step="0.01" placeholder="e.g. 0.30">
+    </div>
+    <div class="field">
+      <label for="evtco-ev-maintenance">Annual maintenance estimate</label>
+      <input type="number" id="evtco-ev-maintenance" min="0" step="0.01" placeholder="e.g. 400">
+    </div>
+
+    <h3>Petrol car</h3>
+    <div class="field">
+      <label for="evtco-petrol-price">Purchase price</label>
+      <input type="number" id="evtco-petrol-price" min="0" step="0.01" placeholder="e.g. 28000">
+    </div>
+    <div class="field">
+      <label for="evtco-petrol-resale">Resale value after the period</label>
+      <input type="number" id="evtco-petrol-resale" min="0" step="0.01" placeholder="e.g. 13000">
+    </div>
+    <div class="field">
+      <label for="evtco-petrol-consumption">Consumption (L/100km)</label>
+      <input type="number" id="evtco-petrol-consumption" min="0" step="0.1" placeholder="e.g. 6.5">
+    </div>
+    <div class="field">
+      <label for="evtco-petrol-price-per-l">Petrol price (per liter)</label>
+      <input type="number" id="evtco-petrol-price-per-l" min="0" step="0.01" placeholder="e.g. 1.60">
+    </div>
+    <div class="field">
+      <label for="evtco-petrol-maintenance">Annual maintenance estimate</label>
+      <input type="number" id="evtco-petrol-maintenance" min="0" step="0.01" placeholder="e.g. 700">
+    </div>
+
+    <button class="calc-btn" id="evtco-calc">Calculate</button>
+    <div class="result" id="evtco-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

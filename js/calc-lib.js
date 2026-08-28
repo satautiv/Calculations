@@ -779,6 +779,58 @@ function ruleOf72(ratePercent) {
   };
 }
 
+// Total cost of ownership comparison between an EV and a petrol car over a
+// chosen ownership period: net purchase cost (price minus resale value) plus
+// energy/fuel cost plus maintenance, for each vehicle. Assumes the DOM layer
+// has already validated inputs (positive prices/consumption/prices, resale
+// value not exceeding purchase price, positive years/mileage, non-negative
+// maintenance) before calling in.
+function evVsPetrolTCO({
+  years,
+  annualMileageKm,
+  evPurchasePrice,
+  evResaleValue,
+  evEfficiencyKWh100km,
+  electricityPricePerKWh,
+  evMaintenancePerYear,
+  petrolPurchasePrice,
+  petrolResaleValue,
+  petrolConsumptionL100km,
+  petrolPricePerL,
+  petrolMaintenancePerYear,
+}) {
+  const totalDistanceKm = years * annualMileageKm;
+
+  const evNetPurchase = evPurchasePrice - evResaleValue;
+  const evEnergyCost = (totalDistanceKm / 100) * evEfficiencyKWh100km * electricityPricePerKWh;
+  const evMaintenanceCost = years * evMaintenancePerYear;
+  const evTCO = evNetPurchase + evEnergyCost + evMaintenanceCost;
+
+  const petrolNetPurchase = petrolPurchasePrice - petrolResaleValue;
+  const petrolFuelCost = (totalDistanceKm / 100) * petrolConsumptionL100km * petrolPricePerL;
+  const petrolMaintenanceCost = years * petrolMaintenancePerYear;
+  const petrolTCO = petrolNetPurchase + petrolFuelCost + petrolMaintenanceCost;
+
+  const difference = petrolTCO - evTCO;
+
+  return {
+    evTCO,
+    petrolTCO,
+    difference,
+    evBreakdown: {
+      netPurchase: evNetPurchase,
+      energyOrFuel: evEnergyCost,
+      maintenance: evMaintenanceCost,
+    },
+    petrolBreakdown: {
+      netPurchase: petrolNetPurchase,
+      energyOrFuel: petrolFuelCost,
+      maintenance: petrolMaintenanceCost,
+    },
+    cheaper: difference >= 0 ? 'ev' : 'petrol',
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -848,5 +900,6 @@ if (typeof module !== 'undefined' && module.exports) {
     fireCalculator,
     petrolDieselBreakEven,
     ruleOf72,
+    evVsPetrolTCO,
   };
 }
