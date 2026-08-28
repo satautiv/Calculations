@@ -68,6 +68,9 @@ const {
   accelerationTimeEstimate,
   speedFromRpm,
   rpmFromSpeed,
+  tyreDiameterMm,
+  tyreCircumferenceMm,
+  tyreSizeComparison,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1287,5 +1290,43 @@ describe('Gear Ratio / RPM calculator', () => {
     const lowerFinalDrive = speedFromRpm(3000, 1.310, 3.42, 650.24).speedKmh;
     const higherFinalDrive = speedFromRpm(3000, 1.310, 3.73, 650.24).speedKmh;
     expect(higherFinalDrive).toBeLessThan(lowerFinalDrive);
+  });
+});
+
+describe('Tire Size & Speedometer Error calculator', () => {
+  test('tyreDiameterMm matches the worked example: 225/45R17 -> 634.3mm', () => {
+    expect(tyreDiameterMm(225, 45, 17)).toBeCloseTo(634.3, 5);
+  });
+
+  test('tyreDiameterMm matches the worked example: 235/40R18 -> 645.2mm', () => {
+    expect(tyreDiameterMm(235, 40, 18)).toBeCloseTo(645.2, 5);
+  });
+
+  test('tyreCircumferenceMm matches circumference = pi * diameter', () => {
+    expect(tyreCircumferenceMm(634.3)).toBeCloseTo(Math.PI * 634.3, 10);
+  });
+
+  test('tyreSizeComparison matches the worked example: 225/45R17 vs 235/40R18 at 100 km/h displayed', () => {
+    const originalDiameterMm = tyreDiameterMm(225, 45, 17);
+    const newDiameterMm = tyreDiameterMm(235, 40, 18);
+    const result = tyreSizeComparison(originalDiameterMm, newDiameterMm, 100);
+
+    expect(result.diameterChangePercent).toBeCloseTo(1.7184, 3);
+    expect(result.actualSpeed).toBeCloseTo(101.72, 1);
+  });
+
+  test('tyreSizeComparison returns a null actualSpeed when no displayed speed is provided', () => {
+    const originalDiameterMm = tyreDiameterMm(225, 45, 17);
+    const newDiameterMm = tyreDiameterMm(235, 40, 18);
+    const result = tyreSizeComparison(originalDiameterMm, newDiameterMm);
+
+    expect(result.actualSpeed).toBeNull();
+    expect(result.diameterChangePercent).toBeCloseTo(1.7184, 3);
+  });
+
+  test('tyreSizeComparison reports a negative diameterChangePercent for a smaller new tyre', () => {
+    const result = tyreSizeComparison(650, 600, 100);
+    expect(result.diameterChangePercent).toBeLessThan(0);
+    expect(result.actualSpeed).toBeLessThan(100);
   });
 });
