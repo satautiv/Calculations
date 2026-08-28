@@ -1922,3 +1922,64 @@ document.getElementById('ev-calc').addEventListener('click', () => {
     ${tripHtml}
   `;
 });
+
+// --- FIRE (Financial Independence, Retire Early) calculator ---
+document.getElementById('fire-calc').addEventListener('click', () => {
+  const annualIncome = parseFloat(document.getElementById('fire-annual-income').value);
+  const annualExpenses = parseFloat(document.getElementById('fire-annual-expenses').value);
+  const currentSavings = parseFloat(document.getElementById('fire-current-savings').value) || 0;
+  const returnRate = parseFloat(document.getElementById('fire-return-rate').value);
+  const withdrawalRate = parseFloat(document.getElementById('fire-withdrawal-rate').value);
+
+  if (!annualExpenses || annualExpenses <= 0) {
+    showError('fire-result', 'Enter valid annual expenses greater than zero.');
+    return;
+  }
+
+  if (isNaN(annualIncome)) {
+    showError('fire-result', 'Enter a valid annual income.');
+    return;
+  }
+
+  if (currentSavings < 0) {
+    showError('fire-result', 'Current invested savings cannot be negative.');
+    return;
+  }
+
+  if (isNaN(returnRate)) {
+    showError('fire-result', 'Enter a valid expected annual investment return.');
+    return;
+  }
+
+  if (isNaN(withdrawalRate) || withdrawalRate <= 0) {
+    showError('fire-result', 'Enter a valid safe withdrawal rate greater than zero.');
+    return;
+  }
+
+  const { fiTarget, yearsToFI, annualSavings, savingsRatePercent, alreadyFI } =
+    fireCalculator(annualIncome, annualExpenses, currentSavings, returnRate, withdrawalRate);
+
+  if (annualSavings <= 0 && !alreadyFI) {
+    document.getElementById('fire-result').innerHTML = `
+      <div class="headline">FI is never reached</div>
+      <div>Annual income doesn't exceed annual expenses, so there's nothing left to invest.</div>
+      <div class="hint">FI target: ${formatMoney(fiTarget)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
+    `;
+    return;
+  }
+
+  if (alreadyFI) {
+    document.getElementById('fire-result').innerHTML = `
+      <div class="headline">Already financially independent</div>
+      <div>Current savings already meet or exceed the FI target.</div>
+      <div class="hint">FI target: ${formatMoney(fiTarget)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
+    `;
+    return;
+  }
+
+  document.getElementById('fire-result').innerHTML = `
+    <div class="headline">${yearsToFI.toFixed(1)} year${yearsToFI === 1 ? '' : 's'} to FI</div>
+    <div>FI target: ${formatMoney(fiTarget)}</div>
+    <div class="hint">Annual savings: ${formatMoney(annualSavings)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
+  `;
+});

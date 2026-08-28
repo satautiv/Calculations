@@ -707,6 +707,35 @@ function evCostPer100km(efficiencyKWhPer100km, pricePerKWh) {
   return efficiencyKWhPer100km * pricePerKWh;
 }
 
+// FIRE (Financial Independence, Retire Early): the FI target is the "25x
+// expenses" rule generalized to any safe withdrawal rate (FI_Target =
+// AnnualExpenses / SafeWithdrawalRate, i.e. AnnualExpenses * (1/rate)).
+// Years to reach it solves the compound-growth-with-contributions formula
+// for time: n = ln((FI_Target*r + AnnualSavings) / (CurrentSavings*r +
+// AnnualSavings)) / ln(1+r), handling r = 0 (no compounding, so the years
+// scale linearly) and reporting "never" rather than a nonsensical/negative
+// figure when annual savings are zero/negative or FI is already reached.
+function fireCalculator(annualIncome, annualExpenses, currentSavings, annualReturnPercent, safeWithdrawalRatePercent = 4) {
+  const annualSavings = annualIncome - annualExpenses;
+  const savingsRatePercent = annualIncome > 0 ? (annualSavings / annualIncome) * 100 : 0;
+  const fiTarget = annualExpenses / (safeWithdrawalRatePercent / 100);
+  const r = annualReturnPercent / 100;
+
+  if (currentSavings >= fiTarget) {
+    return { fiTarget, yearsToFI: 0, annualSavings, savingsRatePercent, alreadyFI: true };
+  }
+
+  if (annualSavings <= 0) {
+    return { fiTarget, yearsToFI: Infinity, annualSavings, savingsRatePercent, alreadyFI: false };
+  }
+
+  const yearsToFI = r === 0
+    ? (fiTarget - currentSavings) / annualSavings
+    : Math.log((fiTarget * r + annualSavings) / (currentSavings * r + annualSavings)) / Math.log(1 + r);
+
+  return { fiTarget, yearsToFI, annualSavings, savingsRatePercent, alreadyFI: false };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -773,5 +802,6 @@ if (typeof module !== 'undefined' && module.exports) {
     evRange,
     evTripCost,
     evCostPer100km,
+    fireCalculator,
   };
 }
