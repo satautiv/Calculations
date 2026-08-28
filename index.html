@@ -1185,6 +1185,43 @@
     <div class="result" id="carloan-result"></div>
   </section>
 
+  <section id="engine-power-torque" class="view tab-panel">
+    <h2>Engine Power &amp; Torque Converter</h2>
+    <p class="hint">Convert engine power between horsepower and kilowatts, torque between newton-meters and pound-feet, and optionally pair a torque value with an RPM to see the corresponding power. Fill in power, torque, or both.</p>
+
+    <div class="field">
+      <label for="engpt-power-value">Power (optional)</label>
+      <input type="number" id="engpt-power-value" min="0" step="0.01" placeholder="e.g. 300">
+    </div>
+    <div class="field">
+      <label for="engpt-power-unit">Power unit</label>
+      <select id="engpt-power-unit">
+        <option value="hp">Horsepower (HP)</option>
+        <option value="kw">Kilowatts (kW)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="engpt-torque-value">Torque (optional)</label>
+      <input type="number" id="engpt-torque-value" min="0" step="0.01" placeholder="e.g. 400">
+    </div>
+    <div class="field">
+      <label for="engpt-torque-unit">Torque unit</label>
+      <select id="engpt-torque-unit">
+        <option value="nm">Newton-meters (Nm)</option>
+        <option value="lbft">Pound-feet (lb-ft)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="engpt-rpm">Engine speed, RPM (optional, pairs with torque above)</label>
+      <input type="number" id="engpt-rpm" min="1" step="1" placeholder="e.g. 5500">
+    </div>
+
+    <button class="calc-btn" id="engpt-calc">Calculate</button>
+    <div class="result" id="engpt-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

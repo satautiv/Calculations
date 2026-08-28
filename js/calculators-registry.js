@@ -262,6 +262,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate the fixed monthly payment for financing a car, either as a standard amortizing loan or as a two-part lease (depreciation plus finance fee).',
     keywords: ['car loan', 'car lease', 'auto loan', 'lease payment', 'money factor', 'cars', 'monthly payment'],
   },
+  {
+    id: 'engine-power-torque',
+    name: 'Engine Power & Torque Converter',
+    category: 'Cars',
+    description: 'Convert engine power between HP and kW, torque between Nm and lb-ft, and optionally pair a torque value with RPM to get the corresponding power.',
+    keywords: ['engine power', 'torque', 'horsepower', 'kilowatts', 'hp', 'kw', 'nm', 'lb-ft', 'rpm', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -911,6 +911,36 @@ function tripBudget({
   return { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay };
 }
 
+// Engine power conversion, HP <-> kW, using the standard mechanical-horsepower
+// factor (1 HP = 0.745699872 kW).
+function hpToKw(hp) {
+  return hp * 0.745699872;
+}
+
+function kwToHp(kw) {
+  return kw / 0.745699872;
+}
+
+// Engine torque conversion, Nm <-> lb-ft, using the standard factor
+// (1 lb-ft = 1.35581795 Nm).
+function nmToLbft(nm) {
+  return nm / 1.35581795;
+}
+
+function lbftToNm(lbft) {
+  return lbft * 1.35581795;
+}
+
+// Power (in kW) implied by a torque figure (in Nm) at a given engine speed
+// (RPM): Power_kW = Torque_Nm * RPM / 9548.8. To get the paired HP figure,
+// convert the result with kwToHp rather than using a separate lb-ft-based
+// formula — 9548.8 and 5252 are independently rounded conventional constants,
+// so deriving HP straight from lb-ft/5252 drifts slightly from the HP you'd
+// get by converting this kW figure, and kW is the more direct derivation.
+function powerFromTorqueNmAndRpm(torqueNm, rpm) {
+  return (torqueNm * rpm) / 9548.8;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -985,5 +1015,10 @@ if (typeof module !== 'undefined' && module.exports) {
     carDepreciationStraightLine,
     tripBudget,
     carLeasePayment,
+    hpToKw,
+    kwToHp,
+    nmToLbft,
+    lbftToNm,
+    powerFromTorqueNmAndRpm,
   };
 }
