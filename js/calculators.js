@@ -2046,3 +2046,45 @@ document.getElementById('pdbe-calc').addEventListener('click', () => {
     ${yearsHtml}
   `;
 });
+
+// --- Rule of 72 calculator ---
+document.getElementById('rule72-calc').addEventListener('click', () => {
+  const ratePercent = parseFloat(document.getElementById('rule72-rate').value);
+  const principalRaw = document.getElementById('rule72-principal').value;
+  const principal = principalRaw === '' ? null : parseFloat(principalRaw);
+
+  if (isNaN(ratePercent) || ratePercent <= 0) {
+    showError('rule72-result', 'Enter a valid annual rate greater than zero (0% or negative rates never double).');
+    return;
+  }
+
+  if (principalRaw !== '' && (isNaN(principal) || principal <= 0)) {
+    showError('rule72-result', 'Starting amount, if provided, must be greater than zero.');
+    return;
+  }
+
+  const { rule72Years, rule693Years, rule70Years, exactYears } = ruleOf72(ratePercent);
+
+  const sanityNoteHtml = ratePercent > 100
+    ? '<div class="hint">Note: rates above 100% are unrealistic for typical investments, though the math still holds.</div>'
+    : '';
+
+  const doubledAmountHtml = principal !== null
+    ? `<div class="hint">${formatMoney(principal)} doubles to ${formatMoney(principal * 2)} after about ${exactYears.toFixed(2)} years (exact) at ${ratePercent}%.</div>`
+    : '';
+
+  document.getElementById('rule72-result').innerHTML = `
+    <div class="headline">${rule72Years.toFixed(2)} years to double (Rule of 72)</div>
+    <table>
+      <thead><tr><th>Method</th><th>Years to double</th></tr></thead>
+      <tbody>
+        <tr><td>Rule of 72</td><td>${rule72Years.toFixed(2)}</td></tr>
+        <tr><td>Rule of 69.3</td><td>${rule693Years.toFixed(2)}</td></tr>
+        <tr><td>Rule of 70</td><td>${rule70Years.toFixed(2)}</td></tr>
+        <tr><td>Exact (logarithmic)</td><td>${exactYears.toFixed(2)}</td></tr>
+      </tbody>
+    </table>
+    ${doubledAmountHtml}
+    ${sanityNoteHtml}
+  `;
+});

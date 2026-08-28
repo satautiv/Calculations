@@ -54,6 +54,7 @@ const {
   evCostPer100km,
   fireCalculator,
   petrolDieselBreakEven,
+  ruleOf72,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -990,5 +991,43 @@ describe('petrolDieselBreakEven', () => {
     expect(result.neverBreaksEven).toBe(false);
     expect(result.breakEvenDistanceKm).toBe(0);
     expect(result.breakEvenYears).toBe(0);
+  });
+});
+
+describe('ruleOf72', () => {
+  test('matches the worked example at 8%: 72/8, 69.3/8, 70/8, and the exact log formula', () => {
+    const result = ruleOf72(8);
+
+    expect(result.rule72Years).toBeCloseTo(9.0, 5);
+    expect(result.rule693Years).toBeCloseTo(8.6625, 5);
+    expect(result.rule70Years).toBeCloseTo(8.75, 5);
+    expect(result.exactYears).toBeCloseTo(9.006, 2);
+  });
+
+  test('at a low rate, the rule-of-thumb approximations are close to the exact value (in relative terms)', () => {
+    const result = ruleOf72(2);
+
+    expect(result.rule72Years).toBeCloseTo(36, 5);
+    expect(result.rule693Years).toBeCloseTo(34.65, 5);
+    expect(result.rule70Years).toBeCloseTo(35, 5);
+
+    const relativeDivergence = Math.abs(result.rule72Years - result.exactYears) / result.exactYears;
+    expect(relativeDivergence).toBeLessThan(0.03);
+  });
+
+  test('at a high rate, the approximations diverge more noticeably from the exact value than at a low rate', () => {
+    const low = ruleOf72(2);
+    const high = ruleOf72(30);
+
+    expect(high.rule72Years).toBeCloseTo(2.4, 5);
+    expect(high.rule693Years).toBeCloseTo(2.31, 5);
+    expect(high.rule70Years).toBeCloseTo(2.3333, 3);
+
+    // Rule of 72's error grows with the rate in relative terms (absolute
+    // years-to-double shrinks fast at high rates, so relative divergence is
+    // the meaningful, monotonically-increasing comparison here).
+    const lowDivergence = Math.abs(low.rule72Years - low.exactYears) / low.exactYears;
+    const highDivergence = Math.abs(high.rule72Years - high.exactYears) / high.exactYears;
+    expect(highDivergence).toBeGreaterThan(lowDivergence);
   });
 });

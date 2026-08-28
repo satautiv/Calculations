@@ -765,6 +765,20 @@ function petrolDieselBreakEven(pricePremium, petrolConsumption, petrolPrice, die
   };
 }
 
+// Doubling time estimates at a fixed annual rate: the classic Rule of 72
+// approximation, its more precise variants (69.3 and 70), and the exact
+// logarithmic doubling time for comparison. Assumes ratePercent > 0 (the
+// DOM layer validates this before calling in).
+function ruleOf72(ratePercent) {
+  const r = ratePercent / 100;
+  return {
+    rule72Years: 72 / ratePercent,
+    rule693Years: 69.3 / ratePercent,
+    rule70Years: 70 / ratePercent,
+    exactYears: Math.log(2) / Math.log(1 + r),
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -833,5 +847,6 @@ if (typeof module !== 'undefined' && module.exports) {
     evCostPer100km,
     fireCalculator,
     petrolDieselBreakEven,
+    ruleOf72,
   };
 }
