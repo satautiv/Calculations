@@ -2431,3 +2431,94 @@ document.getElementById('carloan-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Engine Power & Torque Converter calculator ---
+document.getElementById('engpt-calc').addEventListener('click', () => {
+  const powerRaw = document.getElementById('engpt-power-value').value;
+  const powerUnit = document.getElementById('engpt-power-unit').value;
+  const torqueRaw = document.getElementById('engpt-torque-value').value;
+  const torqueUnit = document.getElementById('engpt-torque-unit').value;
+  const rpmRaw = document.getElementById('engpt-rpm').value;
+
+  const hasPower = powerRaw !== '';
+  const hasTorque = torqueRaw !== '';
+
+  if (!hasPower && !hasTorque) {
+    showError('engpt-result', 'Enter a power value, a torque value, or both.');
+    return;
+  }
+
+  let power = null;
+  if (hasPower) {
+    power = parseFloat(powerRaw);
+    if (isNaN(power) || power < 0) {
+      showError('engpt-result', 'Enter a valid power value (zero or more).');
+      return;
+    }
+  }
+
+  let torque = null;
+  if (hasTorque) {
+    torque = parseFloat(torqueRaw);
+    if (isNaN(torque) || torque < 0) {
+      showError('engpt-result', 'Enter a valid torque value (zero or more).');
+      return;
+    }
+  }
+
+  let rpm = null;
+  if (rpmRaw !== '') {
+    rpm = parseFloat(rpmRaw);
+    if (isNaN(rpm) || rpm <= 0) {
+      showError('engpt-result', 'Enter a valid RPM greater than zero.');
+      return;
+    }
+  }
+
+  const rows = [];
+  let headline = '';
+  let subheadline = '';
+
+  let pairedKw = null;
+  let pairedHp = null;
+  if (hasTorque && rpm !== null) {
+    const torqueNm = torqueUnit === 'nm' ? torque : lbftToNm(torque);
+    pairedKw = powerFromTorqueNmAndRpm(torqueNm, rpm);
+    pairedHp = kwToHp(pairedKw);
+  }
+
+  if (hasPower) {
+    const hp = powerUnit === 'hp' ? power : kwToHp(power);
+    const kw = powerUnit === 'kw' ? power : hpToKw(power);
+    rows.push(`<tr><td>Power</td><td>${hp.toFixed(2)} HP</td><td>${kw.toFixed(2)} kW</td></tr>`);
+
+    if (!headline) {
+      headline = `${hp.toFixed(2)} HP / ${kw.toFixed(2)} kW`;
+      subheadline = 'Power conversion';
+    }
+  }
+
+  if (hasTorque) {
+    const nm = torqueUnit === 'nm' ? torque : lbftToNm(torque);
+    const lbft = torqueUnit === 'lbft' ? torque : nmToLbft(torque);
+    rows.push(`<tr><td>Torque</td><td>${nm.toFixed(2)} Nm</td><td>${lbft.toFixed(2)} lb-ft</td></tr>`);
+
+    if (pairedKw !== null) {
+      rows.push(`<tr><td>Power at ${rpm} RPM</td><td>${pairedHp.toFixed(2)} HP</td><td>${pairedKw.toFixed(2)} kW</td></tr>`);
+      headline = `${pairedHp.toFixed(2)} HP / ${pairedKw.toFixed(2)} kW`;
+      subheadline = `Power implied by this torque at ${rpm} RPM`;
+    } else if (!headline) {
+      headline = `${nm.toFixed(2)} Nm / ${lbft.toFixed(2)} lb-ft`;
+      subheadline = 'Torque conversion';
+    }
+  }
+
+  document.getElementById('engpt-result').innerHTML = `
+    <div class="headline">${headline}</div>
+    <div>${subheadline}</div>
+    <table>
+      <thead><tr><th></th><th></th><th></th></tr></thead>
+      <tbody>${rows.join('')}</tbody>
+    </table>
+  `;
+});

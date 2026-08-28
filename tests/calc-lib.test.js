@@ -60,6 +60,11 @@ const {
   carDepreciationStraightLine,
   tripBudget,
   carLeasePayment,
+  hpToKw,
+  kwToHp,
+  nmToLbft,
+  lbftToNm,
+  powerFromTorqueNmAndRpm,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1202,5 +1207,29 @@ describe('car loan/lease payment', () => {
   test('carLeasePayment does not crash when residual value >= cap cost (DOM layer is responsible for rejecting this)', () => {
     expect(() => carLeasePayment(12000, 12000, 36, 6)).not.toThrow();
     expect(() => carLeasePayment(10000, 12000, 36, 6)).not.toThrow();
+  });
+});
+
+describe('engine power & torque converter', () => {
+  test('hpToKw matches the worked example: 300 HP -> 223.70996159999999 kW', () => {
+    expect(hpToKw(300)).toBeCloseTo(223.71, 2);
+  });
+
+  test('kwToHp is the inverse of hpToKw (round-trip)', () => {
+    expect(kwToHp(hpToKw(300))).toBeCloseTo(300, 6);
+  });
+
+  test('nmToLbft matches the worked example: 400 Nm -> 295.02485934782027 lb-ft', () => {
+    expect(nmToLbft(400)).toBeCloseTo(295.02, 2);
+  });
+
+  test('lbftToNm is the inverse of nmToLbft (round-trip)', () => {
+    expect(lbftToNm(nmToLbft(400))).toBeCloseTo(400, 6);
+  });
+
+  test('powerFromTorqueNmAndRpm + kwToHp matches the worked example: 400 Nm at 5500 RPM -> 230.39544235924936 kW / 308.96537737269364 HP', () => {
+    const kw = powerFromTorqueNmAndRpm(400, 5500);
+    expect(kw).toBeCloseTo(230.40, 2);
+    expect(kwToHp(kw)).toBeCloseTo(308.97, 2);
   });
 });
