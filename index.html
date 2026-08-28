@@ -1100,6 +1100,50 @@
     <div class="result" id="cardep-result"></div>
   </section>
 
+  <section id="trip-budget" class="view tab-panel">
+    <h2>Trip Budget Calculator</h2>
+    <p class="hint">Add up per-day costs across the whole trip plus one-off fixed costs, to get a total projected trip cost and average cost per day.</p>
+    <div class="field">
+      <label for="tripbudget-days">Number of days</label>
+      <input type="number" id="tripbudget-days" min="1" step="1" placeholder="e.g. 7">
+    </div>
+    <div class="field">
+      <label for="tripbudget-accommodation">Accommodation per day</label>
+      <input type="number" id="tripbudget-accommodation" min="0" step="0.01" placeholder="e.g. 80">
+    </div>
+    <div class="field">
+      <label for="tripbudget-food">Food per day</label>
+      <input type="number" id="tripbudget-food" min="0" step="0.01" placeholder="e.g. 40">
+    </div>
+    <div class="field">
+      <label for="tripbudget-activities">Activities per day</label>
+      <input type="number" id="tripbudget-activities" min="0" step="0.01" placeholder="e.g. 25">
+    </div>
+    <div class="field">
+      <label for="tripbudget-transport">Local transport per day</label>
+      <input type="number" id="tripbudget-transport" min="0" step="0.01" placeholder="e.g. 10">
+    </div>
+    <div class="field">
+      <label for="tripbudget-flights">Flights</label>
+      <input type="number" id="tripbudget-flights" min="0" step="0.01" placeholder="e.g. 350">
+    </div>
+    <div class="field">
+      <label for="tripbudget-insurance">Insurance</label>
+      <input type="number" id="tripbudget-insurance" min="0" step="0.01" placeholder="e.g. 45">
+    </div>
+    <div class="field">
+      <label for="tripbudget-other">Other fixed costs (optional)</label>
+      <input type="number" id="tripbudget-other" min="0" step="0.01" placeholder="e.g. 20">
+    </div>
+    <div class="field">
+      <label for="tripbudget-travelers">Number of travelers (optional)</label>
+      <input type="number" id="tripbudget-travelers" min="1" step="1" placeholder="e.g. 2">
+    </div>
+
+    <button class="calc-btn" id="tripbudget-calc">Calculate</button>
+    <div class="result" id="tripbudget-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

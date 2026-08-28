@@ -248,6 +248,13 @@ const CALCULATOR_REGISTRY = [
     description: "Project a car's resale value over time using a declining-balance or straight-line depreciation model.",
     keywords: ['car depreciation', 'resale value', 'declining balance', 'straight line', 'cars'],
   },
+  {
+    id: 'trip-budget',
+    name: 'Trip Budget',
+    category: 'Travel',
+    description: 'Estimate the total cost of a trip from per-day spending and one-off fixed costs like flights and insurance.',
+    keywords: ['trip budget', 'travel budget', 'vacation cost', 'flights', 'travel planning'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

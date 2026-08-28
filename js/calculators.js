@@ -2280,3 +2280,62 @@ document.getElementById('cardep-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Trip Budget calculator ---
+document.getElementById('tripbudget-calc').addEventListener('click', () => {
+  const daysRaw = document.getElementById('tripbudget-days').value;
+  const days = parseInt(daysRaw, 10);
+
+  if (daysRaw === '' || isNaN(days) || days <= 0 || !Number.isInteger(parseFloat(daysRaw))) {
+    showError('tripbudget-result', 'Enter a valid whole number of days, greater than zero.');
+    return;
+  }
+
+  const accommodationPerDay = parseFloat(document.getElementById('tripbudget-accommodation').value) || 0;
+  const foodPerDay = parseFloat(document.getElementById('tripbudget-food').value) || 0;
+  const activitiesPerDay = parseFloat(document.getElementById('tripbudget-activities').value) || 0;
+  const transportPerDay = parseFloat(document.getElementById('tripbudget-transport').value) || 0;
+  const flights = parseFloat(document.getElementById('tripbudget-flights').value) || 0;
+  const insurance = parseFloat(document.getElementById('tripbudget-insurance').value) || 0;
+  const otherFixed = parseFloat(document.getElementById('tripbudget-other').value) || 0;
+  const travelersRaw = document.getElementById('tripbudget-travelers').value;
+  const travelers = travelersRaw === '' ? 1 : parseFloat(travelersRaw);
+
+  const costFields = [accommodationPerDay, foodPerDay, activitiesPerDay, transportPerDay, flights, insurance, otherFixed];
+  if (costFields.some(value => value < 0)) {
+    showError('tripbudget-result', 'Enter valid cost values — none of them can be negative.');
+    return;
+  }
+
+  if (isNaN(travelers) || travelers <= 0) {
+    showError('tripbudget-result', 'Enter a valid number of travelers, greater than zero.');
+    return;
+  }
+
+  const { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay } = tripBudget({
+    days,
+    accommodationPerDay,
+    foodPerDay,
+    activitiesPerDay,
+    transportPerDay,
+    flights,
+    insurance,
+    otherFixed,
+    travelers,
+  });
+
+  document.getElementById('tripbudget-result').innerHTML = `
+    <div class="headline">${formatMoney(totalTripCost)}</div>
+    <div>Total projected trip cost${travelers !== 1 ? ` for ${travelers} travelers` : ''}</div>
+    <div class="hint">Daily cost: ${formatMoney(dailyTotal)}/day &times; ${days} day${days === 1 ? '' : 's'} = ${formatMoney(variableCost)} variable cost, plus ${formatMoney(fixedCost)} in fixed costs.</div>
+    <table>
+      <thead><tr><th></th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Variable (per-day) cost</td><td>${formatMoney(variableCost)}</td></tr>
+        <tr><td>Fixed cost</td><td>${formatMoney(fixedCost)}</td></tr>
+        <tr><td>Total trip cost</td><td>${formatMoney(totalTripCost)}</td></tr>
+        <tr><td>Average cost per day</td><td>${formatMoney(averageCostPerDay)}</td></tr>
+      </tbody>
+    </table>
+  `;
+});
