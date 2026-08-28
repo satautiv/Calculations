@@ -1185,6 +1185,25 @@ function solveProportion(values, unknownKey) {
   }
 }
 
+// --- Average / Weighted Average calculator ---
+
+// Simple arithmetic mean of a list of numbers. Assumes the DOM layer has
+// already validated that values is non-empty.
+function simpleAverage(values) {
+  const sum = values.reduce((total, v) => total + v, 0);
+  return sum / values.length;
+}
+
+// Weighted average = (Σ value*weight) / (Σ weight), given two parallel
+// arrays. Assumes the DOM layer has already validated that values and
+// weights are the same non-zero length, weights are non-negative, and the
+// weights sum to something other than zero.
+function weightedAverage(values, weights) {
+  const weightedSum = values.reduce((total, v, i) => total + v * weights[i], 0);
+  const totalWeight = weights.reduce((total, w) => total + w, 0);
+  return weightedSum / totalWeight;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1284,5 +1303,7 @@ if (typeof module !== 'undefined' && module.exports) {
     simplifyRatio,
     solveProportion,
     luggageWeightCheck,
+    simpleAverage,
+    weightedAverage,
   };
 }

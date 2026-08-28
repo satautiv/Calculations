@@ -38,6 +38,8 @@ const {
   minutesToTimeLabel,
   doughHydrationPercent,
   doughWaterForHydration,
+  simpleAverage,
+  weightedAverage,
   calculateProgressiveTax,
   salaryAfterTax,
   convertSalary,
@@ -1578,6 +1580,36 @@ describe('Luggage Weight Checker calculator', () => {
       expect(result.difference).toBe(0);
       expect(result.isOverAllowance).toBe(false);
       expect(result.remainingOrOverage).toBe(0);
+    });
+  });
+});
+
+describe('Average / Weighted Average calculator', () => {
+  describe('simpleAverage', () => {
+    test('matches the worked example: 4, 8, 6, 10 averages to 7', () => {
+      expect(simpleAverage([4, 8, 6, 10])).toBe(7);
+    });
+
+    test('a single-value list averages to that value', () => {
+      expect(simpleAverage([42])).toBe(42);
+    });
+  });
+
+  describe('weightedAverage', () => {
+    test('matches the worked example: 90 weighted 3, 70 weighted 1 gives 85', () => {
+      expect(weightedAverage([90, 70], [3, 1])).toBe(85);
+    });
+
+    test('weighting more heavily toward 90 pulls the result above the simple average of the same raw values', () => {
+      const simple = simpleAverage([90, 70]);
+      expect(simple).toBe(80);
+
+      const weighted = weightedAverage([90, 70], [3, 1]);
+      expect(weighted).toBeGreaterThan(simple);
+    });
+
+    test('a single value/weight pair averages to that value regardless of weight', () => {
+      expect(weightedAverage([55], [7])).toBe(55);
     });
   });
 });

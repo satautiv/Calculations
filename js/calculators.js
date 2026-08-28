@@ -3144,3 +3144,102 @@ document.getElementById('luggage-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Average / Weighted Average calculator ---
+document.getElementById('avgw-mode').addEventListener('change', (e) => {
+  const isWeighted = e.target.value === 'weighted';
+  document.getElementById('avgw-simple-fields').hidden = isWeighted;
+  document.getElementById('avgw-weighted-fields').hidden = !isWeighted;
+});
+
+function parseAvgwTokens(raw) {
+  return raw.split(',').map(s => s.trim()).filter(s => s !== '');
+}
+
+// Trims trailing floating-point noise for display (e.g. 2.6666666666666665 -> 2.6667).
+function formatAvgwValue(value) {
+  return parseFloat(value.toFixed(4)).toString();
+}
+
+document.getElementById('avgw-calc').addEventListener('click', () => {
+  const mode = document.getElementById('avgw-mode').value;
+
+  if (mode === 'simple') {
+    const tokens = parseAvgwTokens(document.getElementById('avgw-simple-values').value);
+
+    if (tokens.length === 0) {
+      showError('avgw-result', 'Enter at least one number.');
+      return;
+    }
+
+    const values = [];
+    for (const token of tokens) {
+      const n = Number(token);
+      if (isNaN(n)) {
+        showError('avgw-result', `"${token}" is not a valid number.`);
+        return;
+      }
+      values.push(n);
+    }
+
+    const average = simpleAverage(values);
+    const sum = values.reduce((total, v) => total + v, 0);
+
+    document.getElementById('avgw-result').innerHTML = `
+      <div class="headline">Average of ${values.length} value${values.length === 1 ? '' : 's'} = ${formatAvgwValue(average)}</div>
+      <div>Sum ${formatAvgwValue(sum)} &divide; ${values.length} = ${formatAvgwValue(average)}</div>
+    `;
+  } else {
+    const valueTokens = parseAvgwTokens(document.getElementById('avgw-weighted-values').value);
+    const weightTokens = parseAvgwTokens(document.getElementById('avgw-weighted-weights').value);
+
+    if (valueTokens.length === 0 || weightTokens.length === 0) {
+      showError('avgw-result', 'Enter at least one value and a matching weight.');
+      return;
+    }
+
+    if (valueTokens.length !== weightTokens.length) {
+      showError('avgw-result', `Enter the same number of values and weights (got ${valueTokens.length} value${valueTokens.length === 1 ? '' : 's'} and ${weightTokens.length} weight${weightTokens.length === 1 ? '' : 's'}).`);
+      return;
+    }
+
+    const values = [];
+    for (const token of valueTokens) {
+      const n = Number(token);
+      if (isNaN(n)) {
+        showError('avgw-result', `"${token}" is not a valid number.`);
+        return;
+      }
+      values.push(n);
+    }
+
+    const weights = [];
+    for (const token of weightTokens) {
+      const n = Number(token);
+      if (isNaN(n)) {
+        showError('avgw-result', `"${token}" is not a valid weight.`);
+        return;
+      }
+      if (n < 0) {
+        showError('avgw-result', `Weights must be zero or greater ("${token}" is negative).`);
+        return;
+      }
+      weights.push(n);
+    }
+
+    const totalWeight = weights.reduce((total, w) => total + w, 0);
+
+    if (totalWeight === 0) {
+      showError('avgw-result', 'The weights sum to zero, so a weighted average is undefined.');
+      return;
+    }
+
+    const average = weightedAverage(values, weights);
+    const weightedSum = values.reduce((total, v, i) => total + v * weights[i], 0);
+
+    document.getElementById('avgw-result').innerHTML = `
+      <div class="headline">Weighted average = ${formatAvgwValue(average)}</div>
+      <div>${values.length} value${values.length === 1 ? '' : 's'}, weighted sum ${formatAvgwValue(weightedSum)} &divide; total weight ${formatAvgwValue(totalWeight)} = ${formatAvgwValue(average)}</div>
+    `;
+  }
+});

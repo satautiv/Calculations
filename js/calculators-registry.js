@@ -339,6 +339,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Sum the weight of your packed items and check the total against an airline’s weight allowance, flagging how much headroom or overage you have.',
     keywords: ['luggage', 'baggage', 'weight allowance', 'suitcase', 'airline', 'overweight', 'packing', 'travel'],
   },
+  {
+    id: 'average-weighted-average-calculator',
+    name: 'Average / Weighted Average Calculator',
+    category: 'General',
+    description: 'Compute the simple arithmetic mean of a list of numbers, or a weighted average where each value has its own weight.',
+    keywords: ['average', 'mean', 'weighted average', 'arithmetic mean', 'weighted mean', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
