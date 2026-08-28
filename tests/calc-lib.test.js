@@ -44,6 +44,8 @@ const {
   rentVsBuyComparison,
   fuelCostMetric,
   fuelCostImperial,
+  retirementCountdown,
+  retirementProjection,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -825,5 +827,29 @@ describe('fuelCostImperial', () => {
     expect(fuelUsed).toBe(10);
     expect(totalCost).toBe(35);
     expect(costPerDistance).toBeCloseTo(0.1167, 3);
+  });
+});
+
+describe('retirementProjection', () => {
+  test('matches the worked example: age 35 -> 65, €40,000 + €400/mo at 6%', () => {
+    const { yearsRemaining, futureValue, totalContributed, totalGrowth } = retirementProjection(35, 65, 40000, 400, 6);
+    expect(yearsRemaining).toBe(30);
+    expect(futureValue).toBeCloseTo(642709.03, 1);
+    expect(totalContributed).toBe(184000);
+    expect(totalGrowth).toBeCloseTo(458709.03, 1);
+  });
+});
+
+describe('retirementCountdown', () => {
+  test('matches the worked example: 30 years remaining is about 10,957-10,958 days', () => {
+    const { retirementDate, daysRemaining } = retirementCountdown(new Date('2024-01-01T00:00:00Z'), 30);
+    expect(retirementDate.toISOString()).toBe('2054-01-01T00:00:00.000Z');
+    expect(daysRemaining).toBe(10958);
+  });
+
+  test('0 years remaining is today, with 0 days left', () => {
+    const from = new Date('2024-06-15T00:00:00Z');
+    const { daysRemaining } = retirementCountdown(from, 0);
+    expect(daysRemaining).toBe(0);
   });
 });
