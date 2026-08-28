@@ -297,6 +297,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert an amount between currencies using a manually-entered exchange rate, with a swap-direction toggle for the inverse rate.',
     keywords: ['currency converter', 'exchange rate', 'forex', 'money conversion', 'travel'],
   },
+  {
+    id: 'wheel-offset-clearance',
+    name: 'Wheel Offset & Clearance (ET)',
+    category: 'Cars',
+    description: 'Estimate how a wheel width/offset (ET) change shifts fitment outward toward the fender or inward toward the suspension.',
+    keywords: ['wheel offset', 'et', 'clearance', 'fitment', 'fender', 'suspension', 'wheel width', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

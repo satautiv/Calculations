@@ -1010,6 +1010,22 @@ function convertCurrency(amount, exchangeRate) {
   return amount * exchangeRate;
 }
 
+// Estimates how a wheel width/offset (ET) change shifts fitment: half of the
+// width change pushes the wheel outward (toward the fender) while the other
+// half pulls it back in, and a change in offset shifts the whole wheel
+// outward (lower ET) or inward (higher ET) by that same amount. This is an
+// approximation only — it doesn't account for suspension travel, steering
+// lock, or fender rolling.
+function wheelOffsetShift(oldWidthIn, oldET, newWidthIn, newET) {
+  const oldWidthMm = oldWidthIn * 25.4;
+  const newWidthMm = newWidthIn * 25.4;
+  const widthDeltaMm = newWidthMm - oldWidthMm;
+  const etDeltaMm = newET - oldET;
+  const outwardShiftMm = widthDeltaMm / 2 - etDeltaMm;
+  const inwardShiftMm = widthDeltaMm / 2 + etDeltaMm;
+  return { outwardShiftMm, inwardShiftMm };
+}
+
 // Inverts an exchange rate, e.g. for a "swap direction" toggle that converts
 // target currency back into source currency using the same quoted rate.
 function inverseExchangeRate(exchangeRate) {
@@ -1104,5 +1120,6 @@ if (typeof module !== 'undefined' && module.exports) {
     tyreSizeComparison,
     convertCurrency,
     inverseExchangeRate,
+    wheelOffsetShift,
   };
 }
