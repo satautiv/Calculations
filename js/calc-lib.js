@@ -1060,6 +1060,78 @@ function percentageChange(oldValue, newValue) {
   return ((newValue - oldValue) / oldValue) * 100;
 }
 
+// --- Fraction calculator ---
+
+// Euclidean algorithm. Works with any sign/order of inputs and treats
+// gcd(0, n) as n (rather than 0), matching the mathematical convention used
+// to simplify a fraction whose numerator is 0.
+function gcd(a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b !== 0) {
+    [a, b] = [b, a % b];
+  }
+  return a;
+}
+
+// Reduces a fraction to lowest terms and normalizes sign so the denominator
+// is always positive (any negative sign moves onto the numerator).
+function simplifyFraction(numerator, denominator) {
+  if (denominator < 0) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+
+  const divisor = gcd(numerator, denominator);
+  return { numerator: numerator / divisor, denominator: denominator / divisor };
+}
+
+// Arithmetic on two fractions a/b and c/d. Assumes the DOM layer has already
+// validated that b and d are non-zero, and (for 'divide') that c is
+// non-zero, since dividing by fraction c/d requires c !== 0.
+// wholePart/remainderNumerator support a mixed-number display: for 3/2 that's
+// { wholePart: 1, remainderNumerator: 1 } (1 + 1/2), for a proper fraction
+// like 1/4 it's { wholePart: 0, remainderNumerator: 1 }, and for a whole
+// result like 2/1 it's { wholePart: 2, remainderNumerator: 0 }.
+function fractionArithmetic(a, b, c, d, operation) {
+  let numerator;
+  let denominator;
+
+  switch (operation) {
+    case 'add':
+      numerator = a * d + c * b;
+      denominator = b * d;
+      break;
+    case 'subtract':
+      numerator = a * d - c * b;
+      denominator = b * d;
+      break;
+    case 'multiply':
+      numerator = a * c;
+      denominator = b * d;
+      break;
+    case 'divide':
+      numerator = a * d;
+      denominator = b * c;
+      break;
+    default:
+      throw new Error(`Unknown operation: ${operation}`);
+  }
+
+  const simplified = simplifyFraction(numerator, denominator);
+  const decimal = simplified.numerator / simplified.denominator;
+  const wholePart = Math.trunc(simplified.numerator / simplified.denominator);
+  const remainderNumerator = Math.abs(simplified.numerator) % simplified.denominator;
+
+  return {
+    numerator: simplified.numerator,
+    denominator: simplified.denominator,
+    decimal,
+    wholePart,
+    remainderNumerator,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1153,5 +1225,8 @@ if (typeof module !== 'undefined' && module.exports) {
     percentOf,
     whatPercentOf,
     percentageChange,
+    gcd,
+    simplifyFraction,
+    fractionArithmetic,
   };
 }

@@ -1462,6 +1462,42 @@
     <div class="result" id="pct-result"></div>
   </section>
 
+  <section id="fraction-calculator" class="view tab-panel">
+    <h2>Fraction Calculator</h2>
+    <p class="hint">Add, subtract, multiply, or divide two fractions. The result is simplified to lowest terms, with a mixed-number form and decimal equivalent.</p>
+
+    <div class="field">
+      <label for="frac-a-num">Fraction A &mdash; numerator</label>
+      <input type="number" id="frac-a-num" step="1" placeholder="e.g. 1">
+    </div>
+    <div class="field">
+      <label for="frac-a-den">Fraction A &mdash; denominator</label>
+      <input type="number" id="frac-a-den" step="1" placeholder="e.g. 2">
+    </div>
+
+    <div class="field">
+      <label for="frac-operation">Operation</label>
+      <select id="frac-operation">
+        <option value="add">+ Add</option>
+        <option value="subtract">&minus; Subtract</option>
+        <option value="multiply">&times; Multiply</option>
+        <option value="divide">&divide; Divide</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="frac-b-num">Fraction B &mdash; numerator</label>
+      <input type="number" id="frac-b-num" step="1" placeholder="e.g. 1">
+    </div>
+    <div class="field">
+      <label for="frac-b-den">Fraction B &mdash; denominator</label>
+      <input type="number" id="frac-b-den" step="1" placeholder="e.g. 3">
+    </div>
+
+    <button class="calc-btn" id="frac-calc">Calculate</button>
+    <div class="result" id="frac-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
