@@ -185,6 +185,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Project how net worth grows over time from steady savings and investment returns.',
     keywords: ['net worth', 'projection', 'savings', 'growth', 'assets minus liabilities'],
   },
+  {
+    id: 'fuel-cost',
+    name: 'Fuel Cost',
+    category: 'Cars',
+    description: 'Calculate how much a trip will cost in fuel, in metric or imperial units.',
+    keywords: ['fuel cost', 'fuel consumption', 'mpg', 'l/100km', 'trip cost'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
