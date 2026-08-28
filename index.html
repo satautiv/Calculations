@@ -718,6 +718,57 @@
     <div class="result" id="sc-result"></div>
   </section>
 
+  <section id="rent-vs-buy" class="view tab-panel">
+    <h2>Rent vs Buy Calculator</h2>
+    <p class="hint">Compares the net cost of renting vs. buying over your chosen horizon &mdash; lower net cost wins.</p>
+    <div class="field">
+      <label for="rvb-home-price">Home purchase price</label>
+      <input type="number" id="rvb-home-price" min="0" step="1000" placeholder="e.g. 300000">
+    </div>
+    <div class="field">
+      <label for="rvb-down-payment">Down payment</label>
+      <input type="number" id="rvb-down-payment" min="0" step="1000" placeholder="e.g. 60000">
+    </div>
+    <div class="field">
+      <label for="rvb-closing-costs">Closing costs (one-time)</label>
+      <input type="number" id="rvb-closing-costs" min="0" step="100" value="0" placeholder="e.g. 5000">
+    </div>
+    <div class="field">
+      <label for="rvb-mortgage-rate">Mortgage interest rate (%)</label>
+      <input type="number" id="rvb-mortgage-rate" min="0" step="0.01" placeholder="e.g. 4.5">
+    </div>
+    <div class="field">
+      <label for="rvb-mortgage-term">Mortgage term (years)</label>
+      <input type="number" id="rvb-mortgage-term" min="1" step="1" value="30">
+    </div>
+    <div class="field">
+      <label for="rvb-ownership-cost">Property tax + insurance + maintenance (% of home value/year)</label>
+      <input type="number" id="rvb-ownership-cost" min="0" step="0.1" value="2">
+    </div>
+    <div class="field">
+      <label for="rvb-appreciation">Home appreciation rate (%/year)</label>
+      <input type="number" id="rvb-appreciation" step="0.1" value="3">
+    </div>
+    <div class="field">
+      <label for="rvb-rent">Comparable monthly rent</label>
+      <input type="number" id="rvb-rent" min="0" step="10" placeholder="e.g. 1200">
+    </div>
+    <div class="field">
+      <label for="rvb-rent-growth">Rent growth rate (%/year)</label>
+      <input type="number" id="rvb-rent-growth" step="0.1" value="2">
+    </div>
+    <div class="field">
+      <label for="rvb-investment-return">Investment return rate (%/year)</label>
+      <input type="number" id="rvb-investment-return" step="0.1" value="6">
+    </div>
+    <div class="field">
+      <label for="rvb-horizon">Comparison horizon (years)</label>
+      <input type="number" id="rvb-horizon" min="1" step="1" placeholder="e.g. 10">
+    </div>
+    <button class="calc-btn" id="rvb-calc">Compare</button>
+    <div class="result" id="rvb-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

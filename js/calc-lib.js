@@ -567,6 +567,62 @@ function convertSalary(amount, period, hoursPerWeek, weeksPerYear) {
   };
 }
 
+// Compares the net cost of buying vs. renting over a horizon: buying's net
+// cost is everything spent (down payment, closing costs, mortgage payments,
+// ownership costs) minus the equity built up; renting's net cost is total
+// rent paid minus the investment growth earned on the down payment the
+// renter didn't have to lock up. Reuses the existing amortization schedule
+// rather than re-deriving mortgage math.
+function rentVsBuyComparison({
+  homePrice, downPayment, closingCosts, mortgageRatePercent, mortgageTermYears,
+  annualOwnershipCostPercent, appreciationRatePercent, monthlyRent,
+  rentGrowthRatePercent, investmentReturnRatePercent, horizonYears,
+}) {
+  const loanAmount = homePrice - downPayment;
+  const termMonths = mortgageTermYears * 12;
+  const horizonMonths = horizonYears * 12;
+
+  const amortization = amortizationSchedule(loanAmount, mortgageRatePercent, termMonths, 0);
+  const paymentsInHorizon = amortization.schedule.slice(0, horizonMonths);
+  const totalMortgagePayments = paymentsInHorizon.reduce((sum, row) => sum + row.payment, 0);
+  const remainingLoanBalance = horizonMonths < amortization.schedule.length
+    ? amortization.schedule[horizonMonths - 1].balance
+    : 0;
+
+  let totalOwnershipCosts = 0;
+  for (let year = 1; year <= horizonYears; year++) {
+    const homeValueThatYear = homePrice * Math.pow(1 + appreciationRatePercent / 100, year);
+    totalOwnershipCosts += (annualOwnershipCostPercent / 100) * homeValueThatYear;
+  }
+
+  const homeValueAtHorizon = homePrice * Math.pow(1 + appreciationRatePercent / 100, horizonYears);
+  const equity = homeValueAtHorizon - remainingLoanBalance;
+  const netCostBuy = downPayment + closingCosts + totalMortgagePayments + totalOwnershipCosts - equity;
+
+  let totalRent = 0;
+  let rent = monthlyRent;
+  for (let year = 1; year <= horizonYears; year++) {
+    totalRent += rent * 12;
+    rent *= 1 + rentGrowthRatePercent / 100;
+  }
+
+  const opportunityInvestmentValue = downPayment * Math.pow(1 + investmentReturnRatePercent / 100, horizonYears);
+  const netCostRent = totalRent - (opportunityInvestmentValue - downPayment);
+
+  return {
+    netCostBuy,
+    netCostRent,
+    difference: netCostRent - netCostBuy,
+    homeValueAtHorizon,
+    equity,
+    totalMortgagePayments,
+    totalOwnershipCosts,
+    totalRent,
+    opportunityInvestmentValue,
+    remainingLoanBalance,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -622,5 +678,6 @@ if (typeof module !== 'undefined' && module.exports) {
     calculateProgressiveTax,
     salaryAfterTax,
     convertSalary,
+    rentVsBuyComparison,
   };
 }
