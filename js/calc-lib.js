@@ -1132,6 +1132,27 @@ function fractionArithmetic(a, b, c, d, operation) {
   };
 }
 
+// --- Luggage Weight Checker ---
+
+// Sums packed item weights and compares the total against an airline's
+// stated weight allowance. difference > 0 means over the allowance (by that
+// amount); difference <= 0 means within the allowance (exactly at the
+// allowance counts as within, not over), with remainingOrOverage always the
+// non-negative magnitude of the gap either way, for direct display.
+function luggageWeightCheck(allowance, itemWeights) {
+  const totalWeight = itemWeights.reduce((sum, weight) => sum + weight, 0);
+  const difference = totalWeight - allowance;
+  const isOverAllowance = difference > 0;
+
+  return {
+    totalWeight,
+    allowance,
+    difference,
+    isOverAllowance,
+    remainingOrOverage: Math.abs(difference),
+  };
+}
+
 // --- Ratio & Proportion calculator ---
 
 // Reduces a ratio a:b to lowest terms using gcd. Assumes the DOM layer has
@@ -1262,5 +1283,6 @@ if (typeof module !== 'undefined' && module.exports) {
     fractionArithmetic,
     simplifyRatio,
     solveProportion,
+    luggageWeightCheck,
   };
 }

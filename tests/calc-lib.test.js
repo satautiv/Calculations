@@ -83,6 +83,7 @@ const {
   fractionArithmetic,
   simplifyRatio,
   solveProportion,
+  luggageWeightCheck,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1548,6 +1549,35 @@ describe('Ratio & Proportion calculator', () => {
     test('solves for B: 2:B = 8:12 gives B = 3, consistent with the same proportion', () => {
       const result = solveProportion({ a: 2, b: null, c: 8, d: 12 }, 'b');
       expect(result).toBe(3);
+    });
+  });
+});
+
+describe('Luggage Weight Checker calculator', () => {
+  describe('luggageWeightCheck', () => {
+    test('matches the worked example: 23 kg allowance, items totaling 23.2 kg is over by 0.2 kg', () => {
+      const result = luggageWeightCheck(23, [3.5, 8.2, 2.1, 1.4, 3.0, 5.0]);
+      expect(result.totalWeight).toBeCloseTo(23.2, 5);
+      expect(result.allowance).toBe(23);
+      expect(result.difference).toBeCloseTo(0.2, 5);
+      expect(result.isOverAllowance).toBe(true);
+      expect(result.remainingOrOverage).toBeCloseTo(0.2, 5);
+    });
+
+    test('within allowance: total weight under the limit reports remaining headroom', () => {
+      const result = luggageWeightCheck(23, [10, 5, 3]);
+      expect(result.totalWeight).toBe(18);
+      expect(result.difference).toBe(-5);
+      expect(result.isOverAllowance).toBe(false);
+      expect(result.remainingOrOverage).toBe(5);
+    });
+
+    test('exactly at allowance is within allowance, not over, with 0 remaining', () => {
+      const result = luggageWeightCheck(20, [10, 10]);
+      expect(result.totalWeight).toBe(20);
+      expect(result.difference).toBe(0);
+      expect(result.isOverAllowance).toBe(false);
+      expect(result.remainingOrOverage).toBe(0);
     });
   });
 });
