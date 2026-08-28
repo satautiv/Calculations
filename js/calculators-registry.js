@@ -311,6 +311,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate the extra fuel and cost a roof box adds to a trip, given its consumption penalty percentage.',
     keywords: ['roof box', 'fuel penalty', 'consumption', 'aerodynamics', 'trip cost', 'cars'],
   },
+  {
+    id: 'percentage-calculator',
+    name: 'Percentage Calculator',
+    category: 'General',
+    description: 'Find X% of Y, work out what percent one number is of another, or calculate the percentage increase or decrease between two values.',
+    keywords: ['percentage', 'percent', 'percent of', 'percent change', 'increase', 'decrease', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
