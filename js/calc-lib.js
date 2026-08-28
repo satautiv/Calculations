@@ -978,6 +978,31 @@ function rpmFromSpeed(speedKmh, gearRatio, finalDriveRatio, tyreDiameterMm) {
   return { wheelRpm, engineRpm };
 }
 
+// Tyre size decoding: WIDTH/ASPECTRRIM (e.g. 225/45R17). Sidewall height is
+// the aspect ratio applied to the width; overall diameter adds two sidewalls
+// (top and bottom) to the rim diameter (converted from inches to mm).
+function tyreDiameterMm(widthMm, aspectRatioPercent, rimDiameterIn) {
+  const sidewallHeightMm = widthMm * (aspectRatioPercent / 100);
+  return rimDiameterIn * 25.4 + 2 * sidewallHeightMm;
+}
+
+function tyreCircumferenceMm(diameterMm) {
+  return Math.PI * diameterMm;
+}
+
+// Compares an original and a new tyre's overall diameter: how much the
+// diameter changed (as a percentage), and, if a displayed speedometer
+// reading is given, what the actual speed is (speedometers are calibrated
+// to the original tyre's diameter, so a larger new tyre travels further per
+// wheel revolution than the speedometer assumes).
+function tyreSizeComparison(originalDiameterMm, newDiameterMm, displayedSpeed = null) {
+  const diameterChangePercent = ((newDiameterMm - originalDiameterMm) / originalDiameterMm) * 100;
+  const actualSpeed = displayedSpeed === null || displayedSpeed === undefined
+    ? null
+    : displayedSpeed * (newDiameterMm / originalDiameterMm);
+  return { diameterChangePercent, actualSpeed };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1061,5 +1086,8 @@ if (typeof module !== 'undefined' && module.exports) {
     tyreCircumferenceFromDiameterMm,
     speedFromRpm,
     rpmFromSpeed,
+    tyreDiameterMm,
+    tyreCircumferenceMm,
+    tyreSizeComparison,
   };
 }

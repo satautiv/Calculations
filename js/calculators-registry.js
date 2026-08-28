@@ -283,6 +283,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate vehicle speed from engine RPM, or the RPM needed for a target speed, given gear ratio, final drive ratio, and tyre diameter.',
     keywords: ['gear ratio', 'rpm', 'final drive', 'differential', 'tyre diameter', 'speed', 'cars'],
   },
+  {
+    id: 'tire-size-speedometer-error',
+    name: 'Tire Size & Speedometer Error',
+    category: 'Cars',
+    description: 'Decode two tyre size codes into overall diameter and circumference, and calculate the speedometer error caused by the difference.',
+    keywords: ['tyre size', 'tire size', 'speedometer error', 'tyre diameter', 'plus sizing', 'rim size', 'aspect ratio', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -1286,6 +1286,47 @@
     <div class="result" id="gearrpm-result"></div>
   </section>
 
+  <section id="tire-size-speedometer-error" class="view tab-panel">
+    <h2>Tire Size &amp; Speedometer Error</h2>
+    <p class="hint">Decode a tyre size code (e.g. 225/45R17 = width 225mm, aspect ratio 45%, rim diameter 17in) into overall diameter and circumference, compare it against a different tyre size, and see the resulting speedometer error.</p>
+
+    <h3>Original tyre</h3>
+    <div class="field">
+      <label for="tse-orig-width">Width (mm)</label>
+      <input type="number" id="tse-orig-width" min="0" step="1" placeholder="e.g. 225">
+    </div>
+    <div class="field">
+      <label for="tse-orig-aspect">Aspect ratio (%)</label>
+      <input type="number" id="tse-orig-aspect" min="0" step="1" placeholder="e.g. 45">
+    </div>
+    <div class="field">
+      <label for="tse-orig-rim">Rim diameter (in)</label>
+      <input type="number" id="tse-orig-rim" min="0" step="0.5" placeholder="e.g. 17">
+    </div>
+
+    <h3>New tyre</h3>
+    <div class="field">
+      <label for="tse-new-width">Width (mm)</label>
+      <input type="number" id="tse-new-width" min="0" step="1" placeholder="e.g. 235">
+    </div>
+    <div class="field">
+      <label for="tse-new-aspect">Aspect ratio (%)</label>
+      <input type="number" id="tse-new-aspect" min="0" step="1" placeholder="e.g. 40">
+    </div>
+    <div class="field">
+      <label for="tse-new-rim">Rim diameter (in)</label>
+      <input type="number" id="tse-new-rim" min="0" step="0.5" placeholder="e.g. 18">
+    </div>
+
+    <div class="field">
+      <label for="tse-displayed-speed">Displayed speedometer reading, km/h (optional)</label>
+      <input type="number" id="tse-displayed-speed" min="0" step="1" placeholder="e.g. 100">
+    </div>
+
+    <button class="calc-btn" id="tse-calc">Calculate</button>
+    <div class="result" id="tse-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

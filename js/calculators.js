@@ -2625,3 +2625,82 @@ document.getElementById('gearrpm-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Tire Size & Speedometer Error calculator ---
+document.getElementById('tse-calc').addEventListener('click', () => {
+  const origWidth = parseFloat(document.getElementById('tse-orig-width').value);
+  const origAspect = parseFloat(document.getElementById('tse-orig-aspect').value);
+  const origRim = parseFloat(document.getElementById('tse-orig-rim').value);
+  const newWidth = parseFloat(document.getElementById('tse-new-width').value);
+  const newAspect = parseFloat(document.getElementById('tse-new-aspect').value);
+  const newRim = parseFloat(document.getElementById('tse-new-rim').value);
+  const displayedSpeedRaw = document.getElementById('tse-displayed-speed').value;
+
+  if (isNaN(origWidth) || origWidth <= 0) {
+    showError('tse-result', 'Enter a valid original tyre width greater than zero.');
+    return;
+  }
+
+  if (isNaN(origAspect) || origAspect <= 0) {
+    showError('tse-result', 'Enter a valid original tyre aspect ratio greater than zero.');
+    return;
+  }
+
+  if (isNaN(origRim) || origRim <= 0) {
+    showError('tse-result', 'Enter a valid original rim diameter greater than zero.');
+    return;
+  }
+
+  if (isNaN(newWidth) || newWidth <= 0) {
+    showError('tse-result', 'Enter a valid new tyre width greater than zero.');
+    return;
+  }
+
+  if (isNaN(newAspect) || newAspect <= 0) {
+    showError('tse-result', 'Enter a valid new tyre aspect ratio greater than zero.');
+    return;
+  }
+
+  if (isNaN(newRim) || newRim <= 0) {
+    showError('tse-result', 'Enter a valid new rim diameter greater than zero.');
+    return;
+  }
+
+  let displayedSpeed = null;
+  if (displayedSpeedRaw !== '') {
+    displayedSpeed = parseFloat(displayedSpeedRaw);
+    if (isNaN(displayedSpeed) || displayedSpeed <= 0) {
+      showError('tse-result', 'Enter a valid displayed speed greater than zero, or leave it blank.');
+      return;
+    }
+  }
+
+  const aspectWarning = (origAspect > 100 || newAspect > 100)
+    ? '<div class="hint">Note: an aspect ratio above 100 is unusual &mdash; double check the tyre code.</div>'
+    : '';
+
+  const origDiameterMm = tyreDiameterMm(origWidth, origAspect, origRim);
+  const newDiameterMm = tyreDiameterMm(newWidth, newAspect, newRim);
+  const origCircumferenceMm = tyreCircumferenceMm(origDiameterMm);
+  const newCircumferenceMm = tyreCircumferenceMm(newDiameterMm);
+  const { diameterChangePercent, actualSpeed } = tyreSizeComparison(origDiameterMm, newDiameterMm, displayedSpeed);
+
+  const sign = diameterChangePercent > 0 ? '+' : '';
+  const speedRow = actualSpeed !== null
+    ? `<tr><td>Actual speed</td><td>${actualSpeed.toFixed(2)} km/h</td><td>vs. ${displayedSpeed} km/h displayed</td></tr>`
+    : '';
+
+  document.getElementById('tse-result').innerHTML = `
+    <div class="headline">${sign}${diameterChangePercent.toFixed(2)}% diameter change</div>
+    <div>New tyre overall diameter is ${sign}${diameterChangePercent.toFixed(2)}% vs. the original</div>
+    ${aspectWarning}
+    <table>
+      <thead><tr><th></th><th>Diameter</th><th>Circumference</th></tr></thead>
+      <tbody>
+        <tr><td>Original tyre</td><td>${origDiameterMm.toFixed(1)} mm</td><td>${origCircumferenceMm.toFixed(1)} mm</td></tr>
+        <tr><td>New tyre</td><td>${newDiameterMm.toFixed(1)} mm</td><td>${newCircumferenceMm.toFixed(1)} mm</td></tr>
+        ${speedRow}
+      </tbody>
+    </table>
+  `;
+});
