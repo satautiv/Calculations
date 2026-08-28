@@ -36,6 +36,8 @@ const {
   coffeeDoseForWater,
   convertTimeZone,
   minutesToTimeLabel,
+  doughHydrationPercent,
+  doughWaterForHydration,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -669,5 +671,20 @@ describe('convertTimeZone / minutesToTimeLabel', () => {
     const { destinationMinutes, dayOffset } = convertTimeZone(9, 15, 2, 2);
     expect(minutesToTimeLabel(destinationMinutes)).toBe('09:15');
     expect(dayOffset).toBe(0);
+  });
+});
+
+describe('doughHydrationPercent / doughWaterForHydration', () => {
+  test('matches the worked example: 1000 g flour, 700 g water -> 70%', () => {
+    expect(doughHydrationPercent(1000, 700)).toBe(70);
+  });
+
+  test('matches the worked example: 65% hydration, 500 g flour -> 325 g water', () => {
+    expect(doughWaterForHydration(65, 500)).toBe(325);
+  });
+
+  test('the two functions are inverses of each other', () => {
+    const hydration = doughHydrationPercent(800, 560);
+    expect(doughWaterForHydration(hydration, 800)).toBeCloseTo(560, 10);
   });
 });

@@ -150,6 +150,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert a time of day from one UTC offset to another.',
     keywords: ['time zone', 'utc offset', 'time converter', 'travel'],
   },
+  {
+    id: 'dough-hydration',
+    name: 'Dough Hydration',
+    category: 'Cooking',
+    description: "Calculate a dough's hydration percentage, or the water needed for a target hydration.",
+    keywords: ['dough hydration', 'baking', 'bread', 'water percentage'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
