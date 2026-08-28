@@ -143,6 +143,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate coffee dose or water/yield from a brew ratio for pour-over, espresso, or cold brew.',
     keywords: ['coffee', 'brew ratio', 'pour over', 'espresso', 'cold brew'],
   },
+  {
+    id: 'timezone-converter',
+    name: 'Time Zone Converter',
+    category: 'Travel',
+    description: 'Convert a time of day from one UTC offset to another.',
+    keywords: ['time zone', 'utc offset', 'time converter', 'travel'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
