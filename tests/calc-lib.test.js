@@ -42,6 +42,8 @@ const {
   salaryAfterTax,
   convertSalary,
   rentVsBuyComparison,
+  fuelCostMetric,
+  fuelCostImperial,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -806,5 +808,22 @@ describe('rentVsBuyComparison', () => {
   test('0% mortgage rate does not throw (division-by-zero guard in the underlying amortization)', () => {
     const { netCostBuy } = rentVsBuyComparison({ ...RENT_VS_BUY_BASE, mortgageRatePercent: 0 });
     expect(Number.isFinite(netCostBuy)).toBe(true);
+  });
+});
+
+describe('fuelCostMetric', () => {
+  test('matches the worked example: 500 km, 6.5 L/100km, €1.55/L', () => {
+    const { fuelUsed, totalCost } = fuelCostMetric(500, 6.5, 1.55);
+    expect(fuelUsed).toBeCloseTo(32.5, 5);
+    expect(totalCost).toBeCloseTo(50.375, 5);
+  });
+});
+
+describe('fuelCostImperial', () => {
+  test('30 mpg over 300 miles at $3.50/gal', () => {
+    const { fuelUsed, totalCost, costPerDistance } = fuelCostImperial(300, 30, 3.5);
+    expect(fuelUsed).toBe(10);
+    expect(totalCost).toBe(35);
+    expect(costPerDistance).toBeCloseTo(0.1167, 3);
   });
 });

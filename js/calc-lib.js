@@ -623,6 +623,24 @@ function rentVsBuyComparison({
   };
 }
 
+// Metric fuel cost: consumption given as L/100km.
+function fuelCostMetric(distanceKm, consumptionLPer100km, pricePerLiter) {
+  const fuelUsed = distanceKm * (consumptionLPer100km / 100);
+  const totalCost = fuelUsed * pricePerLiter;
+  const costPerDistance = (pricePerLiter * consumptionLPer100km) / 100;
+
+  return { fuelUsed, totalCost, costPerDistance };
+}
+
+// Imperial fuel cost: consumption given as mpg.
+function fuelCostImperial(distanceMiles, mpg, pricePerGallon) {
+  const fuelUsed = distanceMiles / mpg;
+  const totalCost = fuelUsed * pricePerGallon;
+  const costPerDistance = pricePerGallon / mpg;
+
+  return { fuelUsed, totalCost, costPerDistance };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -679,5 +697,7 @@ if (typeof module !== 'undefined' && module.exports) {
     salaryAfterTax,
     convertSalary,
     rentVsBuyComparison,
+    fuelCostMetric,
+    fuelCostImperial,
   };
 }

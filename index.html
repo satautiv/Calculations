@@ -792,6 +792,51 @@
     <div class="result" id="nw-result"></div>
   </section>
 
+  <section id="fuel-cost" class="view tab-panel">
+    <h2>Fuel Cost Calculator</h2>
+    <p class="hint">Calculate how much a trip will cost in fuel, in metric or imperial units.</p>
+    <div class="field">
+      <label for="fuel-unit-system">Unit system</label>
+      <select id="fuel-unit-system">
+        <option value="metric">Metric (km, L/100km, price/L)</option>
+        <option value="imperial">Imperial (mi, mpg, price/gal)</option>
+      </select>
+    </div>
+
+    <div id="fuel-metric-fields">
+      <div class="field">
+        <label for="fuel-distance-km">Distance (km)</label>
+        <input type="number" id="fuel-distance-km" min="0" step="1" placeholder="e.g. 500">
+      </div>
+      <div class="field">
+        <label for="fuel-consumption-l100">Fuel consumption (L/100km)</label>
+        <input type="number" id="fuel-consumption-l100" min="0" step="0.1" placeholder="e.g. 6.5">
+      </div>
+      <div class="field">
+        <label for="fuel-price-l">Fuel price (per liter)</label>
+        <input type="number" id="fuel-price-l" min="0" step="0.01" placeholder="e.g. 1.55">
+      </div>
+    </div>
+
+    <div id="fuel-imperial-fields" hidden>
+      <div class="field">
+        <label for="fuel-distance-mi">Distance (mi)</label>
+        <input type="number" id="fuel-distance-mi" min="0" step="1" placeholder="e.g. 300">
+      </div>
+      <div class="field">
+        <label for="fuel-mpg">Fuel consumption (mpg)</label>
+        <input type="number" id="fuel-mpg" min="0" step="0.1" placeholder="e.g. 30">
+      </div>
+      <div class="field">
+        <label for="fuel-price-gal">Fuel price (per gallon)</label>
+        <input type="number" id="fuel-price-gal" min="0" step="0.01" placeholder="e.g. 3.50">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="fuel-calc">Calculate</button>
+    <div class="result" id="fuel-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

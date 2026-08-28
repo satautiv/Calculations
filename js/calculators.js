@@ -1716,3 +1716,70 @@ document.getElementById('nw-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Fuel cost calculator ---
+document.getElementById('fuel-unit-system').addEventListener('change', (e) => {
+  const isImperial = e.target.value === 'imperial';
+  document.getElementById('fuel-metric-fields').hidden = isImperial;
+  document.getElementById('fuel-imperial-fields').hidden = !isImperial;
+});
+
+document.getElementById('fuel-calc').addEventListener('click', () => {
+  const unitSystem = document.getElementById('fuel-unit-system').value;
+
+  if (unitSystem === 'metric') {
+    const distance = parseFloat(document.getElementById('fuel-distance-km').value);
+    const consumption = parseFloat(document.getElementById('fuel-consumption-l100').value);
+    const price = parseFloat(document.getElementById('fuel-price-l').value);
+
+    if (!distance || distance <= 0) {
+      showError('fuel-result', 'Enter a valid distance greater than zero.');
+      return;
+    }
+
+    if (!consumption || consumption <= 0) {
+      showError('fuel-result', 'Enter a valid fuel consumption greater than zero.');
+      return;
+    }
+
+    if (!price || price <= 0) {
+      showError('fuel-result', 'Enter a valid fuel price greater than zero.');
+      return;
+    }
+
+    const { fuelUsed, totalCost, costPerDistance } = fuelCostMetric(distance, consumption, price);
+
+    document.getElementById('fuel-result').innerHTML = `
+      <div class="headline">${formatMoney(totalCost)}</div>
+      <div>${fuelUsed.toFixed(1)} L used over ${distance} km</div>
+      <div class="hint">Cost per km: ${formatMoney(costPerDistance)}</div>
+    `;
+  } else {
+    const distance = parseFloat(document.getElementById('fuel-distance-mi').value);
+    const mpg = parseFloat(document.getElementById('fuel-mpg').value);
+    const price = parseFloat(document.getElementById('fuel-price-gal').value);
+
+    if (!distance || distance <= 0) {
+      showError('fuel-result', 'Enter a valid distance greater than zero.');
+      return;
+    }
+
+    if (!mpg || mpg <= 0) {
+      showError('fuel-result', 'Enter a valid mpg greater than zero.');
+      return;
+    }
+
+    if (!price || price <= 0) {
+      showError('fuel-result', 'Enter a valid fuel price greater than zero.');
+      return;
+    }
+
+    const { fuelUsed, totalCost, costPerDistance } = fuelCostImperial(distance, mpg, price);
+
+    document.getElementById('fuel-result').innerHTML = `
+      <div class="headline">${formatMoney(totalCost)}</div>
+      <div>${fuelUsed.toFixed(2)} gal used over ${distance} mi</div>
+      <div class="hint">Cost per mile: ${formatMoney(costPerDistance)}</div>
+    `;
+  }
+});
