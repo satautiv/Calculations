@@ -3243,3 +3243,50 @@ document.getElementById('avgw-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Age calculator ---
+
+// Parses a `type="date"` input's `YYYY-MM-DD` string into a UTC-midnight
+// Date, avoiding the timezone-sensitivity of the plain `new Date(string)`
+// constructor for date-only strings. Returns null for a blank/invalid value.
+function parseAgeDateInput(value) {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00Z`);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+// Today's date normalized to UTC midnight, used as the default "as of" date
+// when that field is left blank.
+function todayAsUtcMidnight() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+}
+
+document.getElementById('age-calc').addEventListener('click', () => {
+  const birthDateRaw = document.getElementById('age-birth-date').value;
+  const asOfDateRaw = document.getElementById('age-as-of-date').value;
+
+  const birthDate = parseAgeDateInput(birthDateRaw);
+  if (!birthDate) {
+    showError('age-result', 'Enter a valid birth date.');
+    return;
+  }
+
+  const asOfDate = asOfDateRaw ? parseAgeDateInput(asOfDateRaw) : todayAsUtcMidnight();
+  if (!asOfDate) {
+    showError('age-result', 'Enter a valid as-of date.');
+    return;
+  }
+
+  try {
+    const { years, months, days, totalDays, totalWeeks, remainderDays } = ageBreakdown(birthDate, asOfDate);
+
+    document.getElementById('age-result').innerHTML = `
+      <div class="headline">${years} year${years === 1 ? '' : 's'}, ${months} month${months === 1 ? '' : 's'}, ${days} day${days === 1 ? '' : 's'}</div>
+      <div>Total days lived: ${totalDays.toLocaleString()}</div>
+      <div class="hint">Total weeks lived: ${totalWeeks.toLocaleString()} week${totalWeeks === 1 ? '' : 's'} and ${remainderDays} day${remainderDays === 1 ? '' : 's'}</div>
+    `;
+  } catch (err) {
+    showError('age-result', err.message);
+  }
+});

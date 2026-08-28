@@ -346,6 +346,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute the simple arithmetic mean of a list of numbers, or a weighted average where each value has its own weight.',
     keywords: ['average', 'mean', 'weighted average', 'arithmetic mean', 'weighted mean', 'general'],
   },
+  {
+    id: 'age-calculator',
+    name: 'Age Calculator',
+    category: 'General',
+    description: 'Calculate exact age in years, months, and days from a birth date, as of today or any date, plus total days and weeks lived.',
+    keywords: ['age', 'birthday', 'date of birth', 'years old', 'days lived', 'weeks lived', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
