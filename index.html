@@ -1247,6 +1247,45 @@
     <div class="result" id="accel-result"></div>
   </section>
 
+  <section id="gear-ratio-rpm" class="view tab-panel">
+    <h2>Gear Ratio / RPM Calculator</h2>
+    <p class="hint">Calculate vehicle speed from engine RPM, or the RPM needed for a target speed, given the gearbox ratio, final drive ratio, and tyre diameter.</p>
+
+    <div class="field">
+      <label for="gearrpm-mode">Solve for</label>
+      <select id="gearrpm-mode">
+        <option value="speed">Speed (from engine RPM)</option>
+        <option value="rpm">Engine RPM (from target speed)</option>
+      </select>
+    </div>
+
+    <div class="field" id="gearrpm-speed-fields">
+      <label for="gearrpm-engine-rpm">Engine RPM</label>
+      <input type="number" id="gearrpm-engine-rpm" min="0" step="1" placeholder="e.g. 3000">
+    </div>
+
+    <div class="field" id="gearrpm-rpm-fields" hidden>
+      <label for="gearrpm-target-speed">Target speed (km/h)</label>
+      <input type="number" id="gearrpm-target-speed" min="0" step="0.1" placeholder="e.g. 75.25">
+    </div>
+
+    <div class="field">
+      <label for="gearrpm-gear-ratio">Gear ratio</label>
+      <input type="number" id="gearrpm-gear-ratio" min="0" step="0.001" placeholder="e.g. 1.310">
+    </div>
+    <div class="field">
+      <label for="gearrpm-final-drive">Final drive / differential ratio</label>
+      <input type="number" id="gearrpm-final-drive" min="0" step="0.01" placeholder="e.g. 3.73">
+    </div>
+    <div class="field">
+      <label for="gearrpm-tyre-diameter">Tyre diameter (mm)</label>
+      <input type="number" id="gearrpm-tyre-diameter" min="0" step="0.1" placeholder="e.g. 650.24">
+    </div>
+
+    <button class="calc-btn" id="gearrpm-calc">Calculate</button>
+    <div class="result" id="gearrpm-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

@@ -276,6 +276,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Roughly estimate a car\'s 0-100 km/h (or other target speed) acceleration time from its weight and power.',
     keywords: ['acceleration', '0-100', '0-60', 'zero to sixty', 'kinetic energy', 'power to weight', 'cars'],
   },
+  {
+    id: 'gear-ratio-rpm',
+    name: 'Gear Ratio / RPM Calculator',
+    category: 'Cars',
+    description: 'Calculate vehicle speed from engine RPM, or the RPM needed for a target speed, given gear ratio, final drive ratio, and tyre diameter.',
+    keywords: ['gear ratio', 'rpm', 'final drive', 'differential', 'tyre diameter', 'speed', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

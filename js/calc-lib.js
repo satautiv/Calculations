@@ -954,6 +954,30 @@ function accelerationTimeEstimate(massKg, powerWatts, efficiency = 0.40, targetS
   return { timeSeconds, targetSpeedKmh };
 }
 
+// Gear ratio / RPM <-> speed conversion. wheel_rpm = engine_rpm / (gear_ratio
+// * final_drive_ratio); speed_kmh = wheel_rpm * tyre_circumference_m * 60 / 1000.
+// Tyre circumference derived from a direct mm diameter input (circumference =
+// pi * diameter_m).
+function tyreCircumferenceFromDiameterMm(tyreDiameterMm) {
+  return Math.PI * (tyreDiameterMm / 1000);
+}
+
+function speedFromRpm(engineRpm, gearRatio, finalDriveRatio, tyreDiameterMm) {
+  const circumferenceM = tyreCircumferenceFromDiameterMm(tyreDiameterMm);
+  const wheelRpm = engineRpm / (gearRatio * finalDriveRatio);
+  const speedKmh = (wheelRpm * circumferenceM * 60) / 1000;
+  return { wheelRpm, speedKmh };
+}
+
+// Inverse of speedFromRpm: given a target speed, find the wheel RPM and the
+// engine RPM (in the given gear) needed to produce it.
+function rpmFromSpeed(speedKmh, gearRatio, finalDriveRatio, tyreDiameterMm) {
+  const circumferenceM = tyreCircumferenceFromDiameterMm(tyreDiameterMm);
+  const wheelRpm = (speedKmh * 1000) / (circumferenceM * 60);
+  const engineRpm = wheelRpm * gearRatio * finalDriveRatio;
+  return { wheelRpm, engineRpm };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1034,5 +1058,8 @@ if (typeof module !== 'undefined' && module.exports) {
     lbftToNm,
     powerFromTorqueNmAndRpm,
     accelerationTimeEstimate,
+    tyreCircumferenceFromDiameterMm,
+    speedFromRpm,
+    rpmFromSpeed,
   };
 }

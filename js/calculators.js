@@ -2566,3 +2566,62 @@ document.getElementById('accel-calc').addEventListener('click', () => {
     <div class="hint">This is a rough estimate, not a precise prediction &mdash; actual acceleration depends heavily on gearing, traction, and the engine's torque curve.</div>
   `;
 });
+
+// --- Gear Ratio / RPM calculator ---
+document.getElementById('gearrpm-mode').addEventListener('change', (e) => {
+  const isRpmMode = e.target.value === 'rpm';
+  document.getElementById('gearrpm-speed-fields').hidden = isRpmMode;
+  document.getElementById('gearrpm-rpm-fields').hidden = !isRpmMode;
+});
+
+document.getElementById('gearrpm-calc').addEventListener('click', () => {
+  const mode = document.getElementById('gearrpm-mode').value;
+  const gearRatio = parseFloat(document.getElementById('gearrpm-gear-ratio').value);
+  const finalDrive = parseFloat(document.getElementById('gearrpm-final-drive').value);
+  const tyreDiameterMm = parseFloat(document.getElementById('gearrpm-tyre-diameter').value);
+
+  if (isNaN(gearRatio) || gearRatio <= 0) {
+    showError('gearrpm-result', 'Enter a valid gear ratio greater than zero.');
+    return;
+  }
+
+  if (isNaN(finalDrive) || finalDrive <= 0) {
+    showError('gearrpm-result', 'Enter a valid final drive ratio greater than zero.');
+    return;
+  }
+
+  if (isNaN(tyreDiameterMm) || tyreDiameterMm <= 0) {
+    showError('gearrpm-result', 'Enter a valid tyre diameter greater than zero.');
+    return;
+  }
+
+  if (mode === 'speed') {
+    const engineRpm = parseFloat(document.getElementById('gearrpm-engine-rpm').value);
+    if (isNaN(engineRpm) || engineRpm <= 0) {
+      showError('gearrpm-result', 'Enter a valid engine RPM greater than zero.');
+      return;
+    }
+
+    const { wheelRpm, speedKmh } = speedFromRpm(engineRpm, gearRatio, finalDrive, tyreDiameterMm);
+
+    document.getElementById('gearrpm-result').innerHTML = `
+      <div class="headline">${speedKmh.toFixed(2)} km/h</div>
+      <div>Speed at ${engineRpm} engine RPM</div>
+      <div class="hint">Wheel RPM: ${wheelRpm.toFixed(1)}</div>
+    `;
+  } else {
+    const targetSpeed = parseFloat(document.getElementById('gearrpm-target-speed').value);
+    if (isNaN(targetSpeed) || targetSpeed <= 0) {
+      showError('gearrpm-result', 'Enter a valid target speed greater than zero.');
+      return;
+    }
+
+    const { wheelRpm, engineRpm } = rpmFromSpeed(targetSpeed, gearRatio, finalDrive, tyreDiameterMm);
+
+    document.getElementById('gearrpm-result').innerHTML = `
+      <div class="headline">${engineRpm.toFixed(0)} RPM</div>
+      <div>Engine RPM needed for ${targetSpeed} km/h</div>
+      <div class="hint">Wheel RPM: ${wheelRpm.toFixed(1)}</div>
+    `;
+  }
+});
