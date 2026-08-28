@@ -1478,3 +1478,89 @@ document.getElementById('hydration-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Salary after tax calculator ---
+const DEFAULT_TAX_BRACKETS = [
+  { from: 0, rate: 0 },
+  { from: 10000, rate: 20 },
+  { from: 30000, rate: 35 },
+];
+
+function addTaxBracketRow(from = '', rate = '') {
+  const row = document.createElement('div');
+  row.className = 'tax-bracket-row';
+  row.innerHTML = `
+    <input type="number" class="tax-bracket-from" aria-label="Bracket starts at" min="0" step="0.01" value="${from}" placeholder="e.g. 10000">
+    <input type="number" class="tax-bracket-rate" aria-label="Bracket rate percent" min="0" max="100" step="0.1" value="${rate}" placeholder="e.g. 20">
+    <button type="button" class="tax-bracket-remove-btn" aria-label="Remove bracket">&times;</button>
+  `;
+  document.getElementById('tax-bracket-list').appendChild(row);
+}
+
+DEFAULT_TAX_BRACKETS.forEach(b => addTaxBracketRow(b.from, b.rate));
+
+document.getElementById('tax-bracket-add').addEventListener('click', () => addTaxBracketRow());
+
+document.getElementById('tax-bracket-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tax-bracket-remove-btn');
+  if (!btn) return;
+  btn.closest('.tax-bracket-row').remove();
+});
+
+document.getElementById('salary-calc').addEventListener('click', () => {
+  const grossRaw = parseFloat(document.getElementById('salary-gross').value);
+  const period = document.getElementById('salary-period').value;
+  const ssRate = parseFloat(document.getElementById('salary-ss-rate').value);
+
+  if (!grossRaw || grossRaw <= 0) {
+    showError('salary-result', 'Enter a valid gross salary greater than zero.');
+    return;
+  }
+
+  if (isNaN(ssRate) || ssRate < 0 || ssRate > 100) {
+    showError('salary-result', 'Enter a valid social security rate between 0 and 100%.');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#tax-bracket-list .tax-bracket-row');
+  const brackets = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const from = parseFloat(row.querySelector('.tax-bracket-from').value);
+    const rate = parseFloat(row.querySelector('.tax-bracket-rate').value);
+
+    if (isNaN(from) || from < 0 || isNaN(rate) || rate < 0 || rate > 100) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    brackets.push({ from, rate: rate / 100 });
+  });
+
+  if (hasInvalidRow) {
+    showError('salary-result', 'Enter a valid, non-negative "from" amount and a rate between 0 and 100% for every bracket.');
+    return;
+  }
+
+  if (brackets.length === 0) {
+    showError('salary-result', 'Add at least one tax bracket.');
+    return;
+  }
+
+  for (let i = 1; i < brackets.length; i++) {
+    if (brackets[i].from <= brackets[i - 1].from) {
+      showError('salary-result', 'Bracket "from" amounts must be in strictly ascending order.');
+      return;
+    }
+  }
+
+  const grossAnnual = period === 'monthly' ? grossRaw * 12 : grossRaw;
+  const { tax, socialSecurity, netIncome, netMonthly, effectiveRate } = salaryAfterTax(grossAnnual, brackets, ssRate);
+
+  document.getElementById('salary-result').innerHTML = `
+    <div class="headline">${formatMoney(netIncome)} / year net</div>
+    <div>${formatMoney(netMonthly)} / month &middot; Effective tax + social security rate: ${effectiveRate.toFixed(1)}%</div>
+    <div class="hint">Income tax: ${formatMoney(tax)} &middot; Social security: ${formatMoney(socialSecurity)}</div>
+  `;
+});

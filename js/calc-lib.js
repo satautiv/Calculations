@@ -519,6 +519,38 @@ function doughWaterForHydration(hydrationPercent, flourWeight) {
   return (hydrationPercent / 100) * flourWeight;
 }
 
+// Progressive ("marginal") bracket tax: each bracket's rate applies only to
+// the slice of income between its own `from` and the next bracket's `from`
+// (or to everything above `from` for the top bracket), not the whole income.
+// `brackets` is [{ from, rate }] where rate is a decimal (0.2 for 20%).
+function calculateProgressiveTax(grossIncome, brackets) {
+  const sorted = [...brackets].sort((a, b) => a.from - b.from);
+  let tax = 0;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const { from, rate } = sorted[i];
+    if (grossIncome <= from) break;
+
+    const nextFrom = i + 1 < sorted.length ? sorted[i + 1].from : Infinity;
+    const sliceTop = Math.min(grossIncome, nextFrom);
+    tax += (sliceTop - from) * rate;
+  }
+
+  return tax;
+}
+
+// Net take-home pay after progressive income tax and a flat social-security
+// style deduction on gross income. Net income is clamped at 0 rather than
+// going negative if a misconfigured bracket table over-deducts.
+function salaryAfterTax(grossAnnualIncome, brackets, socialSecurityRatePercent) {
+  const tax = calculateProgressiveTax(grossAnnualIncome, brackets);
+  const socialSecurity = grossAnnualIncome * (socialSecurityRatePercent / 100);
+  const netIncome = Math.max(0, grossAnnualIncome - tax - socialSecurity);
+  const effectiveRate = grossAnnualIncome > 0 ? ((tax + socialSecurity) / grossAnnualIncome) * 100 : 0;
+
+  return { tax, socialSecurity, netIncome, netMonthly: netIncome / 12, effectiveRate };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -571,5 +603,7 @@ if (typeof module !== 'undefined' && module.exports) {
     minutesToTimeLabel,
     doughHydrationPercent,
     doughWaterForHydration,
+    calculateProgressiveTax,
+    salaryAfterTax,
   };
 }

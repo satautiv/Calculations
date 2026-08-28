@@ -157,6 +157,13 @@ const CALCULATOR_REGISTRY = [
     description: "Calculate a dough's hydration percentage, or the water needed for a target hydration.",
     keywords: ['dough hydration', 'baking', 'bread', 'water percentage'],
   },
+  {
+    id: 'salary-after-tax',
+    name: 'Salary After Tax',
+    category: 'Finance',
+    description: 'Calculate net take-home pay from gross salary using your own tax brackets.',
+    keywords: ['salary', 'tax', 'take home pay', 'net income', 'tax brackets'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
