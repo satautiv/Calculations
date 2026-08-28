@@ -621,6 +621,43 @@
     <div class="result" id="tz-result"></div>
   </section>
 
+  <section id="dough-hydration" class="view tab-panel">
+    <h2>Dough Hydration Calculator</h2>
+    <p class="hint">Typical bread doughs range roughly 60-100% hydration.</p>
+    <div class="field">
+      <label for="hydration-mode">Mode</label>
+      <select id="hydration-mode">
+        <option value="weights-to-percent">Weights &rarr; Hydration %</option>
+        <option value="percent-to-weight">Hydration % &rarr; Water weight</option>
+      </select>
+    </div>
+
+    <div id="hydration-weights-fields">
+      <div class="field">
+        <label for="hydration-flour-weight">Flour weight (g)</label>
+        <input type="number" id="hydration-flour-weight" min="0" step="0.1" placeholder="e.g. 1000">
+      </div>
+      <div class="field">
+        <label for="hydration-water-weight">Water weight (g)</label>
+        <input type="number" id="hydration-water-weight" min="0" step="0.1" placeholder="e.g. 700">
+      </div>
+    </div>
+
+    <div id="hydration-percent-fields" hidden>
+      <div class="field">
+        <label for="hydration-target-percent">Target hydration (%)</label>
+        <input type="number" id="hydration-target-percent" min="0" step="0.1" placeholder="e.g. 65">
+      </div>
+      <div class="field">
+        <label for="hydration-flour-weight-2">Flour weight (g)</label>
+        <input type="number" id="hydration-flour-weight-2" min="0" step="0.1" placeholder="e.g. 500">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="hydration-calc">Calculate</button>
+    <div class="result" id="hydration-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

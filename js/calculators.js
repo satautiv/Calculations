@@ -1425,3 +1425,56 @@ document.getElementById('tz-calc').addEventListener('click', () => {
     <div>Destination time (${formatDayOffsetLabel(dayOffset)})</div>
   `;
 });
+
+// --- Dough hydration calculator ---
+document.getElementById('hydration-mode').addEventListener('change', (e) => {
+  const isPercentMode = e.target.value === 'percent-to-weight';
+  document.getElementById('hydration-weights-fields').hidden = isPercentMode;
+  document.getElementById('hydration-percent-fields').hidden = !isPercentMode;
+});
+
+document.getElementById('hydration-calc').addEventListener('click', () => {
+  const mode = document.getElementById('hydration-mode').value;
+
+  if (mode === 'weights-to-percent') {
+    const flourWeight = parseFloat(document.getElementById('hydration-flour-weight').value);
+    const waterWeight = parseFloat(document.getElementById('hydration-water-weight').value);
+
+    if (!flourWeight || flourWeight <= 0) {
+      showError('hydration-result', 'Enter a valid flour weight greater than zero.');
+      return;
+    }
+
+    if (isNaN(waterWeight) || waterWeight < 0) {
+      showError('hydration-result', 'Enter a valid, non-negative water weight.');
+      return;
+    }
+
+    const hydration = doughHydrationPercent(flourWeight, waterWeight);
+
+    document.getElementById('hydration-result').innerHTML = `
+      <div class="headline">${hydration.toFixed(1)}%</div>
+      <div>Hydration (${waterWeight} g water &divide; ${flourWeight} g flour)</div>
+    `;
+  } else {
+    const targetPercent = parseFloat(document.getElementById('hydration-target-percent').value);
+    const flourWeight = parseFloat(document.getElementById('hydration-flour-weight-2').value);
+
+    if (isNaN(targetPercent) || targetPercent < 0) {
+      showError('hydration-result', 'Enter a valid, non-negative target hydration percentage.');
+      return;
+    }
+
+    if (!flourWeight || flourWeight <= 0) {
+      showError('hydration-result', 'Enter a valid flour weight greater than zero.');
+      return;
+    }
+
+    const water = doughWaterForHydration(targetPercent, flourWeight);
+
+    document.getElementById('hydration-result').innerHTML = `
+      <div class="headline">${water.toFixed(1)} g water</div>
+      <div>Needed for ${targetPercent}% hydration with ${flourWeight} g flour</div>
+    `;
+  }
+});

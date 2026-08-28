@@ -510,6 +510,15 @@ function minutesToTimeLabel(minutes) {
   return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 }
 
+// Dough hydration = water weight as a percentage of flour weight.
+function doughHydrationPercent(flourWeight, waterWeight) {
+  return (waterWeight / flourWeight) * 100;
+}
+
+function doughWaterForHydration(hydrationPercent, flourWeight) {
+  return (hydrationPercent / 100) * flourWeight;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -560,5 +569,7 @@ if (typeof module !== 'undefined' && module.exports) {
     coffeeDoseForWater,
     convertTimeZone,
     minutesToTimeLabel,
+    doughHydrationPercent,
+    doughWaterForHydration,
   };
 }
