@@ -1222,6 +1222,31 @@
     <div class="result" id="engpt-result"></div>
   </section>
 
+  <section id="acceleration-estimator" class="view tab-panel">
+    <h2>0-100 km/h Acceleration Estimator</h2>
+    <p class="hint">Rough estimate of acceleration time using a simplified kinetic-energy model. This is a ballpark figure, not a precise prediction &mdash; real acceleration also depends heavily on gearing, traction, and the engine's torque curve.</p>
+
+    <div class="field">
+      <label for="accel-mass">Vehicle mass (kg)</label>
+      <input type="number" id="accel-mass" min="0" step="1" placeholder="e.g. 1525 (kerb weight + ~75 kg for driver)">
+    </div>
+    <div class="field">
+      <label for="accel-power">Engine power (kW)</label>
+      <input type="number" id="accel-power" min="0" step="0.1" placeholder="e.g. 375">
+    </div>
+    <div class="field">
+      <label for="accel-efficiency">Efficiency factor (optional)</label>
+      <input type="number" id="accel-efficiency" min="0" max="1" step="0.01" placeholder="Default 0.40 (typical range 0.35-0.45)">
+    </div>
+    <div class="field">
+      <label for="accel-target-speed">Target speed, km/h (optional)</label>
+      <input type="number" id="accel-target-speed" min="0" step="1" placeholder="Default 100">
+    </div>
+
+    <button class="calc-btn" id="accel-calc">Calculate</button>
+    <div class="result" id="accel-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

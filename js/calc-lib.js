@@ -941,6 +941,19 @@ function powerFromTorqueNmAndRpm(torqueNm, rpm) {
   return (torqueNm * rpm) / 9548.8;
 }
 
+// Rough 0-100 km/h (or other target speed) acceleration time estimate using
+// the kinetic-energy method: t = (m * v^2) / (2 * P * eta), treating the
+// engine as delivering an effective average power (eta, typically 0.35-0.45)
+// over the run rather than modeling gearing/traction/torque curve in detail.
+// v is converted from km/h to m/s with the exact factor (/3.6), not a
+// rounded intermediate. Assumes the DOM layer has already validated that
+// mass, power, efficiency, and target speed are all positive.
+function accelerationTimeEstimate(massKg, powerWatts, efficiency = 0.40, targetSpeedKmh = 100) {
+  const targetSpeedMs = targetSpeedKmh / 3.6;
+  const timeSeconds = (massKg * targetSpeedMs ** 2) / (2 * powerWatts * efficiency);
+  return { timeSeconds, targetSpeedKmh };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1020,5 +1033,6 @@ if (typeof module !== 'undefined' && module.exports) {
     nmToLbft,
     lbftToNm,
     powerFromTorqueNmAndRpm,
+    accelerationTimeEstimate,
   };
 }

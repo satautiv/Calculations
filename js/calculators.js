@@ -2522,3 +2522,47 @@ document.getElementById('engpt-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- 0-100 km/h Acceleration Estimator calculator ---
+document.getElementById('accel-calc').addEventListener('click', () => {
+  const mass = parseFloat(document.getElementById('accel-mass').value);
+  const powerKw = parseFloat(document.getElementById('accel-power').value);
+  const efficiencyRaw = document.getElementById('accel-efficiency').value;
+  const targetSpeedRaw = document.getElementById('accel-target-speed').value;
+
+  if (isNaN(mass) || mass <= 0) {
+    showError('accel-result', 'Enter a valid vehicle mass greater than zero.');
+    return;
+  }
+
+  if (isNaN(powerKw) || powerKw <= 0) {
+    showError('accel-result', 'Enter a valid engine power greater than zero.');
+    return;
+  }
+
+  const efficiency = efficiencyRaw === '' ? 0.40 : parseFloat(efficiencyRaw);
+  if (isNaN(efficiency) || efficiency <= 0 || efficiency > 1) {
+    showError('accel-result', 'Enter a valid efficiency factor greater than 0 and up to 1.');
+    return;
+  }
+
+  const targetSpeedKmh = targetSpeedRaw === '' ? 100 : parseFloat(targetSpeedRaw);
+  if (isNaN(targetSpeedKmh) || targetSpeedKmh <= 0) {
+    showError('accel-result', 'Enter a valid target speed greater than zero.');
+    return;
+  }
+
+  const efficiencyWarning = (efficiency < 0.35 || efficiency > 0.45)
+    ? '<div class="hint">Note: typical efficiency factors are 0.35-0.45; this value is outside that range.</div>'
+    : '';
+
+  const powerWatts = powerKw * 1000;
+  const { timeSeconds } = accelerationTimeEstimate(mass, powerWatts, efficiency, targetSpeedKmh);
+
+  document.getElementById('accel-result').innerHTML = `
+    <div class="headline">${timeSeconds.toFixed(2)} s</div>
+    <div>Estimated 0-${targetSpeedKmh} km/h time</div>
+    ${efficiencyWarning}
+    <div class="hint">This is a rough estimate, not a precise prediction &mdash; actual acceleration depends heavily on gearing, traction, and the engine's torque curve.</div>
+  `;
+});
