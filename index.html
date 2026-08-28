@@ -1567,6 +1567,40 @@
     <div class="result" id="luggage-result"></div>
   </section>
 
+  <section id="average-weighted-average-calculator" class="view tab-panel">
+    <h2>Average / Weighted Average Calculator</h2>
+    <p class="hint">Find the simple arithmetic mean of a list of numbers, or a weighted average where each value counts more or less depending on its weight.</p>
+
+    <div class="field">
+      <label for="avgw-mode">Mode</label>
+      <select id="avgw-mode">
+        <option value="simple">Simple average</option>
+        <option value="weighted">Weighted average</option>
+      </select>
+    </div>
+
+    <div id="avgw-simple-fields">
+      <div class="field">
+        <label for="avgw-simple-values">Values (comma-separated)</label>
+        <input type="text" id="avgw-simple-values" placeholder="e.g. 4, 8, 6, 10">
+      </div>
+    </div>
+
+    <div id="avgw-weighted-fields" hidden>
+      <div class="field">
+        <label for="avgw-weighted-values">Values (comma-separated)</label>
+        <input type="text" id="avgw-weighted-values" placeholder="e.g. 90, 70">
+      </div>
+      <div class="field">
+        <label for="avgw-weighted-weights">Weights (comma-separated, same order)</label>
+        <input type="text" id="avgw-weighted-weights" placeholder="e.g. 3, 1">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="avgw-calc">Calculate</button>
+    <div class="result" id="avgw-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
