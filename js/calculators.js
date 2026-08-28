@@ -2956,3 +2956,97 @@ document.getElementById('frac-calc').addEventListener('click', () => {
     <div>Decimal: ${decimalLabel}</div>
   `;
 });
+
+// --- Ratio & Proportion calculator ---
+document.getElementById('ratio-mode').addEventListener('change', (e) => {
+  const isProportion = e.target.value === 'proportion';
+  document.getElementById('ratio-simplify-fields').hidden = isProportion;
+  document.getElementById('ratio-proportion-fields').hidden = !isProportion;
+});
+
+// Trims trailing floating-point noise for display (e.g. 2.6666666666666665 -> 2.6667).
+function formatRatioValue(value) {
+  return parseFloat(value.toFixed(4)).toString();
+}
+
+const RATIO_PROPORTION_KEYS = ['a', 'b', 'c', 'd'];
+
+// Whichever key is unknown, cross-multiplication (a*d = b*c) always divides
+// by the value diagonally opposite it in the proportion a:b = c:d.
+const RATIO_PROPORTION_DIVISOR_KEY = { a: 'd', b: 'c', c: 'b', d: 'a' };
+
+document.getElementById('ratio-calc').addEventListener('click', () => {
+  const mode = document.getElementById('ratio-mode').value;
+
+  if (mode === 'simplify') {
+    const a = parseFloat(document.getElementById('ratio-simplify-a').value);
+    const b = parseFloat(document.getElementById('ratio-simplify-b').value);
+
+    if (isNaN(a) || isNaN(b)) {
+      showError('ratio-result', 'Enter valid numbers for both A and B.');
+      return;
+    }
+
+    if (a === 0 && b === 0) {
+      showError('ratio-result', 'A and B cannot both be zero &mdash; the ratio is undefined.');
+      return;
+    }
+
+    const simplified = simplifyRatio(a, b);
+
+    document.getElementById('ratio-result').innerHTML = `
+      <div class="headline">${formatRatioValue(simplified.a)}:${formatRatioValue(simplified.b)}</div>
+      <div>${a}:${b} simplifies to ${formatRatioValue(simplified.a)}:${formatRatioValue(simplified.b)}</div>
+    `;
+  } else {
+    const rawValues = {
+      a: document.getElementById('ratio-a').value.trim(),
+      b: document.getElementById('ratio-b').value.trim(),
+      c: document.getElementById('ratio-c').value.trim(),
+      d: document.getElementById('ratio-d').value.trim(),
+    };
+
+    const blankKeys = RATIO_PROPORTION_KEYS.filter((key) => rawValues[key] === '');
+
+    if (blankKeys.length !== 1) {
+      showError('ratio-result', 'Leave exactly one of A, B, C, D blank &mdash; that’s the value to solve for.');
+      return;
+    }
+
+    const unknownKey = blankKeys[0];
+    const values = {};
+
+    for (const key of RATIO_PROPORTION_KEYS) {
+      if (key === unknownKey) {
+        values[key] = null;
+        continue;
+      }
+      const parsed = parseFloat(rawValues[key]);
+      if (isNaN(parsed)) {
+        showError('ratio-result', 'Enter valid numbers for the three known values.');
+        return;
+      }
+      values[key] = parsed;
+    }
+
+    const divisorKey = RATIO_PROPORTION_DIVISOR_KEY[unknownKey];
+
+    if (values[divisorKey] === 0) {
+      showError('ratio-result', 'That combination of values is undefined (it would divide by zero).');
+      return;
+    }
+
+    const solved = solveProportion(values, unknownKey);
+    const resolved = { ...values, [unknownKey]: solved };
+
+    const leftBefore = `${unknownKey === 'a' ? '?' : formatRatioValue(values.a)}:${unknownKey === 'b' ? '?' : formatRatioValue(values.b)}`;
+    const rightBefore = `${unknownKey === 'c' ? '?' : formatRatioValue(values.c)}:${unknownKey === 'd' ? '?' : formatRatioValue(values.d)}`;
+    const leftAfter = `${formatRatioValue(resolved.a)}:${formatRatioValue(resolved.b)}`;
+    const rightAfter = `${formatRatioValue(resolved.c)}:${formatRatioValue(resolved.d)}`;
+
+    document.getElementById('ratio-result').innerHTML = `
+      <div class="headline">${unknownKey.toUpperCase()} = ${formatRatioValue(solved)}</div>
+      <div>${leftBefore} = ${rightBefore} &rarr; the missing value is ${formatRatioValue(solved)}, so ${leftAfter} = ${rightAfter}</div>
+    `;
+  }
+});

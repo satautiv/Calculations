@@ -1132,6 +1132,38 @@ function fractionArithmetic(a, b, c, d, operation) {
   };
 }
 
+// --- Ratio & Proportion calculator ---
+
+// Reduces a ratio a:b to lowest terms using gcd. Assumes the DOM layer has
+// already validated that a and b aren't both zero (a:b is undefined in that
+// case). gcd(0, n) = n means a 0:n ratio simplifies to 0:1, which falls out
+// naturally without special-casing.
+function simplifyRatio(a, b) {
+  const divisor = gcd(a, b);
+  return { a: a / divisor, b: b / divisor };
+}
+
+// Solves a proportion a:b = c:d for whichever single value is unknown, via
+// cross-multiplication (a*d = b*c). `values` holds the three known numbers
+// keyed by 'a'|'b'|'c'|'d' (the unknown key's own entry is ignored).
+// `unknownKey` selects which one to solve for. Assumes the DOM layer has
+// already validated that the divisor in the resulting formula isn't zero.
+function solveProportion(values, unknownKey) {
+  const { a, b, c, d } = values;
+  switch (unknownKey) {
+    case 'a':
+      return (b * c) / d;
+    case 'b':
+      return (a * d) / c;
+    case 'c':
+      return (a * d) / b;
+    case 'd':
+      return (b * c) / a;
+    default:
+      throw new Error(`Unknown key: ${unknownKey}`);
+  }
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1228,5 +1260,7 @@ if (typeof module !== 'undefined' && module.exports) {
     gcd,
     simplifyFraction,
     fractionArithmetic,
+    simplifyRatio,
+    solveProportion,
   };
 }
