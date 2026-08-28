@@ -66,6 +66,8 @@ const {
   lbftToNm,
   powerFromTorqueNmAndRpm,
   accelerationTimeEstimate,
+  speedFromRpm,
+  rpmFromSpeed,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1266,5 +1268,24 @@ describe('accelerationTimeEstimate', () => {
     const to200 = accelerationTimeEstimate(1600, 375000, 0.40, 200).timeSeconds;
     // kinetic energy scales with v^2, so doubling target speed quadruples the time
     expect(to200).toBeCloseTo(to100 * 4, 6);
+  });
+});
+
+describe('Gear Ratio / RPM calculator', () => {
+  test('speedFromRpm matches the worked example: 3000 RPM, 1.310 gear ratio, 3.73 final drive, 650.24 mm tyre -> ~75.25 km/h', () => {
+    const { wheelRpm, speedKmh } = speedFromRpm(3000, 1.310, 3.73, 650.24);
+    expect(wheelRpm).toBeCloseTo(613.961484149561, 6);
+    expect(speedKmh).toBeCloseTo(75.25, 2);
+  });
+
+  test('rpmFromSpeed is the inverse of speedFromRpm: recovers ~3000 RPM from the worked example speed', () => {
+    const { engineRpm } = rpmFromSpeed(75.25163360265249, 1.310, 3.73, 650.24);
+    expect(engineRpm).toBeCloseTo(3000, 1);
+  });
+
+  test('a taller (higher) final drive ratio gives a lower speed for the same RPM', () => {
+    const lowerFinalDrive = speedFromRpm(3000, 1.310, 3.42, 650.24).speedKmh;
+    const higherFinalDrive = speedFromRpm(3000, 1.310, 3.73, 650.24).speedKmh;
+    expect(higherFinalDrive).toBeLessThan(lowerFinalDrive);
   });
 });
