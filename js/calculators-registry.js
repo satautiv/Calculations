@@ -318,6 +318,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Find X% of Y, work out what percent one number is of another, or calculate the percentage increase or decrease between two values.',
     keywords: ['percentage', 'percent', 'percent of', 'percent change', 'increase', 'decrease', 'general'],
   },
+  {
+    id: 'fraction-calculator',
+    name: 'Fraction Calculator',
+    category: 'General',
+    description: 'Add, subtract, multiply, or divide two fractions, with the result simplified to lowest terms, a mixed-number form, and a decimal equivalent.',
+    keywords: ['fraction', 'fractions', 'simplify', 'lowest terms', 'mixed number', 'numerator', 'denominator', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

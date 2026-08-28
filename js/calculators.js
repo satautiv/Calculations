@@ -2903,3 +2903,56 @@ document.getElementById('pct-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Fraction calculator ---
+const FRACTION_OPERATION_SYMBOLS = { add: '+', subtract: '−', multiply: '×', divide: '÷' };
+
+document.getElementById('frac-calc').addEventListener('click', () => {
+  const aNum = parseFloat(document.getElementById('frac-a-num').value);
+  const aDen = parseFloat(document.getElementById('frac-a-den').value);
+  const bNum = parseFloat(document.getElementById('frac-b-num').value);
+  const bDen = parseFloat(document.getElementById('frac-b-den').value);
+  const operation = document.getElementById('frac-operation').value;
+
+  if (
+    isNaN(aNum) || isNaN(aDen) || isNaN(bNum) || isNaN(bDen) ||
+    !Number.isInteger(aNum) || !Number.isInteger(aDen) ||
+    !Number.isInteger(bNum) || !Number.isInteger(bDen)
+  ) {
+    showError('frac-result', 'Enter whole numbers for both fractions’ numerators and denominators.');
+    return;
+  }
+
+  if (aDen === 0 || bDen === 0) {
+    showError('frac-result', 'Denominators must not be zero.');
+    return;
+  }
+
+  if (operation === 'divide' && bNum === 0) {
+    showError('frac-result', 'Cannot divide by a fraction with a numerator of zero.');
+    return;
+  }
+
+  const { numerator, denominator, decimal, wholePart, remainderNumerator } =
+    fractionArithmetic(aNum, aDen, bNum, bDen, operation);
+
+  const fractionLabel = numerator === 0
+    ? '0'
+    : denominator === 1
+      ? `${numerator}`
+      : `${numerator}/${denominator}`;
+
+  const mixedLabel = wholePart !== 0 && remainderNumerator !== 0
+    ? `${wholePart} ${remainderNumerator}/${denominator}`
+    : null;
+
+  const decimalLabel = parseFloat(decimal.toFixed(4)).toString();
+  const symbol = FRACTION_OPERATION_SYMBOLS[operation];
+
+  document.getElementById('frac-result').innerHTML = `
+    <div class="headline">${fractionLabel}</div>
+    <div>${aNum}/${aDen} ${symbol} ${bNum}/${bDen} = ${fractionLabel}</div>
+    ${mixedLabel ? `<div>Mixed number: ${mixedLabel}</div>` : ''}
+    <div>Decimal: ${decimalLabel}</div>
+  `;
+});

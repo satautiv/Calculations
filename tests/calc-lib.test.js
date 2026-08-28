@@ -78,6 +78,9 @@ const {
   percentOf,
   whatPercentOf,
   percentageChange,
+  gcd,
+  simplifyFraction,
+  fractionArithmetic,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1430,5 +1433,81 @@ describe('Percentage calculator', () => {
     // (25 / -50) * 100 = -50. Dividing by a negative base flips the sign versus
     // the plain-magnitude case, which is expected behavior for this formula.
     expect(percentageChange(-50, -25)).toBeCloseTo(-50, 10);
+  });
+});
+
+describe('Fraction calculator', () => {
+  describe('gcd', () => {
+    test('finds the greatest common divisor of two positive integers', () => {
+      expect(gcd(24, 36)).toBe(12);
+    });
+
+    test('treats gcd(0, n) as n', () => {
+      expect(gcd(0, 5)).toBe(5);
+    });
+
+    test('ignores sign, working on magnitudes', () => {
+      expect(gcd(-24, 36)).toBe(12);
+    });
+  });
+
+  describe('simplifyFraction', () => {
+    test('reduces a fraction to lowest terms', () => {
+      expect(simplifyFraction(6, 24)).toEqual({ numerator: 1, denominator: 4 });
+    });
+
+    test('normalizes a negative denominator by moving the sign to the numerator', () => {
+      expect(simplifyFraction(3, -4)).toEqual({ numerator: -3, denominator: 4 });
+    });
+
+    test('leaves an already-simplified fraction with a positive denominator unchanged', () => {
+      expect(simplifyFraction(5, 6)).toEqual({ numerator: 5, denominator: 6 });
+    });
+  });
+
+  describe('fractionArithmetic', () => {
+    test('matches the worked example: 1/2 + 1/3 = 5/6', () => {
+      const result = fractionArithmetic(1, 2, 1, 3, 'add');
+      expect(result.numerator).toBe(5);
+      expect(result.denominator).toBe(6);
+      expect(result.decimal).toBeCloseTo(0.8333, 4);
+      expect(result.wholePart).toBe(0);
+      expect(result.remainderNumerator).toBe(5);
+    });
+
+    test('matches the worked example: 2/4 * 3/6 = 1/4 after simplifying', () => {
+      const result = fractionArithmetic(2, 4, 3, 6, 'multiply');
+      expect(result.numerator).toBe(1);
+      expect(result.denominator).toBe(4);
+      expect(result.decimal).toBe(0.25);
+      expect(result.wholePart).toBe(0);
+      expect(result.remainderNumerator).toBe(1);
+    });
+
+    test('matches the worked example: 3/4 / 1/2 = 3/2, a mixed number of 1 1/2', () => {
+      const result = fractionArithmetic(3, 4, 1, 2, 'divide');
+      expect(result.numerator).toBe(3);
+      expect(result.denominator).toBe(2);
+      expect(result.decimal).toBe(1.5);
+      expect(result.wholePart).toBe(1);
+      expect(result.remainderNumerator).toBe(1);
+    });
+
+    test('subtract simplifies to a whole number result', () => {
+      // (5*1 - 1*1) / (1*1) prepared so the raw subtraction lands on a whole
+      // number: 5/1 - 3/1 = (5*1 - 3*1)/(1*1) = 2/1.
+      const result = fractionArithmetic(5, 1, 3, 1, 'subtract');
+      expect(result.numerator).toBe(2);
+      expect(result.denominator).toBe(1);
+      expect(result.wholePart).toBe(2);
+      expect(result.remainderNumerator).toBe(0);
+    });
+
+    test('normalizes a negative result so the sign lives on the numerator', () => {
+      const result = fractionArithmetic(1, 3, 1, 2, 'subtract');
+      expect(result.numerator).toBe(-1);
+      expect(result.denominator).toBe(6);
+      expect(result.decimal).toBeCloseTo(-0.1667, 4);
+    });
   });
 });
