@@ -199,6 +199,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Project savings at retirement age and count down the years and days remaining.',
     keywords: ['retirement', 'savings', 'projection', 'countdown', 'fire'],
   },
+  {
+    id: 'jet-lag-recovery',
+    name: 'Jet Lag Recovery',
+    category: 'Travel',
+    description: 'Estimate how many days it takes to recover from jet lag after crossing time zones.',
+    keywords: ['jet lag', 'time zones', 'travel recovery', 'eastward', 'westward'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

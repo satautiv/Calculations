@@ -1823,3 +1823,52 @@ document.getElementById('retire-calc').addEventListener('click', () => {
     <div class="hint">Time remaining: ${yearsRemaining} year${yearsRemaining === 1 ? '' : 's'} (&asymp;${daysRemaining.toLocaleString()} days)</div>
   `;
 });
+
+// --- Jet lag recovery calculator ---
+document.getElementById('jetlag-mode').addEventListener('change', (e) => {
+  const isOffsets = e.target.value === 'offsets';
+  document.getElementById('jetlag-direct-fields').hidden = isOffsets;
+  document.getElementById('jetlag-offsets-fields').hidden = !isOffsets;
+});
+
+document.getElementById('jetlag-calc').addEventListener('click', () => {
+  const mode = document.getElementById('jetlag-mode').value;
+  let direction, zonesCrossed;
+
+  if (mode === 'direct') {
+    zonesCrossed = parseFloat(document.getElementById('jetlag-zones').value);
+    direction = document.getElementById('jetlag-direction').value;
+
+    if (!zonesCrossed || zonesCrossed <= 0) {
+      showError('jetlag-result', 'Enter a valid number of time zones crossed, greater than zero.');
+      return;
+    }
+  } else {
+    const originOffset = parseFloat(document.getElementById('jetlag-origin-offset').value);
+    const destOffset = parseFloat(document.getElementById('jetlag-dest-offset').value);
+    const isValidOffset = (o) => !isNaN(o) && o >= -12 && o <= 14;
+
+    if (!isValidOffset(originOffset) || !isValidOffset(destOffset)) {
+      showError('jetlag-result', 'Enter valid UTC offsets between -12 and +14.');
+      return;
+    }
+
+    ({ direction, zonesCrossed } = jetLagDirectionFromOffsets(originOffset, destOffset));
+
+    if (direction === 'none') {
+      document.getElementById('jetlag-result').innerHTML = `
+        <div class="headline">No jet lag expected</div>
+        <div>Origin and destination share the same UTC offset.</div>
+      `;
+      return;
+    }
+  }
+
+  const recoveryDays = jetLagRecoveryDays(zonesCrossed, direction);
+
+  document.getElementById('jetlag-result').innerHTML = `
+    <div class="headline">${recoveryDays} day${recoveryDays === 1 ? '' : 's'} to recover</div>
+    <div>${zonesCrossed} time zone${zonesCrossed === 1 ? '' : 's'} crossed ${direction === 'east' ? 'eastward' : 'westward'}</div>
+    <div class="hint">Eastward jet lag tends to be worse than westward for the same number of zones.</div>
+  `;
+});
