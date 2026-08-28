@@ -958,6 +958,37 @@
     <div class="result" id="fire-result"></div>
   </section>
 
+  <section id="petrol-diesel-break-even" class="view tab-panel">
+    <h2>Petrol vs Diesel Break-Even Calculator</h2>
+    <p class="hint">Find the distance or time it takes for a diesel car's lower running costs to offset its higher upfront price.</p>
+    <div class="field">
+      <label for="pdbe-premium">Diesel price premium (over petrol equivalent)</label>
+      <input type="number" id="pdbe-premium" step="0.01" placeholder="e.g. 2000">
+    </div>
+    <div class="field">
+      <label for="pdbe-petrol-consumption">Petrol consumption (L/100km)</label>
+      <input type="number" id="pdbe-petrol-consumption" min="0" step="0.1" placeholder="e.g. 7.0">
+    </div>
+    <div class="field">
+      <label for="pdbe-petrol-price">Petrol price (per liter)</label>
+      <input type="number" id="pdbe-petrol-price" min="0" step="0.01" placeholder="e.g. 1.60">
+    </div>
+    <div class="field">
+      <label for="pdbe-diesel-consumption">Diesel consumption (L/100km)</label>
+      <input type="number" id="pdbe-diesel-consumption" min="0" step="0.1" placeholder="e.g. 5.5">
+    </div>
+    <div class="field">
+      <label for="pdbe-diesel-price">Diesel price (per liter)</label>
+      <input type="number" id="pdbe-diesel-price" min="0" step="0.01" placeholder="e.g. 1.50">
+    </div>
+    <div class="field">
+      <label for="pdbe-annual-mileage">Expected annual mileage (km, optional)</label>
+      <input type="number" id="pdbe-annual-mileage" min="0" step="1" placeholder="e.g. 15000">
+    </div>
+    <button class="calc-btn" id="pdbe-calc">Calculate</button>
+    <div class="result" id="pdbe-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

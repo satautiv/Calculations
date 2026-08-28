@@ -736,6 +736,35 @@ function fireCalculator(annualIncome, annualExpenses, currentSavings, annualRetu
   return { fiTarget, yearsToFI, annualSavings, savingsRatePercent, alreadyFI: false };
 }
 
+// Break-even distance/time for a pricier-upfront diesel vs. a petrol
+// equivalent: how far (and, given an annual mileage, how long) you'd need to
+// drive before the diesel's lower cost-per-km recoups its price premium.
+// If savingsPerKm <= 0 (diesel is no cheaper, or actually more expensive, per
+// km), diesel never breaks even — breakEvenDistanceKm/breakEvenYears are left
+// null rather than a nonsensical negative/infinite distance. A negative
+// pricePremium (diesel actually cheaper upfront) breaks even immediately, so
+// breakEvenDistanceKm is clamped to 0 rather than going negative.
+function petrolDieselBreakEven(pricePremium, petrolConsumption, petrolPrice, dieselConsumption, dieselPrice, annualMileage = null) {
+  const costPerKmPetrol = (petrolConsumption / 100) * petrolPrice;
+  const costPerKmDiesel = (dieselConsumption / 100) * dieselPrice;
+  const savingsPerKm = costPerKmPetrol - costPerKmDiesel;
+
+  const neverBreaksEven = savingsPerKm <= 0;
+  const breakEvenDistanceKm = neverBreaksEven ? null : Math.max(0, pricePremium / savingsPerKm);
+  const breakEvenYears = neverBreaksEven || annualMileage === null
+    ? null
+    : breakEvenDistanceKm / annualMileage;
+
+  return {
+    costPerKmPetrol,
+    costPerKmDiesel,
+    savingsPerKm,
+    breakEvenDistanceKm,
+    breakEvenYears,
+    neverBreaksEven,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -803,5 +832,6 @@ if (typeof module !== 'undefined' && module.exports) {
     evTripCost,
     evCostPer100km,
     fireCalculator,
+    petrolDieselBreakEven,
   };
 }
