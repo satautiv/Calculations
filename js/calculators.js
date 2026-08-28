@@ -2790,3 +2790,46 @@ document.getElementById('woc-calc').addEventListener('click', () => {
     <div class="hint">This is an approximation, not a fitment guarantee &mdash; it doesn't account for suspension travel, steering lock, or fender rolling.</div>
   `;
 });
+
+// --- Roof Box Fuel Penalty calculator ---
+document.getElementById('rbfp-calc').addEventListener('click', () => {
+  const baseConsumption = parseFloat(document.getElementById('rbfp-base-consumption').value);
+  const penaltyPercent = parseFloat(document.getElementById('rbfp-penalty').value);
+  const distance = parseFloat(document.getElementById('rbfp-distance').value);
+  const fuelPrice = parseFloat(document.getElementById('rbfp-fuel-price').value);
+
+  if (!baseConsumption || baseConsumption <= 0) {
+    showError('rbfp-result', 'Enter a valid base fuel consumption greater than zero.');
+    return;
+  }
+
+  if (isNaN(penaltyPercent) || penaltyPercent < 0) {
+    showError('rbfp-result', 'Enter a valid roof box consumption penalty of zero or more.');
+    return;
+  }
+
+  if (!distance || distance <= 0) {
+    showError('rbfp-result', 'Enter a valid trip distance greater than zero.');
+    return;
+  }
+
+  if (!fuelPrice || fuelPrice <= 0) {
+    showError('rbfp-result', 'Enter a valid fuel price greater than zero.');
+    return;
+  }
+
+  const penaltyWarning = penaltyPercent > 100
+    ? '<div class="hint">Note: a penalty above 100% is unusually high &mdash; double check the value.</div>'
+    : '';
+
+  const { newConsumption, extraConsumption, extraFuel, extraCost } = roofBoxFuelPenalty(
+    baseConsumption, penaltyPercent, distance, fuelPrice
+  );
+
+  document.getElementById('rbfp-result').innerHTML = `
+    <div class="headline">${formatMoney(extraCost)} extra for this trip</div>
+    <div>New consumption: ${newConsumption.toFixed(2)} L/100km (+${extraConsumption.toFixed(2)} L/100km) &middot; Extra fuel: ${extraFuel.toFixed(2)} L over ${distance} km</div>
+    ${penaltyWarning}
+    <div class="hint">Real-world roof box penalties are roughly 10-20% at ~100km/h, up to 25-35% for large boxes at higher speeds.</div>
+  `;
+});

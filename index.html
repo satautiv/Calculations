@@ -1387,6 +1387,31 @@
     <div class="result" id="woc-result"></div>
   </section>
 
+  <section id="roof-box-fuel-penalty" class="view tab-panel">
+    <h2>Roof Box Fuel Penalty</h2>
+    <p class="hint">Estimate the extra fuel and cost a roof box adds to a trip from a consumption penalty percentage you enter. Real-world figures are roughly 10-20% at motorway speeds (~100km/h), rising to 25-35% for large boxes at higher speeds.</p>
+
+    <div class="field">
+      <label for="rbfp-base-consumption">Base fuel consumption without roof box (L/100km)</label>
+      <input type="number" id="rbfp-base-consumption" min="0" step="any" placeholder="e.g. 6.0">
+    </div>
+    <div class="field">
+      <label for="rbfp-penalty">Roof box consumption penalty (%)</label>
+      <input type="number" id="rbfp-penalty" min="0" step="any" placeholder="e.g. 20">
+    </div>
+    <div class="field">
+      <label for="rbfp-distance">Trip distance (km)</label>
+      <input type="number" id="rbfp-distance" min="0" step="any" placeholder="e.g. 800">
+    </div>
+    <div class="field">
+      <label for="rbfp-fuel-price">Fuel price per liter</label>
+      <input type="number" id="rbfp-fuel-price" min="0" step="any" placeholder="e.g. 1.60">
+    </div>
+
+    <button class="calc-btn" id="rbfp-calc">Calculate</button>
+    <div class="result" id="rbfp-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

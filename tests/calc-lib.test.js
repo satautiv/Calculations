@@ -74,6 +74,7 @@ const {
   convertCurrency,
   inverseExchangeRate,
   wheelOffsetShift,
+  roofBoxFuelPenalty,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1376,5 +1377,30 @@ describe('Wheel Offset & Clearance (ET) calculator', () => {
     const { outwardShiftMm, inwardShiftMm } = wheelOffsetShift(8, 35, 8, 35);
     expect(outwardShiftMm).toBe(0);
     expect(inwardShiftMm).toBe(0);
+  });
+});
+
+describe('Roof Box Fuel Penalty calculator', () => {
+  test('roofBoxFuelPenalty matches the worked example: 6.0 L/100km, 20% penalty, 800 km, €1.60/L', () => {
+    const { newConsumption, extraConsumption, extraFuel, extraCost } = roofBoxFuelPenalty(6.0, 20, 800, 1.60);
+    expect(extraConsumption).toBeCloseTo(1.2, 5);
+    expect(newConsumption).toBeCloseTo(7.2, 5);
+    expect(extraFuel).toBeCloseTo(9.6, 5);
+    expect(extraCost).toBeCloseTo(15.36, 2);
+  });
+
+  test('roofBoxFuelPenalty produces no extra fuel/cost at a 0% penalty, and newConsumption equals base', () => {
+    const { newConsumption, extraConsumption, extraFuel, extraCost } = roofBoxFuelPenalty(6.0, 0, 800, 1.60);
+    expect(newConsumption).toBe(6.0);
+    expect(extraConsumption).toBe(0);
+    expect(extraFuel).toBe(0);
+    expect(extraCost).toBe(0);
+  });
+
+  test('roofBoxFuelPenalty scales extra cost proportionally with a higher penalty percentage', () => {
+    const lowerPenalty = roofBoxFuelPenalty(6.0, 10, 800, 1.60);
+    const higherPenalty = roofBoxFuelPenalty(6.0, 20, 800, 1.60);
+    expect(higherPenalty.extraCost).toBeCloseTo(lowerPenalty.extraCost * 2, 5);
+    expect(higherPenalty.extraCost).toBeGreaterThan(lowerPenalty.extraCost);
   });
 });
