@@ -666,6 +666,24 @@ function retirementProjection(currentAge, retirementAge, currentSavings, monthly
   return { yearsRemaining, futureValue, totalContributed, totalGrowth };
 }
 
+// Rule-of-thumb jet lag recovery: ~1 day/zone crossed eastward (harder to
+// adapt to), ~0.5 days/zone crossed westward (easier), rounded up.
+function jetLagRecoveryDays(zonesCrossed, direction) {
+  const perZone = direction === 'east' ? 1 : 0.5;
+  return Math.ceil(zonesCrossed * perZone);
+}
+
+// Derives direction and zones crossed from two UTC offsets by finding the
+// shorter angular direction around the 24-hour circle, so e.g. crossing 21
+// zones "east" is treated as 3 zones west instead.
+function jetLagDirectionFromOffsets(originOffsetHours, destOffsetHours) {
+  const diff = destOffsetHours - originOffsetHours;
+  const normalized = (((diff + 12) % 24) + 24) % 24 - 12;
+
+  if (normalized === 0) return { direction: 'none', zonesCrossed: 0 };
+  return { direction: normalized > 0 ? 'east' : 'west', zonesCrossed: Math.abs(normalized) };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -726,5 +744,7 @@ if (typeof module !== 'undefined' && module.exports) {
     fuelCostImperial,
     retirementCountdown,
     retirementProjection,
+    jetLagRecoveryDays,
+    jetLagDirectionFromOffsets,
   };
 }

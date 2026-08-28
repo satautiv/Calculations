@@ -864,6 +864,46 @@
     <div class="result" id="retire-result"></div>
   </section>
 
+  <section id="jet-lag-recovery" class="view tab-panel">
+    <h2>Jet Lag Recovery Calculator</h2>
+    <p class="hint">A rough rule-of-thumb estimate &mdash; eastward travel is generally harder to recover from than westward travel for the same number of zones.</p>
+    <div class="field">
+      <label for="jetlag-mode">How to specify travel</label>
+      <select id="jetlag-mode">
+        <option value="direct">Zones crossed + direction</option>
+        <option value="offsets">Origin/destination UTC offsets</option>
+      </select>
+    </div>
+
+    <div id="jetlag-direct-fields">
+      <div class="field">
+        <label for="jetlag-zones">Time zones crossed</label>
+        <input type="number" id="jetlag-zones" min="0" step="1" placeholder="e.g. 6">
+      </div>
+      <div class="field">
+        <label for="jetlag-direction">Direction of travel</label>
+        <select id="jetlag-direction">
+          <option value="east">East</option>
+          <option value="west">West</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="jetlag-offsets-fields" hidden>
+      <div class="field">
+        <label for="jetlag-origin-offset">Origin UTC offset (hours)</label>
+        <input type="number" id="jetlag-origin-offset" min="-12" max="14" step="0.25" placeholder="e.g. 1">
+      </div>
+      <div class="field">
+        <label for="jetlag-dest-offset">Destination UTC offset (hours)</label>
+        <input type="number" id="jetlag-dest-offset" min="-12" max="14" step="0.25" placeholder="e.g. -8">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="jetlag-calc">Calculate</button>
+    <div class="result" id="jetlag-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

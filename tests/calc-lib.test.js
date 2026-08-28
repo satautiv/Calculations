@@ -46,6 +46,8 @@ const {
   fuelCostImperial,
   retirementCountdown,
   retirementProjection,
+  jetLagRecoveryDays,
+  jetLagDirectionFromOffsets,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -851,5 +853,36 @@ describe('retirementCountdown', () => {
     const from = new Date('2024-06-15T00:00:00Z');
     const { daysRemaining } = retirementCountdown(from, 0);
     expect(daysRemaining).toBe(0);
+  });
+});
+
+describe('jetLagRecoveryDays', () => {
+  test('matches the worked example: 6 zones eastward -> 6 days, westward -> 3 days', () => {
+    expect(jetLagRecoveryDays(6, 'east')).toBe(6);
+    expect(jetLagRecoveryDays(6, 'west')).toBe(3);
+  });
+
+  test('rounds up to a whole day', () => {
+    expect(jetLagRecoveryDays(9, 'west')).toBe(5);
+  });
+});
+
+describe('jetLagDirectionFromOffsets', () => {
+  test('matches the worked example: Paris (+1) to Los Angeles (-8) is 9 zones west', () => {
+    const { direction, zonesCrossed } = jetLagDirectionFromOffsets(1, -8);
+    expect(direction).toBe('west');
+    expect(zonesCrossed).toBe(9);
+  });
+
+  test('identical offsets mean no jet lag', () => {
+    const { direction, zonesCrossed } = jetLagDirectionFromOffsets(2, 2);
+    expect(direction).toBe('none');
+    expect(zonesCrossed).toBe(0);
+  });
+
+  test('wraps around the 24-hour circle to find the shorter direction', () => {
+    const { direction, zonesCrossed } = jetLagDirectionFromOffsets(-10, 11);
+    expect(direction).toBe('west');
+    expect(zonesCrossed).toBe(3);
   });
 });
