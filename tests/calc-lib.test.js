@@ -41,6 +41,7 @@ const {
   calculateProgressiveTax,
   salaryAfterTax,
   convertSalary,
+  rentVsBuyComparison,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -752,5 +753,45 @@ describe('convertSalary', () => {
     const { monthly, hourly } = convertSalary(52000, 'annual', 40, 52);
     expect(monthly).toBeCloseTo(4333.33, 2);
     expect(hourly).toBe(25);
+  });
+});
+
+const RENT_VS_BUY_BASE = {
+  homePrice: 300000,
+  downPayment: 60000,
+  closingCosts: 5000,
+  mortgageRatePercent: 4.5,
+  mortgageTermYears: 30,
+  annualOwnershipCostPercent: 2,
+  appreciationRatePercent: 3,
+  monthlyRent: 1200,
+  rentGrowthRatePercent: 2,
+  investmentReturnRatePercent: 6,
+  horizonYears: 10,
+};
+
+describe('rentVsBuyComparison', () => {
+  test('matches a precise computation of the issue\'s own formulas over a 10-year horizon', () => {
+    const result = rentVsBuyComparison(RENT_VS_BUY_BASE);
+    expect(result.netCostBuy).toBeCloseTo(70811.87, 1);
+    expect(result.netCostRent).toBeCloseTo(110225.12, 1);
+    expect(result.homeValueAtHorizon).toBeCloseTo(403174.91, 1);
+    expect(result.remainingLoanBalance).toBeCloseTo(192214.64, 1);
+  });
+
+  test('remaining loan balance is 0 once the horizon exceeds the mortgage term', () => {
+    const { remainingLoanBalance } = rentVsBuyComparison({ ...RENT_VS_BUY_BASE, horizonYears: 35 });
+    expect(remainingLoanBalance).toBe(0);
+  });
+
+  test('a longer horizon builds more home equity', () => {
+    const shortHorizon = rentVsBuyComparison({ ...RENT_VS_BUY_BASE, horizonYears: 5 });
+    const longHorizon = rentVsBuyComparison({ ...RENT_VS_BUY_BASE, horizonYears: 20 });
+    expect(longHorizon.equity).toBeGreaterThan(shortHorizon.equity);
+  });
+
+  test('0% mortgage rate does not throw (division-by-zero guard in the underlying amortization)', () => {
+    const { netCostBuy } = rentVsBuyComparison({ ...RENT_VS_BUY_BASE, mortgageRatePercent: 0 });
+    expect(Number.isFinite(netCostBuy)).toBe(true);
   });
 });

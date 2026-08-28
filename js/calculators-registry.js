@@ -171,6 +171,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert a pay rate between hourly, monthly, and annual figures.',
     keywords: ['salary converter', 'hourly rate', 'annual salary', 'pay rate'],
   },
+  {
+    id: 'rent-vs-buy',
+    name: 'Rent vs Buy',
+    category: 'Finance',
+    description: 'Compare the net cost of renting vs. buying a home over a chosen horizon.',
+    keywords: ['rent vs buy', 'mortgage', 'home ownership', 'housing'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

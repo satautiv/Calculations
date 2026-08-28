@@ -1594,3 +1594,78 @@ document.getElementById('sc-calc').addEventListener('click', () => {
     <div>${formatMoney(monthly)} / month &middot; ${formatMoney(hourly)} / hour</div>
   `;
 });
+
+// --- Rent vs Buy calculator ---
+document.getElementById('rvb-calc').addEventListener('click', () => {
+  const homePrice = parseFloat(document.getElementById('rvb-home-price').value);
+  const downPayment = parseFloat(document.getElementById('rvb-down-payment').value);
+  const closingCosts = parseFloat(document.getElementById('rvb-closing-costs').value) || 0;
+  const mortgageRatePercent = parseFloat(document.getElementById('rvb-mortgage-rate').value);
+  const mortgageTermYears = parseInt(document.getElementById('rvb-mortgage-term').value, 10);
+  const annualOwnershipCostPercent = parseFloat(document.getElementById('rvb-ownership-cost').value);
+  const appreciationRatePercent = parseFloat(document.getElementById('rvb-appreciation').value);
+  const monthlyRent = parseFloat(document.getElementById('rvb-rent').value);
+  const rentGrowthRatePercent = parseFloat(document.getElementById('rvb-rent-growth').value);
+  const investmentReturnRatePercent = parseFloat(document.getElementById('rvb-investment-return').value);
+  const horizonYears = parseInt(document.getElementById('rvb-horizon').value, 10);
+
+  if (!homePrice || homePrice <= 0) {
+    showError('rvb-result', 'Enter a valid home price greater than zero.');
+    return;
+  }
+
+  if (isNaN(downPayment) || downPayment < 0 || downPayment > homePrice) {
+    showError('rvb-result', 'Down payment must be between 0 and the home price.');
+    return;
+  }
+
+  if (isNaN(mortgageRatePercent) || mortgageRatePercent < 0) {
+    showError('rvb-result', 'Enter a valid mortgage interest rate (0 or greater).');
+    return;
+  }
+
+  if (!mortgageTermYears || mortgageTermYears < 1 || !Number.isInteger(mortgageTermYears)) {
+    showError('rvb-result', 'Enter a valid whole number of years for the mortgage term.');
+    return;
+  }
+
+  if (isNaN(annualOwnershipCostPercent) || annualOwnershipCostPercent < 0) {
+    showError('rvb-result', 'Enter a valid ownership cost percentage (0 or greater).');
+    return;
+  }
+
+  if (isNaN(appreciationRatePercent)) {
+    showError('rvb-result', 'Enter a valid home appreciation rate.');
+    return;
+  }
+
+  if (!monthlyRent || monthlyRent <= 0) {
+    showError('rvb-result', 'Enter a valid comparable monthly rent greater than zero.');
+    return;
+  }
+
+  if (isNaN(rentGrowthRatePercent) || isNaN(investmentReturnRatePercent)) {
+    showError('rvb-result', 'Enter valid rent growth and investment return rates.');
+    return;
+  }
+
+  if (!horizonYears || horizonYears < 1 || !Number.isInteger(horizonYears)) {
+    showError('rvb-result', 'Enter a valid whole number of years for the comparison horizon.');
+    return;
+  }
+
+  const { netCostBuy, netCostRent, difference } = rentVsBuyComparison({
+    homePrice, downPayment, closingCosts, mortgageRatePercent, mortgageTermYears,
+    annualOwnershipCostPercent, appreciationRatePercent, monthlyRent,
+    rentGrowthRatePercent, investmentReturnRatePercent, horizonYears,
+  });
+
+  const verdict = difference > 0
+    ? `Buying is cheaper by ${formatMoney(Math.abs(difference))} over ${horizonYears} years`
+    : `Renting is cheaper by ${formatMoney(Math.abs(difference))} over ${horizonYears} years`;
+
+  document.getElementById('rvb-result').innerHTML = `
+    <div class="headline">${verdict}</div>
+    <div class="hint">Net cost of buying: ${formatMoney(netCostBuy)} &middot; Net cost of renting: ${formatMoney(netCostRent)}</div>
+  `;
+});
