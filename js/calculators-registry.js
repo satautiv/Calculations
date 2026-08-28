@@ -192,6 +192,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how much a trip will cost in fuel, in metric or imperial units.',
     keywords: ['fuel cost', 'fuel consumption', 'mpg', 'l/100km', 'trip cost'],
   },
+  {
+    id: 'retirement-savings',
+    name: 'Retirement Savings',
+    category: 'Finance',
+    description: 'Project savings at retirement age and count down the years and days remaining.',
+    keywords: ['retirement', 'savings', 'projection', 'countdown', 'fire'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

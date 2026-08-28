@@ -1783,3 +1783,43 @@ document.getElementById('fuel-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Retirement savings calculator ---
+document.getElementById('retire-calc').addEventListener('click', () => {
+  const currentAge = parseFloat(document.getElementById('retire-current-age').value);
+  const retirementAge = parseFloat(document.getElementById('retire-target-age').value);
+  const currentSavings = parseFloat(document.getElementById('retire-current-savings').value) || 0;
+  const monthlyContribution = parseFloat(document.getElementById('retire-monthly-contribution').value) || 0;
+  const rate = parseFloat(document.getElementById('retire-rate').value);
+
+  if (isNaN(currentAge) || currentAge < 0 || currentAge > 120) {
+    showError('retire-result', 'Enter a valid current age between 0 and 120.');
+    return;
+  }
+
+  if (isNaN(retirementAge) || retirementAge < 0 || retirementAge > 120 || retirementAge <= currentAge) {
+    showError('retire-result', 'Enter a valid retirement age greater than your current age.');
+    return;
+  }
+
+  if (currentSavings < 0 || monthlyContribution < 0) {
+    showError('retire-result', 'Current savings and monthly contribution cannot be negative.');
+    return;
+  }
+
+  if (isNaN(rate)) {
+    showError('retire-result', 'Enter a valid expected annual growth rate.');
+    return;
+  }
+
+  const { yearsRemaining, futureValue, totalContributed, totalGrowth } =
+    retirementProjection(currentAge, retirementAge, currentSavings, monthlyContribution, rate);
+  const { daysRemaining } = retirementCountdown(new Date(), yearsRemaining);
+
+  document.getElementById('retire-result').innerHTML = `
+    <div class="headline">${formatMoney(futureValue)}</div>
+    <div>Projected savings at age ${retirementAge}</div>
+    <div class="hint">Contributed: ${formatMoney(totalContributed)} &middot; Growth: ${formatMoney(totalGrowth)}</div>
+    <div class="hint">Time remaining: ${yearsRemaining} year${yearsRemaining === 1 ? '' : 's'} (&asymp;${daysRemaining.toLocaleString()} days)</div>
+  `;
+});

@@ -641,6 +641,31 @@ function fuelCostImperial(distanceMiles, mpg, pricePerGallon) {
   return { fuelUsed, totalCost, costPerDistance };
 }
 
+// Calendar countdown to retirement, independent of the money projection.
+// Takes fromDate explicitly (rather than defaulting to `new Date()`) so this
+// stays a pure, deterministically testable function; callers pass the
+// current date themselves.
+function retirementCountdown(fromDate, yearsRemaining) {
+  const retirementDate = new Date(fromDate.getTime());
+  retirementDate.setFullYear(retirementDate.getFullYear() + yearsRemaining);
+
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysRemaining = Math.round((retirementDate - fromDate) / msPerDay);
+
+  return { retirementDate, daysRemaining };
+}
+
+// Projected retirement savings, using the same lump-sum-plus-contribution
+// compound formula as the Investment/DCA Growth and Net Worth calculators.
+function retirementProjection(currentAge, retirementAge, currentSavings, monthlyContribution, annualRatePercent) {
+  const yearsRemaining = retirementAge - currentAge;
+  const { futureValue, totalContributed, totalGrowth } = investmentGrowth(
+    currentSavings, monthlyContribution, 12, annualRatePercent, yearsRemaining
+  );
+
+  return { yearsRemaining, futureValue, totalContributed, totalGrowth };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -699,5 +724,7 @@ if (typeof module !== 'undefined' && module.exports) {
     rentVsBuyComparison,
     fuelCostMetric,
     fuelCostImperial,
+    retirementCountdown,
+    retirementProjection,
   };
 }
