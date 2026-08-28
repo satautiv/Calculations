@@ -213,6 +213,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate the cost to charge an EV, its estimated range, and cost per trip.',
     keywords: ['ev', 'electric vehicle', 'charging cost', 'kwh', 'range'],
   },
+  {
+    id: 'fire-calculator',
+    name: 'FIRE Calculator',
+    category: 'Finance',
+    description: 'Estimate years to Financial Independence using the 4% rule and your savings rate.',
+    keywords: ['fire', 'financial independence', 'retire early', '4% rule', 'safe withdrawal rate'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

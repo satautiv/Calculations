@@ -52,6 +52,7 @@ const {
   evRange,
   evTripCost,
   evCostPer100km,
+  fireCalculator,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -909,5 +910,45 @@ describe('evTripCost / evCostPer100km', () => {
     const { energyUsed, cost } = evTripCost(100, 16, 0.30);
     expect(energyUsed).toBe(16);
     expect(cost).toBeCloseTo(4.8, 5);
+  });
+});
+
+describe('fireCalculator', () => {
+  test('matches the worked example: €60k income, €30k expenses, €50k savings, 6% return, 4% SWR', () => {
+    const { fiTarget, yearsToFI, annualSavings, savingsRatePercent, alreadyFI } =
+      fireCalculator(60000, 30000, 50000, 6, 4);
+
+    expect(fiTarget).toBe(750000);
+    expect(annualSavings).toBe(30000);
+    expect(savingsRatePercent).toBeCloseTo(50, 5);
+    expect(alreadyFI).toBe(false);
+    expect(yearsToFI).toBeCloseTo(14.09, 2);
+  });
+
+  test('r = 0 falls back to linear years (no compounding)', () => {
+    const { yearsToFI } = fireCalculator(60000, 30000, 50000, 0, 4);
+    expect(yearsToFI).toBeCloseTo((750000 - 50000) / 30000, 5);
+  });
+
+  test('already financially independent when current savings meet or exceed the FI target', () => {
+    const result = fireCalculator(60000, 30000, 750000, 6, 4);
+    expect(result.alreadyFI).toBe(true);
+    expect(result.yearsToFI).toBe(0);
+
+    const overshoot = fireCalculator(60000, 30000, 900000, 6, 4);
+    expect(overshoot.alreadyFI).toBe(true);
+    expect(overshoot.yearsToFI).toBe(0);
+  });
+
+  test('FI never reached when annual savings is zero or negative', () => {
+    const zeroSavings = fireCalculator(30000, 30000, 10000, 6, 4);
+    expect(zeroSavings.annualSavings).toBe(0);
+    expect(zeroSavings.alreadyFI).toBe(false);
+    expect(zeroSavings.yearsToFI).toBe(Infinity);
+
+    const overspending = fireCalculator(30000, 40000, 10000, 6, 4);
+    expect(overspending.annualSavings).toBe(-10000);
+    expect(overspending.alreadyFI).toBe(false);
+    expect(overspending.yearsToFI).toBe(Infinity);
   });
 });
