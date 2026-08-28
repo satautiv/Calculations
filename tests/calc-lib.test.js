@@ -73,6 +73,7 @@ const {
   tyreSizeComparison,
   convertCurrency,
   inverseExchangeRate,
+  wheelOffsetShift,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1355,5 +1356,25 @@ describe('Currency Converter calculator', () => {
 
   test('convertCurrency computes correctly with a very small rate without special-casing', () => {
     expect(convertCurrency(1000, 0.0001)).toBeCloseTo(0.1, 10);
+  });
+});
+
+describe('Wheel Offset & Clearance (ET) calculator', () => {
+  test('wheelOffsetShift matches the worked example: 8J ET35 -> 9J ET25', () => {
+    const { outwardShiftMm, inwardShiftMm } = wheelOffsetShift(8, 35, 9, 25);
+    expect(outwardShiftMm).toBeCloseTo(22.7, 5);
+    expect(inwardShiftMm).toBeCloseTo(2.7, 5);
+  });
+
+  test('wheelOffsetShift flips sign when only ET increases (same width, higher ET tucks the wheel in)', () => {
+    const { outwardShiftMm, inwardShiftMm } = wheelOffsetShift(8, 35, 8, 45);
+    expect(outwardShiftMm).toBeCloseTo(-10, 5);
+    expect(inwardShiftMm).toBeCloseTo(10, 5);
+  });
+
+  test('wheelOffsetShift returns zero shift for an identical width and offset', () => {
+    const { outwardShiftMm, inwardShiftMm } = wheelOffsetShift(8, 35, 8, 35);
+    expect(outwardShiftMm).toBe(0);
+    expect(inwardShiftMm).toBe(0);
   });
 });

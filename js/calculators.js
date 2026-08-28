@@ -2737,3 +2737,56 @@ document.getElementById('currency-calc').addEventListener('click', () => {
     <div class="hint">Effective rate used: 1 ${fromLabel} = ${effectiveRate.toFixed(6)} ${toLabel}</div>
   `;
 });
+
+// --- Wheel Offset & Clearance (ET) calculator ---
+document.getElementById('woc-calc').addEventListener('click', () => {
+  const oldWidth = parseFloat(document.getElementById('woc-old-width').value);
+  const oldET = parseFloat(document.getElementById('woc-old-et').value);
+  const newWidth = parseFloat(document.getElementById('woc-new-width').value);
+  const newET = parseFloat(document.getElementById('woc-new-et').value);
+
+  if (isNaN(oldWidth) || oldWidth <= 0) {
+    showError('woc-result', 'Enter a valid old wheel width greater than zero.');
+    return;
+  }
+
+  if (isNaN(oldET)) {
+    showError('woc-result', 'Enter a valid old wheel offset (ET) in mm.');
+    return;
+  }
+
+  if (isNaN(newWidth) || newWidth <= 0) {
+    showError('woc-result', 'Enter a valid new wheel width greater than zero.');
+    return;
+  }
+
+  if (isNaN(newET)) {
+    showError('woc-result', 'Enter a valid new wheel offset (ET) in mm.');
+    return;
+  }
+
+  const etWarning = (Math.abs(oldET) > 60 || Math.abs(newET) > 60)
+    ? '<div class="hint">Note: an offset (ET) beyond &plusmn;60mm is unusual &mdash; double check the value.</div>'
+    : '';
+
+  const { outwardShiftMm, inwardShiftMm } = wheelOffsetShift(oldWidth, oldET, newWidth, newET);
+
+  const outwardDescription = outwardShiftMm > 0
+    ? `sits ${outwardShiftMm.toFixed(1)} mm further out toward the fender`
+    : outwardShiftMm < 0
+      ? `tucks ${Math.abs(outwardShiftMm).toFixed(1)} mm further in, away from the fender`
+      : 'stays in the same place relative to the fender';
+
+  const inwardDescription = inwardShiftMm > 0
+    ? `sits ${inwardShiftMm.toFixed(1)} mm further in toward the suspension/strut`
+    : inwardShiftMm < 0
+      ? `sits ${Math.abs(inwardShiftMm).toFixed(1)} mm further out, away from the suspension/strut`
+      : 'stays in the same place relative to the suspension/strut';
+
+  document.getElementById('woc-result').innerHTML = `
+    <div class="headline">${outwardShiftMm >= 0 ? '+' : ''}${outwardShiftMm.toFixed(1)} mm outward / ${inwardShiftMm >= 0 ? '+' : ''}${inwardShiftMm.toFixed(1)} mm inward</div>
+    <div>The new wheel ${outwardDescription}, and ${inwardDescription}.</div>
+    ${etWarning}
+    <div class="hint">This is an approximation, not a fitment guarantee &mdash; it doesn't account for suspension travel, steering lock, or fender rolling.</div>
+  `;
+});
