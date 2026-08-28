@@ -71,6 +71,8 @@ const {
   tyreDiameterMm,
   tyreCircumferenceMm,
   tyreSizeComparison,
+  convertCurrency,
+  inverseExchangeRate,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1328,5 +1330,30 @@ describe('Tire Size & Speedometer Error calculator', () => {
     const result = tyreSizeComparison(650, 600, 100);
     expect(result.diameterChangePercent).toBeLessThan(0);
     expect(result.actualSpeed).toBeLessThan(100);
+  });
+});
+
+describe('Currency Converter calculator', () => {
+  test('convertCurrency matches the worked example: 250 USD at rate 0.92 -> 230.00 EUR', () => {
+    // Note: the source issue states this example as "232.00", but
+    // 250 x 0.92 = 230.00 — the correct result of the specified formula.
+    expect(convertCurrency(250, 0.92)).toBe(230);
+  });
+
+  test('inverseExchangeRate matches the worked example: inverse of 0.92 -> ~1.0869565217391', () => {
+    expect(inverseExchangeRate(0.92)).toBeCloseTo(1.0869565217391, 10);
+  });
+
+  test('convertCurrency using the swapped inverse rate matches the worked example: 100 EUR -> ~108.70 USD', () => {
+    const inverseRate = inverseExchangeRate(0.92);
+    expect(convertCurrency(100, inverseRate)).toBeCloseTo(108.70, 1);
+  });
+
+  test('convertCurrency with a zero amount converts to zero', () => {
+    expect(convertCurrency(0, 0.92)).toBe(0);
+  });
+
+  test('convertCurrency computes correctly with a very small rate without special-casing', () => {
+    expect(convertCurrency(1000, 0.0001)).toBeCloseTo(0.1, 10);
   });
 });

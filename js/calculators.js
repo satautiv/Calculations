@@ -2704,3 +2704,36 @@ document.getElementById('tse-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Currency Converter calculator ---
+document.getElementById('currency-calc').addEventListener('click', () => {
+  const amountRaw = document.getElementById('currency-amount').value;
+  const rateRaw = document.getElementById('currency-rate').value;
+  const sourceLabel = document.getElementById('currency-source').value.trim() || 'Source';
+  const targetLabel = document.getElementById('currency-target').value.trim() || 'Target';
+  const swap = document.getElementById('currency-swap').checked;
+
+  const amount = parseFloat(amountRaw);
+  if (amountRaw.trim() === '' || isNaN(amount) || amount < 0) {
+    showError('currency-result', 'Enter a valid amount, zero or greater.');
+    return;
+  }
+
+  const rate = parseFloat(rateRaw);
+  if (rateRaw.trim() === '' || isNaN(rate) || rate <= 0) {
+    showError('currency-result', 'Enter a valid exchange rate greater than zero.');
+    return;
+  }
+
+  const effectiveRate = swap ? inverseExchangeRate(rate) : rate;
+  const convertedAmount = convertCurrency(amount, effectiveRate);
+
+  const fromLabel = swap ? targetLabel : sourceLabel;
+  const toLabel = swap ? sourceLabel : targetLabel;
+
+  document.getElementById('currency-result').innerHTML = `
+    <div class="headline">${convertedAmount.toFixed(2)} ${toLabel}</div>
+    <div>${amount.toFixed(2)} ${fromLabel} converted at the effective rate below</div>
+    <div class="hint">Effective rate used: 1 ${fromLabel} = ${effectiveRate.toFixed(6)} ${toLabel}</div>
+  `;
+});

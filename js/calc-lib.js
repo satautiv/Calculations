@@ -1003,6 +1003,19 @@ function tyreSizeComparison(originalDiameterMm, newDiameterMm, displayedSpeed = 
   return { diameterChangePercent, actualSpeed };
 }
 
+// Converts an amount from a source currency to a target currency using a
+// manually-entered exchange rate, where exchangeRate means "1 unit of
+// source currency = exchangeRate units of target currency".
+function convertCurrency(amount, exchangeRate) {
+  return amount * exchangeRate;
+}
+
+// Inverts an exchange rate, e.g. for a "swap direction" toggle that converts
+// target currency back into source currency using the same quoted rate.
+function inverseExchangeRate(exchangeRate) {
+  return 1 / exchangeRate;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1089,5 +1102,7 @@ if (typeof module !== 'undefined' && module.exports) {
     tyreDiameterMm,
     tyreCircumferenceMm,
     tyreSizeComparison,
+    convertCurrency,
+    inverseExchangeRate,
   };
 }
