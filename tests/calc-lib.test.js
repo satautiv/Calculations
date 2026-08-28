@@ -58,6 +58,7 @@ const {
   evVsPetrolTCO,
   carDepreciationDecliningBalance,
   carDepreciationStraightLine,
+  tripBudget,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1112,5 +1113,59 @@ describe('carDepreciationStraightLine', () => {
     expect(result.totalDepreciationPercent).toBeCloseTo((10000 / 30000) * 100, 6);
     expect(result.yearly).toHaveLength(4);
     expect(result.yearly[3].value).toBeCloseTo(result.valueAtYearN, 6);
+  });
+});
+
+describe('tripBudget', () => {
+  test('matches the worked example: 7-day trip with daily and fixed costs', () => {
+    const result = tripBudget({
+      days: 7,
+      accommodationPerDay: 80,
+      foodPerDay: 40,
+      activitiesPerDay: 25,
+      transportPerDay: 10,
+      flights: 350,
+      insurance: 45,
+    });
+
+    expect(result.dailyTotal).toBe(155);
+    expect(result.variableCost).toBe(1085);
+    expect(result.fixedCost).toBe(395);
+    expect(result.totalTripCost).toBe(1480);
+    expect(result.averageCostPerDay).toBeCloseTo(211.43, 2);
+  });
+
+  test('zero per-day costs with only fixed costs still produces a valid total', () => {
+    const result = tripBudget({
+      days: 5,
+      accommodationPerDay: 0,
+      foodPerDay: 0,
+      activitiesPerDay: 0,
+      transportPerDay: 0,
+      flights: 300,
+      insurance: 50,
+    });
+
+    expect(result.dailyTotal).toBe(0);
+    expect(result.variableCost).toBe(0);
+    expect(result.fixedCost).toBe(350);
+    expect(result.totalTripCost).toBe(350);
+    expect(result.averageCostPerDay).toBe(70);
+  });
+
+  test('applies a flat multiplier for multiple travelers', () => {
+    const result = tripBudget({
+      days: 7,
+      accommodationPerDay: 80,
+      foodPerDay: 40,
+      activitiesPerDay: 25,
+      transportPerDay: 10,
+      flights: 350,
+      insurance: 45,
+      travelers: 2,
+    });
+
+    expect(result.totalTripCost).toBe(2960);
+    expect(result.averageCostPerDay).toBeCloseTo(422.86, 2);
   });
 });

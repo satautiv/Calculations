@@ -867,6 +867,30 @@ function carDepreciationStraightLine(purchasePrice, residualValue, usefulLifeYea
   return { valueAtYearN, totalDepreciation, totalDepreciationPercent, yearly };
 }
 
+// Trip budget: per-day costs (accommodation, food, activities, local
+// transport) scale with trip length, while fixed costs (flights, insurance,
+// other one-off costs) don't. Total is optionally multiplied by the number
+// of travelers (a flat multiplier, per the simplification in issue #44).
+function tripBudget({
+  days,
+  accommodationPerDay,
+  foodPerDay,
+  activitiesPerDay,
+  transportPerDay,
+  flights,
+  insurance,
+  otherFixed = 0,
+  travelers = 1,
+}) {
+  const dailyTotal = accommodationPerDay + foodPerDay + activitiesPerDay + transportPerDay;
+  const variableCost = dailyTotal * days;
+  const fixedCost = flights + insurance + otherFixed;
+  const totalTripCost = (variableCost + fixedCost) * travelers;
+  const averageCostPerDay = totalTripCost / days;
+
+  return { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -939,5 +963,6 @@ if (typeof module !== 'undefined' && module.exports) {
     evVsPetrolTCO,
     carDepreciationDecliningBalance,
     carDepreciationStraightLine,
+    tripBudget,
   };
 }
