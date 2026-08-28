@@ -831,6 +831,42 @@ function evVsPetrolTCO({
   };
 }
 
+// Declining-balance car depreciation: a fixed percentage of the current
+// value is lost each year (value_n = price * (1 - rate)^n). Naturally stays
+// positive and approaches (but never reaches) zero for any 0 < rate < 1.
+function carDepreciationDecliningBalance(purchasePrice, annualRatePercent, years) {
+  const rate = annualRatePercent / 100;
+
+  const yearly = [];
+  for (let year = 1; year <= years; year++) {
+    yearly.push({ year, value: purchasePrice * Math.pow(1 - rate, year) });
+  }
+
+  const valueAtYearN = yearly[yearly.length - 1].value;
+  const totalDepreciation = purchasePrice - valueAtYearN;
+  const totalDepreciationPercent = (totalDepreciation / purchasePrice) * 100;
+
+  return { valueAtYearN, totalDepreciation, totalDepreciationPercent, yearly };
+}
+
+// Straight-line car depreciation: a fixed amount is lost each year, derived
+// from the gap between purchase price and an expected residual value spread
+// evenly over the useful life (value_n = price - annualDepreciation * n).
+function carDepreciationStraightLine(purchasePrice, residualValue, usefulLifeYears, years) {
+  const annualDepreciation = (purchasePrice - residualValue) / usefulLifeYears;
+
+  const yearly = [];
+  for (let year = 1; year <= years; year++) {
+    yearly.push({ year, value: purchasePrice - annualDepreciation * year });
+  }
+
+  const valueAtYearN = yearly[yearly.length - 1].value;
+  const totalDepreciation = purchasePrice - valueAtYearN;
+  const totalDepreciationPercent = (totalDepreciation / purchasePrice) * 100;
+
+  return { valueAtYearN, totalDepreciation, totalDepreciationPercent, yearly };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -901,5 +937,7 @@ if (typeof module !== 'undefined' && module.exports) {
     petrolDieselBreakEven,
     ruleOf72,
     evVsPetrolTCO,
+    carDepreciationDecliningBalance,
+    carDepreciationStraightLine,
   };
 }

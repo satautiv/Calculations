@@ -2207,3 +2207,76 @@ document.getElementById('evtco-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Car Depreciation calculator ---
+document.getElementById('cardep-method').addEventListener('change', (e) => {
+  const isStraightLine = e.target.value === 'straight-line';
+  document.getElementById('cardep-declining-fields').hidden = isStraightLine;
+  document.getElementById('cardep-straightline-fields').hidden = !isStraightLine;
+});
+
+document.getElementById('cardep-calc').addEventListener('click', () => {
+  const purchasePrice = parseFloat(document.getElementById('cardep-price').value);
+  const method = document.getElementById('cardep-method').value;
+  const years = parseInt(document.getElementById('cardep-years').value, 10);
+  const yearsRaw = document.getElementById('cardep-years').value;
+
+  if (!purchasePrice || purchasePrice <= 0) {
+    showError('cardep-result', 'Enter a valid purchase price greater than zero.');
+    return;
+  }
+
+  if (yearsRaw === '' || isNaN(years) || years <= 0 || !Number.isInteger(parseFloat(yearsRaw))) {
+    showError('cardep-result', 'Enter a valid whole number of years to project, greater than zero.');
+    return;
+  }
+
+  let result;
+
+  if (method === 'straight-line') {
+    const residualValue = parseFloat(document.getElementById('cardep-residual').value);
+    const usefulLife = parseFloat(document.getElementById('cardep-useful-life').value);
+
+    if (isNaN(residualValue) || residualValue < 0) {
+      showError('cardep-result', 'Enter a valid residual value (zero or more).');
+      return;
+    }
+
+    if (residualValue >= purchasePrice) {
+      showError('cardep-result', 'Residual value must be less than the purchase price.');
+      return;
+    }
+
+    if (!usefulLife || usefulLife <= 0) {
+      showError('cardep-result', 'Enter a valid useful life greater than zero years.');
+      return;
+    }
+
+    result = carDepreciationStraightLine(purchasePrice, residualValue, usefulLife, years);
+  } else {
+    const rate = parseFloat(document.getElementById('cardep-rate').value);
+
+    if (isNaN(rate) || rate <= 0 || rate >= 100) {
+      showError('cardep-result', 'Enter a valid annual depreciation rate strictly between 0% and 100%.');
+      return;
+    }
+
+    result = carDepreciationDecliningBalance(purchasePrice, rate, years);
+  }
+
+  const { valueAtYearN, totalDepreciation, totalDepreciationPercent, yearly } = result;
+
+  const rows = yearly.map(y => `
+    <tr><td>${y.year}</td><td>${formatMoney(y.value)}</td></tr>
+  `).join('');
+
+  document.getElementById('cardep-result').innerHTML = `
+    <div class="headline">${formatMoney(valueAtYearN)}</div>
+    <div>Projected value after ${years} year${years === 1 ? '' : 's'}</div>
+    <div class="hint">Total depreciation: ${formatMoney(totalDepreciation)} (${totalDepreciationPercent.toFixed(1)}%)</div>
+    <table>
+      <thead><tr><th>Year</th><th>Value</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+});

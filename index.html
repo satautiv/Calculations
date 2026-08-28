@@ -1064,6 +1064,42 @@
     <div class="result" id="evtco-result"></div>
   </section>
 
+  <section id="car-depreciation" class="view tab-panel">
+    <h2>Car Depreciation Calculator</h2>
+    <p class="hint">Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.</p>
+    <div class="field">
+      <label for="cardep-price">Purchase price</label>
+      <input type="number" id="cardep-price" min="0" step="0.01" placeholder="e.g. 30000">
+    </div>
+    <div class="field">
+      <label for="cardep-method">Depreciation method</label>
+      <select id="cardep-method">
+        <option value="declining">Declining balance (% per year)</option>
+        <option value="straight-line">Straight-line (residual value over useful life)</option>
+      </select>
+    </div>
+
+    <div class="field" id="cardep-declining-fields">
+      <label for="cardep-rate">Annual depreciation rate (%)</label>
+      <input type="number" id="cardep-rate" min="0.01" max="99.99" step="0.1" placeholder="e.g. 15">
+    </div>
+
+    <div class="field" id="cardep-straightline-fields" hidden>
+      <label for="cardep-residual">Residual value</label>
+      <input type="number" id="cardep-residual" min="0" step="0.01" placeholder="e.g. 10000">
+      <label for="cardep-useful-life">Useful life (years)</label>
+      <input type="number" id="cardep-useful-life" min="0.01" step="1" placeholder="e.g. 8">
+    </div>
+
+    <div class="field">
+      <label for="cardep-years">Years to project</label>
+      <input type="number" id="cardep-years" min="1" step="1" placeholder="e.g. 5">
+    </div>
+
+    <button class="calc-btn" id="cardep-calc">Calculate</button>
+    <div class="result" id="cardep-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
