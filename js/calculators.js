@@ -2088,3 +2088,122 @@ document.getElementById('rule72-calc').addEventListener('click', () => {
     ${sanityNoteHtml}
   `;
 });
+
+// --- EV vs Petrol Total Cost of Ownership calculator ---
+document.getElementById('evtco-calc').addEventListener('click', () => {
+  const years = parseFloat(document.getElementById('evtco-years').value);
+  const annualMileageKm = parseFloat(document.getElementById('evtco-annual-mileage').value);
+
+  const evPurchasePrice = parseFloat(document.getElementById('evtco-ev-price').value);
+  const evResaleValue = parseFloat(document.getElementById('evtco-ev-resale').value);
+  const evEfficiencyKWh100km = parseFloat(document.getElementById('evtco-ev-efficiency').value);
+  const electricityPricePerKWh = parseFloat(document.getElementById('evtco-electricity-price').value);
+  const evMaintenancePerYear = parseFloat(document.getElementById('evtco-ev-maintenance').value);
+
+  const petrolPurchasePrice = parseFloat(document.getElementById('evtco-petrol-price').value);
+  const petrolResaleValue = parseFloat(document.getElementById('evtco-petrol-resale').value);
+  const petrolConsumptionL100km = parseFloat(document.getElementById('evtco-petrol-consumption').value);
+  const petrolPricePerL = parseFloat(document.getElementById('evtco-petrol-price-per-l').value);
+  const petrolMaintenancePerYear = parseFloat(document.getElementById('evtco-petrol-maintenance').value);
+
+  if (!years || years <= 0) {
+    showError('evtco-result', 'Enter a valid ownership period (years) greater than zero.');
+    return;
+  }
+
+  if (!annualMileageKm || annualMileageKm <= 0) {
+    showError('evtco-result', 'Enter a valid annual mileage greater than zero.');
+    return;
+  }
+
+  if (!evPurchasePrice || evPurchasePrice <= 0) {
+    showError('evtco-result', 'Enter a valid EV purchase price greater than zero.');
+    return;
+  }
+
+  if (isNaN(evResaleValue) || evResaleValue < 0) {
+    showError('evtco-result', 'Enter a valid EV resale value (zero or more).');
+    return;
+  }
+
+  if (evResaleValue > evPurchasePrice) {
+    showError('evtco-result', "The EV's resale value cannot exceed its purchase price.");
+    return;
+  }
+
+  if (!evEfficiencyKWh100km || evEfficiencyKWh100km <= 0) {
+    showError('evtco-result', 'Enter a valid EV efficiency (kWh/100km) greater than zero.');
+    return;
+  }
+
+  if (!electricityPricePerKWh || electricityPricePerKWh <= 0) {
+    showError('evtco-result', 'Enter a valid electricity price greater than zero.');
+    return;
+  }
+
+  if (isNaN(evMaintenancePerYear) || evMaintenancePerYear < 0) {
+    showError('evtco-result', "Enter a valid EV annual maintenance estimate (zero or more).");
+    return;
+  }
+
+  if (!petrolPurchasePrice || petrolPurchasePrice <= 0) {
+    showError('evtco-result', 'Enter a valid petrol car purchase price greater than zero.');
+    return;
+  }
+
+  if (isNaN(petrolResaleValue) || petrolResaleValue < 0) {
+    showError('evtco-result', 'Enter a valid petrol car resale value (zero or more).');
+    return;
+  }
+
+  if (petrolResaleValue > petrolPurchasePrice) {
+    showError('evtco-result', "The petrol car's resale value cannot exceed its purchase price.");
+    return;
+  }
+
+  if (!petrolConsumptionL100km || petrolConsumptionL100km <= 0) {
+    showError('evtco-result', 'Enter a valid petrol consumption (L/100km) greater than zero.');
+    return;
+  }
+
+  if (!petrolPricePerL || petrolPricePerL <= 0) {
+    showError('evtco-result', 'Enter a valid petrol price greater than zero.');
+    return;
+  }
+
+  if (isNaN(petrolMaintenancePerYear) || petrolMaintenancePerYear < 0) {
+    showError('evtco-result', "Enter a valid petrol car annual maintenance estimate (zero or more).");
+    return;
+  }
+
+  const { evTCO, petrolTCO, difference, evBreakdown, petrolBreakdown, cheaper } = evVsPetrolTCO({
+    years,
+    annualMileageKm,
+    evPurchasePrice,
+    evResaleValue,
+    evEfficiencyKWh100km,
+    electricityPricePerKWh,
+    evMaintenancePerYear,
+    petrolPurchasePrice,
+    petrolResaleValue,
+    petrolConsumptionL100km,
+    petrolPricePerL,
+    petrolMaintenancePerYear,
+  });
+
+  const verdict = cheaper === 'ev'
+    ? `The EV is cheaper overall by ${formatMoney(Math.abs(difference))} over ${years} year${years === 1 ? '' : 's'}.`
+    : `The petrol car is cheaper overall by ${formatMoney(Math.abs(difference))} over ${years} year${years === 1 ? '' : 's'}.`;
+
+  document.getElementById('evtco-result').innerHTML = `
+    <div class="headline">${cheaper === 'ev' ? 'EV' : 'Petrol'} wins</div>
+    <div>${verdict}</div>
+    <table>
+      <thead><tr><th></th><th>Net purchase</th><th>Energy/fuel</th><th>Maintenance</th><th>Total TCO</th></tr></thead>
+      <tbody>
+        <tr><td>EV</td><td>${formatMoney(evBreakdown.netPurchase)}</td><td>${formatMoney(evBreakdown.energyOrFuel)}</td><td>${formatMoney(evBreakdown.maintenance)}</td><td>${formatMoney(evTCO)}</td></tr>
+        <tr><td>Petrol</td><td>${formatMoney(petrolBreakdown.netPurchase)}</td><td>${formatMoney(petrolBreakdown.energyOrFuel)}</td><td>${formatMoney(petrolBreakdown.maintenance)}</td><td>${formatMoney(petrolTCO)}</td></tr>
+      </tbody>
+    </table>
+  `;
+});

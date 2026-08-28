@@ -55,6 +55,7 @@ const {
   fireCalculator,
   petrolDieselBreakEven,
   ruleOf72,
+  evVsPetrolTCO,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1029,5 +1030,53 @@ describe('ruleOf72', () => {
     const lowDivergence = Math.abs(low.rule72Years - low.exactYears) / low.exactYears;
     const highDivergence = Math.abs(high.rule72Years - high.exactYears) / high.exactYears;
     expect(highDivergence).toBeGreaterThan(lowDivergence);
+  });
+});
+
+describe('evVsPetrolTCO', () => {
+  test('matches the worked example: 5 years, 15000 km/year, EV cheaper overall', () => {
+    const result = evVsPetrolTCO({
+      years: 5,
+      annualMileageKm: 15000,
+      evPurchasePrice: 35000,
+      evResaleValue: 18000,
+      evEfficiencyKWh100km: 16,
+      electricityPricePerKWh: 0.30,
+      evMaintenancePerYear: 400,
+      petrolPurchasePrice: 28000,
+      petrolResaleValue: 13000,
+      petrolConsumptionL100km: 6.5,
+      petrolPricePerL: 1.60,
+      petrolMaintenancePerYear: 700,
+    });
+
+    expect(result.evTCO).toBe(22600);
+    expect(result.petrolTCO).toBe(26300);
+    expect(result.difference).toBe(3700);
+    expect(result.cheaper).toBe('ev');
+    expect(result.evBreakdown).toEqual({ netPurchase: 17000, energyOrFuel: 3600, maintenance: 2000 });
+    expect(result.petrolBreakdown).toEqual({ netPurchase: 15000, energyOrFuel: 7800, maintenance: 3500 });
+  });
+
+  test('petrol comes out cheaper when the EV has a high purchase price and low resale, and petrol is efficient', () => {
+    const result = evVsPetrolTCO({
+      years: 5,
+      annualMileageKm: 15000,
+      evPurchasePrice: 45000,
+      evResaleValue: 15000,
+      evEfficiencyKWh100km: 18,
+      electricityPricePerKWh: 0.35,
+      evMaintenancePerYear: 300,
+      petrolPurchasePrice: 20000,
+      petrolResaleValue: 8000,
+      petrolConsumptionL100km: 5,
+      petrolPricePerL: 1.50,
+      petrolMaintenancePerYear: 500,
+    });
+
+    expect(result.evTCO).toBe(36225);
+    expect(result.petrolTCO).toBe(20125);
+    expect(result.difference).toBe(-16100);
+    expect(result.cheaper).toBe('petrol');
   });
 });

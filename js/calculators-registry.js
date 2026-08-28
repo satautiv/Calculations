@@ -234,6 +234,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how many years it takes an investment to double at a fixed annual rate.',
     keywords: ['rule of 72', 'rule of 70', 'doubling time', 'investment growth', 'compound interest'],
   },
+  {
+    id: 'ev-vs-petrol-tco',
+    name: 'EV vs Petrol Total Cost of Ownership',
+    category: 'Cars',
+    description: 'Compare the total cost of ownership of an EV versus a petrol car, combining purchase, energy/fuel, and maintenance costs.',
+    keywords: ['ev', 'petrol', 'total cost of ownership', 'tco', 'electric vehicle', 'cars', 'comparison'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
