@@ -81,6 +81,8 @@ const {
   gcd,
   simplifyFraction,
   fractionArithmetic,
+  simplifyRatio,
+  solveProportion,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1508,6 +1510,44 @@ describe('Fraction calculator', () => {
       expect(result.numerator).toBe(-1);
       expect(result.denominator).toBe(6);
       expect(result.decimal).toBeCloseTo(-0.1667, 4);
+    });
+  });
+});
+
+describe('Ratio & Proportion calculator', () => {
+  describe('simplifyRatio', () => {
+    test('matches the worked example: 8:12 simplifies to 2:3', () => {
+      expect(simplifyRatio(8, 12)).toEqual({ a: 2, b: 3 });
+    });
+
+    test('a 0:5 ratio simplifies to 0:1 (gcd(0, n) = n)', () => {
+      expect(simplifyRatio(0, 5)).toEqual({ a: 0, b: 1 });
+    });
+
+    test('leaves an already-simplified ratio unchanged', () => {
+      expect(simplifyRatio(2, 3)).toEqual({ a: 2, b: 3 });
+    });
+  });
+
+  describe('solveProportion', () => {
+    test('matches the worked example: 2:3 = C:12, solve for C', () => {
+      const result = solveProportion({ a: 2, b: 3, c: null, d: 12 }, 'c');
+      expect(result).toBe(8);
+    });
+
+    test('solving 2:3 = 8:D for D gives back 12, consistent with the C example', () => {
+      const result = solveProportion({ a: 2, b: 3, c: 8, d: null }, 'd');
+      expect(result).toBe(12);
+    });
+
+    test('solves for A: A:3 = 8:12 gives A = 2, consistent with the same proportion', () => {
+      const result = solveProportion({ a: null, b: 3, c: 8, d: 12 }, 'a');
+      expect(result).toBe(2);
+    });
+
+    test('solves for B: 2:B = 8:12 gives B = 3, consistent with the same proportion', () => {
+      const result = solveProportion({ a: 2, b: null, c: 8, d: 12 }, 'b');
+      expect(result).toBe(3);
     });
   });
 });

@@ -325,6 +325,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Add, subtract, multiply, or divide two fractions, with the result simplified to lowest terms, a mixed-number form, and a decimal equivalent.',
     keywords: ['fraction', 'fractions', 'simplify', 'lowest terms', 'mixed number', 'numerator', 'denominator', 'general'],
   },
+  {
+    id: 'ratio-proportion-calculator',
+    name: 'Ratio & Proportion Calculator',
+    category: 'General',
+    description: 'Simplify a ratio A:B to lowest terms, or solve a proportion A:B = C:D for whichever single value is left blank.',
+    keywords: ['ratio', 'proportion', 'simplify', 'cross multiplication', 'lowest terms', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
