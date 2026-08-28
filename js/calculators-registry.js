@@ -178,6 +178,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compare the net cost of renting vs. buying a home over a chosen horizon.',
     keywords: ['rent vs buy', 'mortgage', 'home ownership', 'housing'],
   },
+  {
+    id: 'net-worth-projection',
+    name: 'Net Worth Growth Projection',
+    category: 'Finance',
+    description: 'Project how net worth grows over time from steady savings and investment returns.',
+    keywords: ['net worth', 'projection', 'savings', 'growth', 'assets minus liabilities'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

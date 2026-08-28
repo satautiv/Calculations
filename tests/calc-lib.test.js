@@ -227,6 +227,19 @@ describe('investmentGrowth', () => {
     expect(yearly[2].cumulativeContributions).toBe(300);
     expect(yearly[2].endingBalance).toBeCloseTo(yearly[2].cumulativeContributions + yearly[2].cumulativeGrowth, 6);
   });
+
+  test('matches the net worth projection worked example: €20,000 + €500/mo at 6% over 15 years', () => {
+    const { futureValue, totalContributed, totalGrowth } = investmentGrowth(20000, 500, 12, 6, 15);
+    expect(futureValue).toBeCloseTo(194491.23, 1);
+    expect(totalContributed).toBe(110000);
+    expect(totalGrowth).toBeCloseTo(84491.23, 1);
+  });
+
+  test('supports a negative starting balance (net debt) and negative contributions (net worth shrinking)', () => {
+    const { futureValue } = investmentGrowth(-5000, -100, 12, 5, 1);
+    expect(Number.isFinite(futureValue)).toBe(true);
+    expect(futureValue).toBeLessThan(-5000);
+  });
 });
 
 describe('bakersPercentagesFromWeights', () => {
