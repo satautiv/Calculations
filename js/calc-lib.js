@@ -281,6 +281,26 @@ function amortizationSchedule(principal, annualRatePercent, termMonths, extraPay
   return { schedule, totalInterest, totalPaid, monthsToPayoff: month, monthlyPayment };
 }
 
+// Two-part car lease payment: a depreciation fee (the cap cost minus residual,
+// spread evenly over the term) plus a finance fee (a "money factor" applied to
+// the sum of cap cost and residual, standing in for interest on a lease).
+// The money factor is the APR as a plain percentage number divided by 2400
+// (equivalent to (APR/100)/24 — the industry-standard conversion), not
+// (APR/100)/2400.
+function carLeasePayment(capCost, residualValue, termMonths, annualRatePercent) {
+  const depreciationFee = (capCost - residualValue) / termMonths;
+  const moneyFactor = annualRatePercent / 2400;
+  const financeFee = (capCost + residualValue) * moneyFactor;
+  const monthlyPayment = depreciationFee + financeFee;
+
+  return {
+    depreciationFee,
+    financeFee,
+    monthlyPayment,
+    totalPaid: monthlyPayment * termMonths,
+  };
+}
+
 const CREDIT_CARD_MIN_PAYMENT_DEFAULTS = { minPercent: 2, minFloor: 25 };
 
 // Month-by-month credit card payoff simulation with a fixed monthly payment.
@@ -964,5 +984,6 @@ if (typeof module !== 'undefined' && module.exports) {
     carDepreciationDecliningBalance,
     carDepreciationStraightLine,
     tripBudget,
+    carLeasePayment,
   };
 }

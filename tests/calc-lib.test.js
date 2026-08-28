@@ -59,6 +59,7 @@ const {
   carDepreciationDecliningBalance,
   carDepreciationStraightLine,
   tripBudget,
+  carLeasePayment,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1167,5 +1168,39 @@ describe('tripBudget', () => {
 
     expect(result.totalTripCost).toBe(2960);
     expect(result.averageCostPerDay).toBeCloseTo(422.86, 2);
+  });
+});
+
+describe('car loan/lease payment', () => {
+  test('loan mode (via existing loanMonthlyPayment) matches the worked example: €25,000 at 6% for 60 months', () => {
+    const principal = 25000;
+    const monthlyPayment = loanMonthlyPayment(principal, 6, 60);
+    const totalPaid = monthlyPayment * 60;
+    const totalInterest = totalPaid - principal;
+
+    expect(monthlyPayment).toBeCloseTo(483.32, 2);
+    expect(totalPaid).toBeCloseTo(28999.20, 1);
+    expect(totalInterest).toBeCloseTo(3999.20, 1);
+  });
+
+  test('carLeasePayment matches the worked example: cap cost €25,000, residual €12,000, 36 months, 6% APR', () => {
+    const result = carLeasePayment(25000, 12000, 36, 6);
+
+    expect(result.depreciationFee).toBeCloseTo(361.11, 2);
+    expect(result.financeFee).toBeCloseTo(92.5, 2);
+    expect(result.monthlyPayment).toBeCloseTo(453.61, 2);
+    expect(result.totalPaid).toBeCloseTo(453.61 * 36, 1);
+  });
+
+  test('carLeasePayment with 0% APR has zero finance fee, payment is depreciation only', () => {
+    const result = carLeasePayment(25000, 12000, 36, 0);
+
+    expect(result.financeFee).toBe(0);
+    expect(result.monthlyPayment).toBeCloseTo(361.11, 2);
+  });
+
+  test('carLeasePayment does not crash when residual value >= cap cost (DOM layer is responsible for rejecting this)', () => {
+    expect(() => carLeasePayment(12000, 12000, 36, 6)).not.toThrow();
+    expect(() => carLeasePayment(10000, 12000, 36, 6)).not.toThrow();
   });
 });

@@ -2339,3 +2339,95 @@ document.getElementById('tripbudget-calc').addEventListener('click', () => {
     </table>
   `;
 });
+
+// --- Car Loan/Lease Payment calculator ---
+document.getElementById('carloan-mode').addEventListener('change', (e) => {
+  document.getElementById('carloan-lease-fields').hidden = e.target.value !== 'lease';
+});
+
+document.getElementById('carloan-calc').addEventListener('click', () => {
+  const mode = document.getElementById('carloan-mode').value;
+  const price = parseFloat(document.getElementById('carloan-price').value);
+  const downPayment = parseFloat(document.getElementById('carloan-downpayment').value) || 0;
+  const tradeIn = parseFloat(document.getElementById('carloan-tradein').value) || 0;
+  const apr = parseFloat(document.getElementById('carloan-apr').value);
+  const termRaw = document.getElementById('carloan-term').value;
+  const term = parseInt(termRaw, 10);
+
+  if (!price || price <= 0) {
+    showError('carloan-result', 'Enter a valid vehicle price greater than zero.');
+    return;
+  }
+
+  if (downPayment < 0 || tradeIn < 0) {
+    showError('carloan-result', 'Down payment and trade-in value cannot be negative.');
+    return;
+  }
+
+  if (isNaN(apr) || apr < 0) {
+    showError('carloan-result', 'Enter a valid APR (zero or greater).');
+    return;
+  }
+
+  if (termRaw === '' || isNaN(term) || term <= 0 || !Number.isInteger(parseFloat(termRaw))) {
+    showError('carloan-result', 'Enter a valid whole number of months for the term, greater than zero.');
+    return;
+  }
+
+  const netAmount = price - downPayment - tradeIn;
+
+  if (mode === 'loan') {
+    const principal = netAmount > 0 ? netAmount : 0;
+    const monthlyPayment = loanMonthlyPayment(principal, apr, term);
+    const totalPaid = monthlyPayment * term;
+    const totalInterest = totalPaid - principal;
+
+    document.getElementById('carloan-result').innerHTML = `
+      <div class="headline">${formatMoney(monthlyPayment)}/month</div>
+      <div>Loan payment over ${term} month${term === 1 ? '' : 's'}</div>
+      <table>
+        <thead><tr><th></th><th>Amount</th></tr></thead>
+        <tbody>
+          <tr><td>Principal financed</td><td>${formatMoney(principal)}</td></tr>
+          <tr><td>Total paid</td><td>${formatMoney(totalPaid)}</td></tr>
+          <tr><td>Total interest</td><td>${formatMoney(totalInterest)}</td></tr>
+        </tbody>
+      </table>
+    `;
+    return;
+  }
+
+  if (netAmount <= 0) {
+    showError('carloan-result', 'Down payment and trade-in must be less than the vehicle price.');
+    return;
+  }
+
+  const residualValue = parseFloat(document.getElementById('carloan-residual').value);
+
+  if (isNaN(residualValue) || residualValue < 0) {
+    showError('carloan-result', 'Enter a valid residual value (zero or more).');
+    return;
+  }
+
+  if (residualValue >= netAmount) {
+    showError('carloan-result', 'Residual value must be less than the cap cost (price minus down payment and trade-in).');
+    return;
+  }
+
+  const { depreciationFee, financeFee, monthlyPayment, totalPaid } = carLeasePayment(netAmount, residualValue, term, apr);
+  const totalFinanceCharges = financeFee * term;
+
+  document.getElementById('carloan-result').innerHTML = `
+    <div class="headline">${formatMoney(monthlyPayment)}/month</div>
+    <div>Lease payment over ${term} month${term === 1 ? '' : 's'}</div>
+    <table>
+      <thead><tr><th></th><th>Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Depreciation fee (monthly)</td><td>${formatMoney(depreciationFee)}</td></tr>
+        <tr><td>Finance fee (monthly)</td><td>${formatMoney(financeFee)}</td></tr>
+        <tr><td>Total paid</td><td>${formatMoney(totalPaid)}</td></tr>
+        <tr><td>Total finance charges</td><td>${formatMoney(totalFinanceCharges)}</td></tr>
+      </tbody>
+    </table>
+  `;
+});

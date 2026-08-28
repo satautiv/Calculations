@@ -1144,6 +1144,47 @@
     <div class="result" id="tripbudget-result"></div>
   </section>
 
+  <section id="car-loan-lease" class="view tab-panel">
+    <h2>Car Loan/Lease Payment Calculator</h2>
+    <p class="hint">Calculate the fixed monthly payment for financing a car, either as a standard amortizing loan or as a two-part lease (depreciation fee plus finance fee).</p>
+    <div class="field">
+      <label for="carloan-mode">Mode</label>
+      <select id="carloan-mode">
+        <option value="loan">Loan</option>
+        <option value="lease">Lease</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="carloan-price">Vehicle price (negotiated cap cost for lease)</label>
+      <input type="number" id="carloan-price" min="0" step="0.01" placeholder="e.g. 25000">
+    </div>
+    <div class="field">
+      <label for="carloan-downpayment">Down payment</label>
+      <input type="number" id="carloan-downpayment" min="0" step="0.01" placeholder="e.g. 0">
+    </div>
+    <div class="field">
+      <label for="carloan-tradein">Trade-in value</label>
+      <input type="number" id="carloan-tradein" min="0" step="0.01" placeholder="e.g. 0">
+    </div>
+    <div class="field">
+      <label for="carloan-apr">APR (%)</label>
+      <input type="number" id="carloan-apr" min="0" step="0.01" placeholder="e.g. 6">
+    </div>
+    <div class="field">
+      <label for="carloan-term">Term (months)</label>
+      <input type="number" id="carloan-term" min="1" step="1" placeholder="e.g. 60">
+    </div>
+
+    <div class="field" id="carloan-lease-fields" hidden>
+      <label for="carloan-residual">Residual value</label>
+      <input type="number" id="carloan-residual" min="0" step="0.01" placeholder="e.g. 12000">
+    </div>
+
+    <button class="calc-btn" id="carloan-calc">Calculate</button>
+    <div class="result" id="carloan-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
