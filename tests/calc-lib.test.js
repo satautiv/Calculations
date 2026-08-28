@@ -38,6 +38,8 @@ const {
   minutesToTimeLabel,
   doughHydrationPercent,
   doughWaterForHydration,
+  calculateProgressiveTax,
+  salaryAfterTax,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -686,5 +688,42 @@ describe('doughHydrationPercent / doughWaterForHydration', () => {
   test('the two functions are inverses of each other', () => {
     const hydration = doughHydrationPercent(800, 560);
     expect(doughWaterForHydration(hydration, 800)).toBeCloseTo(560, 10);
+  });
+});
+
+const SALARY_TAX_BRACKETS = [
+  { from: 0, rate: 0 },
+  { from: 10000, rate: 0.20 },
+  { from: 30000, rate: 0.35 },
+];
+
+describe('calculateProgressiveTax', () => {
+  test('matches the worked example: €40,000 income across three brackets', () => {
+    expect(calculateProgressiveTax(40000, SALARY_TAX_BRACKETS)).toBe(7500);
+  });
+
+  test('income entirely within the first (0%) bracket owes no tax', () => {
+    expect(calculateProgressiveTax(5000, SALARY_TAX_BRACKETS)).toBe(0);
+  });
+
+  test('is unaffected by bracket input order', () => {
+    const shuffled = [SALARY_TAX_BRACKETS[2], SALARY_TAX_BRACKETS[0], SALARY_TAX_BRACKETS[1]];
+    expect(calculateProgressiveTax(40000, shuffled)).toBe(7500);
+  });
+});
+
+describe('salaryAfterTax', () => {
+  test('matches the worked example: €40,000 gross, 9% social security -> €28,900 net', () => {
+    const { tax, socialSecurity, netIncome, netMonthly, effectiveRate } = salaryAfterTax(40000, SALARY_TAX_BRACKETS, 9);
+    expect(tax).toBe(7500);
+    expect(socialSecurity).toBe(3600);
+    expect(netIncome).toBe(28900);
+    expect(netMonthly).toBeCloseTo(2408.33, 2);
+    expect(effectiveRate).toBeCloseTo(27.75, 2);
+  });
+
+  test('clamps net income at 0 instead of going negative for an over-deducting bracket table', () => {
+    const { netIncome } = salaryAfterTax(10000, [{ from: 0, rate: 0.9 }], 50);
+    expect(netIncome).toBe(0);
   });
 });

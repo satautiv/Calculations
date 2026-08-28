@@ -658,6 +658,39 @@
     <div class="result" id="hydration-result"></div>
   </section>
 
+  <section id="salary-after-tax" class="view tab-panel">
+    <h2>Salary After Tax Calculator</h2>
+    <p class="hint">Define your own progressive tax brackets and social security rate &mdash; the defaults below are illustrative, not any specific country's tax code.</p>
+    <div class="field">
+      <label for="salary-gross">Gross salary</label>
+      <input type="number" id="salary-gross" min="0" step="0.01" placeholder="e.g. 40000">
+    </div>
+    <div class="field">
+      <label for="salary-period">Period</label>
+      <select id="salary-period">
+        <option value="annual">Annual</option>
+        <option value="monthly">Monthly</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="salary-ss-rate">Social security / payroll deduction (%)</label>
+      <input type="number" id="salary-ss-rate" min="0" max="100" step="0.1" value="9">
+    </div>
+
+    <div class="field">
+      <label>Tax brackets (rate applies to income from this amount up to the next bracket)</label>
+      <div class="tax-bracket-grid" id="tax-bracket-list">
+        <div class="tax-bracket-row tax-bracket-header">
+          <span>From</span><span>Rate (%)</span><span></span>
+        </div>
+      </div>
+      <button type="button" class="calc-btn secondary-btn" id="tax-bracket-add">+ Add bracket</button>
+    </div>
+
+    <button class="calc-btn" id="salary-calc">Calculate</button>
+    <div class="result" id="salary-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
