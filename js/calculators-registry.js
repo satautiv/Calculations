@@ -255,6 +255,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate the total cost of a trip from per-day spending and one-off fixed costs like flights and insurance.',
     keywords: ['trip budget', 'travel budget', 'vacation cost', 'flights', 'travel planning'],
   },
+  {
+    id: 'car-loan-lease',
+    name: 'Car Loan/Lease Payment',
+    category: 'Cars',
+    description: 'Calculate the fixed monthly payment for financing a car, either as a standard amortizing loan or as a two-part lease (depreciation plus finance fee).',
+    keywords: ['car loan', 'car lease', 'auto loan', 'lease payment', 'money factor', 'cars', 'monthly payment'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
