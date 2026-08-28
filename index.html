@@ -769,6 +769,29 @@
     <div class="result" id="rvb-result"></div>
   </section>
 
+  <section id="net-worth-projection" class="view tab-panel">
+    <h2>Net Worth Growth Projection Calculator</h2>
+    <p class="hint">Projects how net worth (assets minus liabilities) grows over time from steady monthly savings and expected investment growth.</p>
+    <div class="field">
+      <label for="nw-current">Current net worth</label>
+      <input type="number" id="nw-current" step="0.01" placeholder="e.g. 20000">
+    </div>
+    <div class="field">
+      <label for="nw-monthly-savings">Monthly net savings</label>
+      <input type="number" id="nw-monthly-savings" step="0.01" value="0" placeholder="e.g. 500">
+    </div>
+    <div class="field">
+      <label for="nw-rate">Expected annual growth rate (%)</label>
+      <input type="number" id="nw-rate" step="0.01" placeholder="e.g. 6">
+    </div>
+    <div class="field">
+      <label for="nw-years">Projection horizon (years)</label>
+      <input type="number" id="nw-years" min="1" step="1" placeholder="e.g. 15">
+    </div>
+    <button class="calc-btn" id="nw-calc">Calculate</button>
+    <div class="result" id="nw-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

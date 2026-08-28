@@ -1669,3 +1669,50 @@ document.getElementById('rvb-calc').addEventListener('click', () => {
     <div class="hint">Net cost of buying: ${formatMoney(netCostBuy)} &middot; Net cost of renting: ${formatMoney(netCostRent)}</div>
   `;
 });
+
+// --- Net worth growth projection calculator ---
+// Net worth projection is the same lump-sum-plus-contribution compound
+// formula as the Investment/DCA Growth calculator, applied to net worth
+// instead of a specific investment account.
+document.getElementById('nw-calc').addEventListener('click', () => {
+  const current = parseFloat(document.getElementById('nw-current').value);
+  const monthlySavings = parseFloat(document.getElementById('nw-monthly-savings').value) || 0;
+  const rate = parseFloat(document.getElementById('nw-rate').value);
+  const years = parseInt(document.getElementById('nw-years').value, 10);
+
+  if (isNaN(current)) {
+    showError('nw-result', 'Enter a valid current net worth (it may be negative).');
+    return;
+  }
+
+  if (isNaN(rate)) {
+    showError('nw-result', 'Enter a valid expected annual growth rate.');
+    return;
+  }
+
+  if (!years || years < 1 || !Number.isInteger(years)) {
+    showError('nw-result', 'Enter a valid whole number of years for the projection horizon.');
+    return;
+  }
+
+  const { futureValue, totalContributed, totalGrowth, yearly } = investmentGrowth(current, monthlySavings, 12, rate, years);
+
+  const rows = yearly.map(y => `
+    <tr>
+      <td>${y.year}</td>
+      <td>${formatMoney(y.endingBalance)}</td>
+      <td>${formatMoney(y.cumulativeContributions)}</td>
+      <td>${formatMoney(y.cumulativeGrowth)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('nw-result').innerHTML = `
+    <div class="headline">${formatMoney(futureValue)}</div>
+    <div>Projected net worth after ${years} year${years === 1 ? '' : 's'}</div>
+    <div class="hint">Contributed: ${formatMoney(totalContributed)} &middot; Growth: ${formatMoney(totalGrowth)}</div>
+    <table>
+      <thead><tr><th>Year</th><th>Net worth</th><th>Contributed</th><th>Growth</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  `;
+});
