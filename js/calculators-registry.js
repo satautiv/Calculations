@@ -332,6 +332,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Simplify a ratio A:B to lowest terms, or solve a proportion A:B = C:D for whichever single value is left blank.',
     keywords: ['ratio', 'proportion', 'simplify', 'cross multiplication', 'lowest terms', 'general'],
   },
+  {
+    id: 'luggage-weight-checker',
+    name: 'Luggage Weight Checker',
+    category: 'Travel',
+    description: 'Sum the weight of your packed items and check the total against an airline’s weight allowance, flagging how much headroom or overage you have.',
+    keywords: ['luggage', 'baggage', 'weight allowance', 'suitcase', 'airline', 'overweight', 'packing', 'travel'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -3050,3 +3050,97 @@ document.getElementById('ratio-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Luggage Weight Checker calculator ---
+const LUGGAGE_INITIAL_ROWS = 3;
+
+function addLuggageItemRow() {
+  const row = document.createElement('div');
+  row.className = 'luggage-item-row';
+  row.innerHTML = `
+    <input type="text" class="luggage-item-name" aria-label="Item name" placeholder="e.g. Hiking boots">
+    <input type="number" class="luggage-item-weight" aria-label="Weight (kg)" min="0" step="0.1" placeholder="e.g. 1.4">
+    <button type="button" class="luggage-remove-btn" aria-label="Remove item">&times;</button>
+  `;
+  document.getElementById('luggage-item-list').appendChild(row);
+}
+
+for (let i = 0; i < LUGGAGE_INITIAL_ROWS; i++) addLuggageItemRow();
+
+document.getElementById('luggage-add-item').addEventListener('click', () => addLuggageItemRow());
+
+document.getElementById('luggage-item-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.luggage-remove-btn');
+  if (!btn) return;
+  btn.closest('.luggage-item-row').remove();
+});
+
+function formatLuggageWeight(weight) {
+  return weight % 1 === 0 ? String(weight) : weight.toFixed(1);
+}
+
+document.getElementById('luggage-calc').addEventListener('click', () => {
+  const allowance = parseFloat(document.getElementById('luggage-allowance').value);
+
+  if (!allowance || allowance <= 0) {
+    showError('luggage-result', 'Enter a valid weight allowance greater than zero.');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#luggage-item-list .luggage-item-row');
+  const items = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const name = row.querySelector('.luggage-item-name').value.trim();
+    const weightRaw = row.querySelector('.luggage-item-weight').value;
+    const weight = parseFloat(weightRaw);
+
+    if (!name && weightRaw === '') return; // blank row, skip silently
+
+    if (!name || weightRaw === '' || isNaN(weight) || weight < 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    items.push({ name, weight });
+  });
+
+  if (hasInvalidRow) {
+    showError('luggage-result', 'Enter a valid name and non-negative weight for every item row, or leave the row blank.');
+    return;
+  }
+
+  if (items.length === 0) {
+    showError('luggage-result', 'Add at least one packed item.');
+    return;
+  }
+
+  const { totalWeight, difference, isOverAllowance, remainingOrOverage } = luggageWeightCheck(
+    allowance, items.map(item => item.weight)
+  );
+
+  const rowsHtml = items.map(item => `
+    <tr>
+      <td>${item.name}</td>
+      <td>${formatLuggageWeight(item.weight)} kg</td>
+    </tr>
+  `).join('');
+
+  const statusHtml = isOverAllowance
+    ? `<div class="headline">Over by ${formatLuggageWeight(remainingOrOverage)} kg</div>`
+    : `<div class="headline">Within allowance</div>`;
+
+  const detailHtml = isOverAllowance
+    ? `<div>Total packed weight ${formatLuggageWeight(totalWeight)} kg exceeds the ${formatLuggageWeight(allowance)} kg allowance by ${formatLuggageWeight(remainingOrOverage)} kg.</div>`
+    : `<div>Total packed weight ${formatLuggageWeight(totalWeight)} kg is within the ${formatLuggageWeight(allowance)} kg allowance, with ${formatLuggageWeight(remainingOrOverage)} kg to spare.</div>`;
+
+  document.getElementById('luggage-result').innerHTML = `
+    ${statusHtml}
+    ${detailHtml}
+    <table>
+      <thead><tr><th>Item</th><th>Weight</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+});
