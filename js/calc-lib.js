@@ -1045,6 +1045,21 @@ function roofBoxFuelPenalty(baseConsumption, penaltyPercent, distanceKm, fuelPri
   return { newConsumption, extraConsumption, extraFuel, extraCost };
 }
 
+// --- Percentage calculator ---
+function percentOf(percent, base) {
+  return (percent / 100) * base;
+}
+
+function whatPercentOf(part, whole) {
+  // Assumes caller has already validated whole !== 0.
+  return (part / whole) * 100;
+}
+
+function percentageChange(oldValue, newValue) {
+  // Assumes caller has already validated oldValue !== 0.
+  return ((newValue - oldValue) / oldValue) * 100;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1135,5 +1150,8 @@ if (typeof module !== 'undefined' && module.exports) {
     inverseExchangeRate,
     wheelOffsetShift,
     roofBoxFuelPenalty,
+    percentOf,
+    whatPercentOf,
+    percentageChange,
   };
 }

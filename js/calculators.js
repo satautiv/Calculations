@@ -2833,3 +2833,73 @@ document.getElementById('rbfp-calc').addEventListener('click', () => {
     <div class="hint">Real-world roof box penalties are roughly 10-20% at ~100km/h, up to 25-35% for large boxes at higher speeds.</div>
   `;
 });
+
+// --- Percentage calculator ---
+document.getElementById('pct-mode').addEventListener('change', (e) => {
+  const mode = e.target.value;
+  document.getElementById('pct-of-fields').hidden = mode !== 'percent-of';
+  document.getElementById('pct-what-fields').hidden = mode !== 'what-percent';
+  document.getElementById('pct-change-fields').hidden = mode !== 'percent-change';
+});
+
+document.getElementById('pct-calc').addEventListener('click', () => {
+  const mode = document.getElementById('pct-mode').value;
+
+  if (mode === 'percent-of') {
+    const percent = parseFloat(document.getElementById('pct-of-percent').value);
+    const base = parseFloat(document.getElementById('pct-of-base').value);
+
+    if (isNaN(percent) || isNaN(base)) {
+      showError('pct-result', 'Enter valid numbers for both fields.');
+      return;
+    }
+
+    const result = percentOf(percent, base);
+
+    document.getElementById('pct-result').innerHTML = `
+      <div class="headline">${result.toFixed(2)}</div>
+      <div>${percent}% of ${base} = ${result.toFixed(2)}</div>
+    `;
+  } else if (mode === 'what-percent') {
+    const part = parseFloat(document.getElementById('pct-part').value);
+    const whole = parseFloat(document.getElementById('pct-whole').value);
+
+    if (isNaN(part) || isNaN(whole)) {
+      showError('pct-result', 'Enter valid numbers for both fields.');
+      return;
+    }
+
+    if (whole === 0) {
+      showError('pct-result', 'The whole value must not be zero.');
+      return;
+    }
+
+    const result = whatPercentOf(part, whole);
+
+    document.getElementById('pct-result').innerHTML = `
+      <div class="headline">${result.toFixed(2)}%</div>
+      <div>${part} is ${result.toFixed(2)}% of ${whole}</div>
+    `;
+  } else {
+    const oldValue = parseFloat(document.getElementById('pct-old').value);
+    const newValue = parseFloat(document.getElementById('pct-new').value);
+
+    if (isNaN(oldValue) || isNaN(newValue)) {
+      showError('pct-result', 'Enter valid numbers for both fields.');
+      return;
+    }
+
+    if (oldValue === 0) {
+      showError('pct-result', 'The old value must not be zero.');
+      return;
+    }
+
+    const result = percentageChange(oldValue, newValue);
+    const direction = result < 0 ? 'decrease' : 'increase';
+
+    document.getElementById('pct-result').innerHTML = `
+      <div class="headline">${Math.abs(result).toFixed(2)}% ${direction}</div>
+      <div>From ${oldValue} to ${newValue} is a ${Math.abs(result).toFixed(2)}% ${direction}</div>
+    `;
+  }
+});

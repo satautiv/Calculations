@@ -75,6 +75,9 @@ const {
   inverseExchangeRate,
   wheelOffsetShift,
   roofBoxFuelPenalty,
+  percentOf,
+  whatPercentOf,
+  percentageChange,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1402,5 +1405,30 @@ describe('Roof Box Fuel Penalty calculator', () => {
     const higherPenalty = roofBoxFuelPenalty(6.0, 20, 800, 1.60);
     expect(higherPenalty.extraCost).toBeCloseTo(lowerPenalty.extraCost * 2, 5);
     expect(higherPenalty.extraCost).toBeGreaterThan(lowerPenalty.extraCost);
+  });
+});
+
+describe('Percentage calculator', () => {
+  test('percentOf matches the worked example: 15% of 80 = 12', () => {
+    expect(percentOf(15, 80)).toBe(12);
+  });
+
+  test('whatPercentOf matches the worked example: 40 is 25% of 160', () => {
+    expect(whatPercentOf(40, 160)).toBe(25);
+  });
+
+  test('percentageChange matches the worked example: 80 to 100 is a 25% increase', () => {
+    expect(percentageChange(80, 100)).toBe(25);
+  });
+
+  test('percentageChange matches a decrease example: 100 to 80 is a -20% change', () => {
+    expect(percentageChange(100, 80)).toBeCloseTo(-20, 10);
+  });
+
+  test('percentageChange handles negative old/new values and returns a correctly-signed result', () => {
+    // ((newValue - oldValue) / oldValue) * 100 with oldValue = -50, newValue = -25:
+    // (25 / -50) * 100 = -50. Dividing by a negative base flips the sign versus
+    // the plain-magnitude case, which is expected behavior for this formula.
+    expect(percentageChange(-50, -25)).toBeCloseTo(-50, 10);
   });
 });
