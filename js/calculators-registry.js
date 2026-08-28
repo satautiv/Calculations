@@ -304,6 +304,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how a wheel width/offset (ET) change shifts fitment outward toward the fender or inward toward the suspension.',
     keywords: ['wheel offset', 'et', 'clearance', 'fitment', 'fender', 'suspension', 'wheel width', 'cars'],
   },
+  {
+    id: 'roof-box-fuel-penalty',
+    name: 'Roof Box Fuel Penalty',
+    category: 'Cars',
+    description: 'Estimate the extra fuel and cost a roof box adds to a trip, given its consumption penalty percentage.',
+    keywords: ['roof box', 'fuel penalty', 'consumption', 'aerodynamics', 'trip cost', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

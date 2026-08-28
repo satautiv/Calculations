@@ -1032,6 +1032,19 @@ function inverseExchangeRate(exchangeRate) {
   return 1 / exchangeRate;
 }
 
+// Extra fuel/cost from fitting a roof box, given a user-entered consumption
+// penalty percentage: the penalty scales the base L/100km consumption up,
+// and that extra consumption (not the full new consumption) is what's
+// multiplied out over the trip distance to get the extra fuel and cost.
+function roofBoxFuelPenalty(baseConsumption, penaltyPercent, distanceKm, fuelPricePerL) {
+  const extraConsumption = baseConsumption * (penaltyPercent / 100);
+  const newConsumption = baseConsumption * (1 + penaltyPercent / 100);
+  const extraFuel = (distanceKm / 100) * extraConsumption;
+  const extraCost = extraFuel * fuelPricePerL;
+
+  return { newConsumption, extraConsumption, extraFuel, extraCost };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1121,5 +1134,6 @@ if (typeof module !== 'undefined' && module.exports) {
     convertCurrency,
     inverseExchangeRate,
     wheelOffsetShift,
+    roofBoxFuelPenalty,
   };
 }
