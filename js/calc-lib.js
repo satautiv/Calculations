@@ -684,6 +684,29 @@ function jetLagDirectionFromOffsets(originOffsetHours, destOffsetHours) {
   return { direction: normalized > 0 ? 'east' : 'west', zonesCrossed: Math.abs(normalized) };
 }
 
+// Cost to fully charge an EV battery, accounting for charging losses
+// (AC/DC conversion, battery heat) via a charging-efficiency factor.
+function evFullChargeCost(batteryCapacityKWh, pricePerKWh, chargingEfficiencyPercent) {
+  const energyFromWall = batteryCapacityKWh / (chargingEfficiencyPercent / 100);
+  return { energyFromWall, cost: energyFromWall * pricePerKWh };
+}
+
+// Estimated range on a full charge, from battery capacity and efficiency.
+function evRange(batteryCapacityKWh, efficiencyKWhPer100km) {
+  return (batteryCapacityKWh * 100) / efficiencyKWhPer100km;
+}
+
+// Cost to drive a specific distance (no charging-loss factor, since this is
+// energy actually used while driving, not energy drawn from the wall).
+function evTripCost(distanceKm, efficiencyKWhPer100km, pricePerKWh) {
+  const energyUsed = distanceKm * (efficiencyKWhPer100km / 100);
+  return { energyUsed, cost: energyUsed * pricePerKWh };
+}
+
+function evCostPer100km(efficiencyKWhPer100km, pricePerKWh) {
+  return efficiencyKWhPer100km * pricePerKWh;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -746,5 +769,9 @@ if (typeof module !== 'undefined' && module.exports) {
     retirementProjection,
     jetLagRecoveryDays,
     jetLagDirectionFromOffsets,
+    evFullChargeCost,
+    evRange,
+    evTripCost,
+    evCostPer100km,
   };
 }

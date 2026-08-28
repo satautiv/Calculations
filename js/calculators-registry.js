@@ -206,6 +206,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how many days it takes to recover from jet lag after crossing time zones.',
     keywords: ['jet lag', 'time zones', 'travel recovery', 'eastward', 'westward'],
   },
+  {
+    id: 'ev-charging-cost',
+    name: 'EV Charging Cost',
+    category: 'Cars',
+    description: 'Calculate the cost to charge an EV, its estimated range, and cost per trip.',
+    keywords: ['ev', 'electric vehicle', 'charging cost', 'kwh', 'range'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
