@@ -241,6 +241,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compare the total cost of ownership of an EV versus a petrol car, combining purchase, energy/fuel, and maintenance costs.',
     keywords: ['ev', 'petrol', 'total cost of ownership', 'tco', 'electric vehicle', 'cars', 'comparison'],
   },
+  {
+    id: 'car-depreciation',
+    name: 'Car Depreciation',
+    category: 'Cars',
+    description: "Project a car's resale value over time using a declining-balance or straight-line depreciation model.",
+    keywords: ['car depreciation', 'resale value', 'declining balance', 'straight line', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

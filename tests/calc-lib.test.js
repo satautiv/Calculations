@@ -56,6 +56,8 @@ const {
   petrolDieselBreakEven,
   ruleOf72,
   evVsPetrolTCO,
+  carDepreciationDecliningBalance,
+  carDepreciationStraightLine,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1078,5 +1080,37 @@ describe('evVsPetrolTCO', () => {
     expect(result.petrolTCO).toBe(20125);
     expect(result.difference).toBe(-16100);
     expect(result.cheaper).toBe('petrol');
+  });
+});
+
+describe('carDepreciationDecliningBalance', () => {
+  test('matches the worked example: €30,000 at 15%/year over 5 years', () => {
+    const result = carDepreciationDecliningBalance(30000, 15, 5);
+
+    expect(result.valueAtYearN).toBeCloseTo(13311.16, 1);
+    expect(result.totalDepreciation).toBeCloseTo(16688.84, 1);
+    expect(result.totalDepreciationPercent).toBeCloseTo(55.63, 1);
+    expect(result.yearly).toHaveLength(5);
+    expect(result.yearly[4].value).toBeCloseTo(result.valueAtYearN, 6);
+  });
+
+  test('never goes negative or NaN even at a high rate over many years', () => {
+    const result = carDepreciationDecliningBalance(30000, 90, 20);
+
+    expect(result.valueAtYearN).toBeGreaterThan(0);
+    expect(result.valueAtYearN).toBeLessThan(30000);
+    expect(Number.isNaN(result.valueAtYearN)).toBe(false);
+  });
+});
+
+describe('carDepreciationStraightLine', () => {
+  test('matches the worked example: €30,000 price, €10,000 residual, 8-year life, at year 4', () => {
+    const result = carDepreciationStraightLine(30000, 10000, 8, 4);
+
+    expect(result.valueAtYearN).toBeCloseTo(20000, 6);
+    expect(result.totalDepreciation).toBeCloseTo(10000, 6);
+    expect(result.totalDepreciationPercent).toBeCloseTo((10000 / 30000) * 100, 6);
+    expect(result.yearly).toHaveLength(4);
+    expect(result.yearly[3].value).toBeCloseTo(result.valueAtYearN, 6);
   });
 });
