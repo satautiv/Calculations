@@ -53,6 +53,7 @@ const {
   evTripCost,
   evCostPer100km,
   fireCalculator,
+  petrolDieselBreakEven,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -950,5 +951,44 @@ describe('fireCalculator', () => {
     expect(overspending.annualSavings).toBe(-10000);
     expect(overspending.alreadyFI).toBe(false);
     expect(overspending.yearsToFI).toBe(Infinity);
+  });
+});
+
+describe('petrolDieselBreakEven', () => {
+  test('matches the worked example with annual mileage: €2000 premium, 7.0L/100km @ €1.60 vs 5.5L/100km @ €1.50, 15000 km/year', () => {
+    const result = petrolDieselBreakEven(2000, 7.0, 1.60, 5.5, 1.50, 15000);
+
+    expect(result.costPerKmPetrol).toBeCloseTo(0.112, 5);
+    expect(result.costPerKmDiesel).toBeCloseTo(0.0825, 5);
+    expect(result.savingsPerKm).toBeCloseTo(0.0295, 5);
+    expect(result.breakEvenDistanceKm).toBeCloseTo(67796.61, 1);
+    expect(result.breakEvenYears).toBeCloseTo(4.52, 1);
+    expect(result.neverBreaksEven).toBe(false);
+  });
+
+  test('matches the worked example without annual mileage: breakEvenYears is null', () => {
+    const result = petrolDieselBreakEven(2000, 7.0, 1.60, 5.5, 1.50);
+
+    expect(result.breakEvenDistanceKm).toBeCloseTo(67796.61, 1);
+    expect(result.breakEvenYears).toBeNull();
+  });
+
+  test('diesel never breaks even when it costs the same or more per km than petrol', () => {
+    const sameCost = petrolDieselBreakEven(2000, 6.0, 2.00, 6.0, 2.00, 15000);
+    expect(sameCost.neverBreaksEven).toBe(true);
+    expect(sameCost.breakEvenDistanceKm).toBeNull();
+    expect(sameCost.breakEvenYears).toBeNull();
+
+    const dieselPricier = petrolDieselBreakEven(2000, 7.0, 1.60, 7.0, 1.90, 15000);
+    expect(dieselPricier.neverBreaksEven).toBe(true);
+    expect(dieselPricier.breakEvenDistanceKm).toBeNull();
+  });
+
+  test('a negative price premium (diesel cheaper upfront) breaks even immediately', () => {
+    const result = petrolDieselBreakEven(-500, 7.0, 1.60, 5.5, 1.50, 15000);
+
+    expect(result.neverBreaksEven).toBe(false);
+    expect(result.breakEvenDistanceKm).toBe(0);
+    expect(result.breakEvenYears).toBe(0);
   });
 });

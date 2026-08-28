@@ -220,6 +220,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate years to Financial Independence using the 4% rule and your savings rate.',
     keywords: ['fire', 'financial independence', 'retire early', '4% rule', 'safe withdrawal rate'],
   },
+  {
+    id: 'petrol-diesel-break-even',
+    name: 'Petrol vs Diesel Break-Even',
+    category: 'Cars',
+    description: "Find the distance or time it takes for a diesel car's fuel savings to offset its higher upfront price.",
+    keywords: ['petrol', 'diesel', 'break even', 'fuel savings', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

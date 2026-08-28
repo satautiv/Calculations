@@ -1983,3 +1983,66 @@ document.getElementById('fire-calc').addEventListener('click', () => {
     <div class="hint">Annual savings: ${formatMoney(annualSavings)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
   `;
 });
+
+// --- Petrol vs Diesel Break-Even calculator ---
+document.getElementById('pdbe-calc').addEventListener('click', () => {
+  const pricePremium = parseFloat(document.getElementById('pdbe-premium').value);
+  const petrolConsumption = parseFloat(document.getElementById('pdbe-petrol-consumption').value);
+  const petrolPrice = parseFloat(document.getElementById('pdbe-petrol-price').value);
+  const dieselConsumption = parseFloat(document.getElementById('pdbe-diesel-consumption').value);
+  const dieselPrice = parseFloat(document.getElementById('pdbe-diesel-price').value);
+  const annualMileageRaw = document.getElementById('pdbe-annual-mileage').value;
+  const annualMileage = annualMileageRaw === '' ? null : parseFloat(annualMileageRaw);
+
+  if (isNaN(pricePremium)) {
+    showError('pdbe-result', 'Enter a valid price premium for the diesel car (can be negative if diesel is cheaper upfront).');
+    return;
+  }
+
+  if (!petrolConsumption || petrolConsumption <= 0) {
+    showError('pdbe-result', 'Enter a valid petrol consumption greater than zero.');
+    return;
+  }
+
+  if (!petrolPrice || petrolPrice <= 0) {
+    showError('pdbe-result', 'Enter a valid petrol price greater than zero.');
+    return;
+  }
+
+  if (!dieselConsumption || dieselConsumption <= 0) {
+    showError('pdbe-result', 'Enter a valid diesel consumption greater than zero.');
+    return;
+  }
+
+  if (!dieselPrice || dieselPrice <= 0) {
+    showError('pdbe-result', 'Enter a valid diesel price greater than zero.');
+    return;
+  }
+
+  if (annualMileage !== null && annualMileage <= 0) {
+    showError('pdbe-result', 'Annual mileage, if provided, must be greater than zero.');
+    return;
+  }
+
+  const {
+    costPerKmPetrol, costPerKmDiesel, savingsPerKm, breakEvenDistanceKm, breakEvenYears, neverBreaksEven,
+  } = petrolDieselBreakEven(pricePremium, petrolConsumption, petrolPrice, dieselConsumption, dieselPrice, annualMileage);
+
+  if (neverBreaksEven) {
+    document.getElementById('pdbe-result').innerHTML = `
+      <div class="headline">Diesel never breaks even</div>
+      <div>Diesel's cost per km (${formatMoney(costPerKmDiesel)}) is not lower than petrol's (${formatMoney(costPerKmPetrol)}), so the higher upfront price is never recouped in fuel savings.</div>
+    `;
+    return;
+  }
+
+  const yearsHtml = breakEvenYears !== null
+    ? `<div class="hint">At ${annualMileage.toLocaleString()} km/year: about ${breakEvenYears.toFixed(2)} years to break even.</div>`
+    : '';
+
+  document.getElementById('pdbe-result').innerHTML = `
+    <div class="headline">${breakEvenDistanceKm.toFixed(0)} km to break even</div>
+    <div>Diesel saves ${formatMoney(savingsPerKm)} per km driven (${formatMoney(costPerKmPetrol)}/km petrol vs ${formatMoney(costPerKmDiesel)}/km diesel).</div>
+    ${yearsHtml}
+  `;
+});
