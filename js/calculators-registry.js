@@ -269,6 +269,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert engine power between HP and kW, torque between Nm and lb-ft, and optionally pair a torque value with RPM to get the corresponding power.',
     keywords: ['engine power', 'torque', 'horsepower', 'kilowatts', 'hp', 'kw', 'nm', 'lb-ft', 'rpm', 'cars'],
   },
+  {
+    id: 'acceleration-estimator',
+    name: '0-100 km/h Acceleration Estimator',
+    category: 'Cars',
+    description: 'Roughly estimate a car\'s 0-100 km/h (or other target speed) acceleration time from its weight and power.',
+    keywords: ['acceleration', '0-100', '0-60', 'zero to sixty', 'kinetic energy', 'power to weight', 'cars'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

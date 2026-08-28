@@ -65,6 +65,7 @@ const {
   nmToLbft,
   lbftToNm,
   powerFromTorqueNmAndRpm,
+  accelerationTimeEstimate,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1231,5 +1232,39 @@ describe('engine power & torque converter', () => {
     const kw = powerFromTorqueNmAndRpm(400, 5500);
     expect(kw).toBeCloseTo(230.40, 2);
     expect(kwToHp(kw)).toBeCloseTo(308.97, 2);
+  });
+});
+
+describe('accelerationTimeEstimate', () => {
+  test('matches the worked example: 1600 kg, 375 kW, 0.40 efficiency, 100 km/h -> ~4.115 s', () => {
+    const result = accelerationTimeEstimate(1600, 375000, 0.40, 100);
+    expect(result.timeSeconds).toBeCloseTo(4.115, 2);
+    expect(result.targetSpeedKmh).toBe(100);
+  });
+
+  test('higher power gives a shorter time, holding mass/efficiency/speed constant', () => {
+    const lowerPower = accelerationTimeEstimate(1600, 200000, 0.40, 100).timeSeconds;
+    const higherPower = accelerationTimeEstimate(1600, 400000, 0.40, 100).timeSeconds;
+    expect(higherPower).toBeLessThan(lowerPower);
+  });
+
+  test('higher mass gives a longer time, holding power/efficiency/speed constant', () => {
+    const lighterCar = accelerationTimeEstimate(1200, 300000, 0.40, 100).timeSeconds;
+    const heavierCar = accelerationTimeEstimate(1800, 300000, 0.40, 100).timeSeconds;
+    expect(heavierCar).toBeGreaterThan(lighterCar);
+  });
+
+  test('uses the default efficiency (0.40) and default target speed (100 km/h) when not provided', () => {
+    const withDefaults = accelerationTimeEstimate(1600, 375000);
+    const withExplicitDefaults = accelerationTimeEstimate(1600, 375000, 0.40, 100);
+    expect(withDefaults.timeSeconds).toBeCloseTo(withExplicitDefaults.timeSeconds, 10);
+    expect(withDefaults.targetSpeedKmh).toBe(100);
+  });
+
+  test('a custom target speed changes the result accordingly', () => {
+    const to100 = accelerationTimeEstimate(1600, 375000, 0.40, 100).timeSeconds;
+    const to200 = accelerationTimeEstimate(1600, 375000, 0.40, 200).timeSeconds;
+    // kinetic energy scales with v^2, so doubling target speed quadruples the time
+    expect(to200).toBeCloseTo(to100 * 4, 6);
   });
 });
