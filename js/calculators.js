@@ -1390,3 +1390,38 @@ document.getElementById('coffee-calc').addEventListener('click', () => {
     `;
   }
 });
+
+// --- Time zone converter ---
+function formatDayOffsetLabel(dayOffset) {
+  if (dayOffset === 0) return 'same day';
+  if (dayOffset === 1) return 'next day';
+  if (dayOffset === -1) return 'previous day';
+  return dayOffset > 0 ? `${dayOffset} days later` : `${Math.abs(dayOffset)} days earlier`;
+}
+
+document.getElementById('tz-calc').addEventListener('click', () => {
+  const sourceTimeRaw = document.getElementById('tz-source-time').value;
+  const sourceOffset = parseFloat(document.getElementById('tz-source-offset').value);
+  const destOffset = parseFloat(document.getElementById('tz-dest-offset').value);
+
+  if (!sourceTimeRaw) {
+    showError('tz-result', 'Enter a valid source time.');
+    return;
+  }
+
+  const [sourceHour, sourceMinute] = sourceTimeRaw.split(':').map(Number);
+
+  const isValidOffset = (offset) => !isNaN(offset) && offset >= -12 && offset <= 14;
+
+  if (!isValidOffset(sourceOffset) || !isValidOffset(destOffset)) {
+    showError('tz-result', 'Enter valid UTC offsets between -12 and +14.');
+    return;
+  }
+
+  const { destinationMinutes, dayOffset } = convertTimeZone(sourceHour, sourceMinute, sourceOffset, destOffset);
+
+  document.getElementById('tz-result').innerHTML = `
+    <div class="headline">${minutesToTimeLabel(destinationMinutes)}</div>
+    <div>Destination time (${formatDayOffsetLabel(dayOffset)})</div>
+  `;
+});

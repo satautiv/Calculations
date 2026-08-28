@@ -34,6 +34,8 @@ const {
   meatPullTemperature,
   coffeeWaterForDose,
   coffeeDoseForWater,
+  convertTimeZone,
+  minutesToTimeLabel,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -641,5 +643,31 @@ describe('coffeeWaterForDose / coffeeDoseForWater', () => {
   test('coffeeDoseForWater is the inverse of coffeeWaterForDose', () => {
     expect(coffeeDoseForWater(320, 16)).toBe(20);
     expect(coffeeDoseForWater(36, 2)).toBe(18);
+  });
+});
+
+describe('convertTimeZone / minutesToTimeLabel', () => {
+  test('matches the worked example: 22:00 UTC-5 -> UTC+9 is 12:00 next day', () => {
+    const { destinationMinutes, dayOffset } = convertTimeZone(22, 0, -5, 9);
+    expect(minutesToTimeLabel(destinationMinutes)).toBe('12:00');
+    expect(dayOffset).toBe(1);
+  });
+
+  test('supports fractional offsets (e.g. UTC+5:30)', () => {
+    const { destinationMinutes, dayOffset } = convertTimeZone(12, 0, 0, 5.5);
+    expect(minutesToTimeLabel(destinationMinutes)).toBe('17:30');
+    expect(dayOffset).toBe(0);
+  });
+
+  test('rolls back to the previous day when the result is negative', () => {
+    const { destinationMinutes, dayOffset } = convertTimeZone(1, 0, 9, -5);
+    expect(minutesToTimeLabel(destinationMinutes)).toBe('11:00');
+    expect(dayOffset).toBe(-1);
+  });
+
+  test('same offset is a no-op (same time, same day)', () => {
+    const { destinationMinutes, dayOffset } = convertTimeZone(9, 15, 2, 2);
+    expect(minutesToTimeLabel(destinationMinutes)).toBe('09:15');
+    expect(dayOffset).toBe(0);
   });
 });

@@ -492,6 +492,24 @@ function coffeeDoseForWater(water, ratio) {
   return water / ratio;
 }
 
+// Converts a source time to a destination time zone given fixed UTC offsets
+// (in hours, supporting fractional offsets like +5.5 or +5.75). Reports how
+// many calendar days the destination time falls from the source's day.
+function convertTimeZone(sourceHour, sourceMinute, sourceOffsetHours, destOffsetHours) {
+  const sourceMinutes = sourceHour * 60 + sourceMinute;
+  const totalMinutes = sourceMinutes + (destOffsetHours - sourceOffsetHours) * 60;
+  const dayOffset = Math.floor(totalMinutes / 1440);
+  const destinationMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+
+  return { destinationMinutes, dayOffset };
+}
+
+function minutesToTimeLabel(minutes) {
+  const hour = Math.floor(minutes / 60);
+  const minute = Math.round(minutes % 60);
+  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -540,5 +558,7 @@ if (typeof module !== 'undefined' && module.exports) {
     COFFEE_BREW_METHODS,
     coffeeWaterForDose,
     coffeeDoseForWater,
+    convertTimeZone,
+    minutesToTimeLabel,
   };
 }
