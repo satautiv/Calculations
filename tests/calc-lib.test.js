@@ -48,6 +48,10 @@ const {
   retirementProjection,
   jetLagRecoveryDays,
   jetLagDirectionFromOffsets,
+  evFullChargeCost,
+  evRange,
+  evTripCost,
+  evCostPer100km,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -884,5 +888,26 @@ describe('jetLagDirectionFromOffsets', () => {
     const { direction, zonesCrossed } = jetLagDirectionFromOffsets(-10, 11);
     expect(direction).toBe('west');
     expect(zonesCrossed).toBe(3);
+  });
+});
+
+describe('evFullChargeCost / evRange', () => {
+  test('matches the worked example: 60 kWh battery, 16 kWh/100km, €0.30/kWh, 90% charging efficiency', () => {
+    const { energyFromWall, cost } = evFullChargeCost(60, 0.30, 90);
+    expect(energyFromWall).toBeCloseTo(66.6667, 3);
+    expect(cost).toBeCloseTo(20, 5);
+    expect(evRange(60, 16)).toBe(375);
+  });
+});
+
+describe('evTripCost / evCostPer100km', () => {
+  test('cost per 100km matches efficiency times price', () => {
+    expect(evCostPer100km(16, 0.30)).toBeCloseTo(4.8, 5);
+  });
+
+  test('a specific trip cost scales linearly with distance', () => {
+    const { energyUsed, cost } = evTripCost(100, 16, 0.30);
+    expect(energyUsed).toBe(16);
+    expect(cost).toBeCloseTo(4.8, 5);
   });
 });

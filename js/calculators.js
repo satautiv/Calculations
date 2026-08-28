@@ -1872,3 +1872,53 @@ document.getElementById('jetlag-calc').addEventListener('click', () => {
     <div class="hint">Eastward jet lag tends to be worse than westward for the same number of zones.</div>
   `;
 });
+
+// --- EV charging cost calculator ---
+document.getElementById('ev-calc').addEventListener('click', () => {
+  const battery = parseFloat(document.getElementById('ev-battery').value);
+  const efficiency = parseFloat(document.getElementById('ev-efficiency').value);
+  const price = parseFloat(document.getElementById('ev-price').value);
+  const chargingEfficiency = parseFloat(document.getElementById('ev-charging-efficiency').value);
+  const distanceRaw = document.getElementById('ev-distance').value;
+  const distance = distanceRaw === '' ? null : parseFloat(distanceRaw);
+
+  if (!battery || battery <= 0) {
+    showError('ev-result', 'Enter a valid battery capacity greater than zero.');
+    return;
+  }
+
+  if (!efficiency || efficiency <= 0) {
+    showError('ev-result', 'Enter a valid efficiency greater than zero.');
+    return;
+  }
+
+  if (!price || price <= 0) {
+    showError('ev-result', 'Enter a valid electricity price greater than zero.');
+    return;
+  }
+
+  if (isNaN(chargingEfficiency) || chargingEfficiency <= 0 || chargingEfficiency > 100) {
+    showError('ev-result', 'Enter a valid charging efficiency between 0 (exclusive) and 100%.');
+    return;
+  }
+
+  if (distance !== null && distance <= 0) {
+    showError('ev-result', 'Distance, if provided, must be greater than zero.');
+    return;
+  }
+
+  const { cost: fullChargeCost } = evFullChargeCost(battery, price, chargingEfficiency);
+  const range = evRange(battery, efficiency);
+  const costPer100km = evCostPer100km(efficiency, price);
+
+  const tripHtml = distance !== null ? `
+    <div class="hint">Cost for a ${distance} km trip: ${formatMoney(evTripCost(distance, efficiency, price).cost)}</div>
+  ` : '';
+
+  document.getElementById('ev-result').innerHTML = `
+    <div class="headline">${formatMoney(fullChargeCost)} to fully charge</div>
+    <div>Estimated range on a full charge: ${range.toFixed(0)} km</div>
+    <div class="hint">Cost per 100 km: ${formatMoney(costPer100km)}</div>
+    ${tripHtml}
+  `;
+});
