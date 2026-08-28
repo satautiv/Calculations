@@ -989,6 +989,21 @@
     <div class="result" id="pdbe-result"></div>
   </section>
 
+  <section id="rule-of-72" class="view tab-panel">
+    <h2>Rule of 72 Calculator</h2>
+    <p class="hint">Estimate how many years it takes an investment to double at a fixed annual rate, using the Rule of 72 and more precise variants for comparison.</p>
+    <div class="field">
+      <label for="rule72-rate">Annual interest/growth rate (%)</label>
+      <input type="number" id="rule72-rate" min="0.01" step="0.01" placeholder="e.g. 8">
+    </div>
+    <div class="field">
+      <label for="rule72-principal">Starting amount (optional)</label>
+      <input type="number" id="rule72-principal" min="0" step="0.01" placeholder="e.g. 10000">
+    </div>
+    <button class="calc-btn" id="rule72-calc">Calculate</button>
+    <div class="result" id="rule72-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

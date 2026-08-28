@@ -227,6 +227,13 @@ const CALCULATOR_REGISTRY = [
     description: "Find the distance or time it takes for a diesel car's fuel savings to offset its higher upfront price.",
     keywords: ['petrol', 'diesel', 'break even', 'fuel savings', 'cars'],
   },
+  {
+    id: 'rule-of-72',
+    name: 'Rule of 72',
+    category: 'Finance',
+    description: 'Estimate how many years it takes an investment to double at a fixed annual rate.',
+    keywords: ['rule of 72', 'rule of 70', 'doubling time', 'investment growth', 'compound interest'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
