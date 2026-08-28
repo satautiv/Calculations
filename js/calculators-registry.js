@@ -290,6 +290,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Decode two tyre size codes into overall diameter and circumference, and calculate the speedometer error caused by the difference.',
     keywords: ['tyre size', 'tire size', 'speedometer error', 'tyre diameter', 'plus sizing', 'rim size', 'aspect ratio', 'cars'],
   },
+  {
+    id: 'currency-converter',
+    name: 'Currency Converter',
+    category: 'Travel',
+    description: 'Convert an amount between currencies using a manually-entered exchange rate, with a swap-direction toggle for the inverse rate.',
+    keywords: ['currency converter', 'exchange rate', 'forex', 'money conversion', 'travel'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -207,6 +207,24 @@ main:has(#calculator-index.active) {
   border-color: var(--accent);
 }
 
+.field-checkbox {
+  margin-bottom: 1rem;
+}
+
+.field-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.field-checkbox input[type="checkbox"] {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .calc-btn {
   width: 100%;
   padding: 0.75rem;
