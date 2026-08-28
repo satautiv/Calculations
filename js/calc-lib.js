@@ -551,6 +551,22 @@ function salaryAfterTax(grossAnnualIncome, brackets, socialSecurityRatePercent) 
   return { tax, socialSecurity, netIncome, netMonthly: netIncome / 12, effectiveRate };
 }
 
+// Converts a pay rate between hourly, monthly, and annual figures, using the
+// annual figure as the common base (see the loan/investment calculators for
+// the same "derive everything from one shared base" pattern).
+function convertSalary(amount, period, hoursPerWeek, weeksPerYear) {
+  let annual;
+  if (period === 'hourly') annual = amount * hoursPerWeek * weeksPerYear;
+  else if (period === 'monthly') annual = amount * 12;
+  else annual = amount;
+
+  return {
+    annual,
+    monthly: annual / 12,
+    hourly: annual / (hoursPerWeek * weeksPerYear),
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -605,5 +621,6 @@ if (typeof module !== 'undefined' && module.exports) {
     doughWaterForHydration,
     calculateProgressiveTax,
     salaryAfterTax,
+    convertSalary,
   };
 }

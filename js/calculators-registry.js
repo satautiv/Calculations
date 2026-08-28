@@ -164,6 +164,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate net take-home pay from gross salary using your own tax brackets.',
     keywords: ['salary', 'tax', 'take home pay', 'net income', 'tax brackets'],
   },
+  {
+    id: 'salary-converter',
+    name: 'Salary Converter',
+    category: 'Finance',
+    description: 'Convert a pay rate between hourly, monthly, and annual figures.',
+    keywords: ['salary converter', 'hourly rate', 'annual salary', 'pay rate'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

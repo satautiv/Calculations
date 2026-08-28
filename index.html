@@ -691,6 +691,33 @@
     <div class="result" id="salary-result"></div>
   </section>
 
+  <section id="salary-converter" class="view tab-panel">
+    <h2>Salary Converter</h2>
+    <p class="hint">Convert a pay rate between hourly, monthly, and annual figures.</p>
+    <div class="field">
+      <label for="sc-period">This figure is</label>
+      <select id="sc-period">
+        <option value="hourly">Hourly</option>
+        <option value="monthly">Monthly</option>
+        <option value="annual">Annual</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sc-amount">Amount</label>
+      <input type="number" id="sc-amount" min="0" step="0.01" placeholder="e.g. 25">
+    </div>
+    <div class="field">
+      <label for="sc-hours-per-week">Hours per week</label>
+      <input type="number" id="sc-hours-per-week" min="1" max="168" step="0.5" value="40">
+    </div>
+    <div class="field">
+      <label for="sc-weeks-per-year">Weeks per year</label>
+      <input type="number" id="sc-weeks-per-year" min="1" max="52" step="0.5" value="52">
+    </div>
+    <button class="calc-btn" id="sc-calc">Convert</button>
+    <div class="result" id="sc-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>
