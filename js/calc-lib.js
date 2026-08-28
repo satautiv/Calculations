@@ -1204,6 +1204,52 @@ function weightedAverage(values, weights) {
   return weightedSum / totalWeight;
 }
 
+// --- Age calculator ---
+
+// Number of days in `month` (0-indexed) of `year`, via UTC calendar
+// arithmetic (day 0 of the following month is the last day of this one).
+function daysInUtcMonth(year, month) {
+  return new Date(Date.UTC(year, month + 1, 0)).getUTCDate();
+}
+
+// Calendar-aware age breakdown between two UTC-midnight-normalized Date
+// objects. Takes both dates explicitly (rather than defaulting asOfDate to
+// `new Date()` internally) so this stays a pure, deterministically testable
+// function, the same pattern as retirementCountdown; callers pass today's
+// date themselves. Throws if asOfDate is before birthDate.
+function ageBreakdown(birthDate, asOfDate) {
+  if (asOfDate < birthDate) {
+    throw new Error('The as-of date must be on or after the birth date.');
+  }
+
+  let years = asOfDate.getUTCFullYear() - birthDate.getUTCFullYear();
+  let months = asOfDate.getUTCMonth() - birthDate.getUTCMonth();
+  let days = asOfDate.getUTCDate() - birthDate.getUTCDate();
+
+  if (days < 0) {
+    months -= 1;
+    let prevMonth = asOfDate.getUTCMonth() - 1;
+    let prevMonthYear = asOfDate.getUTCFullYear();
+    if (prevMonth < 0) {
+      prevMonth = 11;
+      prevMonthYear -= 1;
+    }
+    days += daysInUtcMonth(prevMonthYear, prevMonth);
+  }
+
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const totalDays = Math.floor((asOfDate - birthDate) / msPerDay);
+  const totalWeeks = Math.floor(totalDays / 7);
+  const remainderDays = totalDays % 7;
+
+  return { years, months, days, totalDays, totalWeeks, remainderDays };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1305,5 +1351,6 @@ if (typeof module !== 'undefined' && module.exports) {
     luggageWeightCheck,
     simpleAverage,
     weightedAverage,
+    ageBreakdown,
   };
 }

@@ -86,6 +86,7 @@ const {
   simplifyRatio,
   solveProportion,
   luggageWeightCheck,
+  ageBreakdown,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1611,5 +1612,54 @@ describe('Average / Weighted Average calculator', () => {
     test('a single value/weight pair averages to that value regardless of weight', () => {
       expect(weightedAverage([55], [7])).toBe(55);
     });
+  });
+});
+
+describe('ageBreakdown', () => {
+  function utc(dateString) {
+    return new Date(dateString + 'T00:00:00Z');
+  }
+
+  test('matches the worked example: born 2000-03-15, as of 2026-08-25', () => {
+    const result = ageBreakdown(utc('2000-03-15'), utc('2026-08-25'));
+    expect(result.years).toBe(26);
+    expect(result.months).toBe(5);
+    expect(result.days).toBe(10);
+    expect(result.totalDays).toBe(9659);
+    expect(result.totalWeeks).toBe(1379);
+    expect(result.remainderDays).toBe(6);
+  });
+
+  test('birth date equal to as-of date gives 0/0/0 and 0 total days', () => {
+    const result = ageBreakdown(utc('2020-01-01'), utc('2020-01-01'));
+    expect(result.years).toBe(0);
+    expect(result.months).toBe(0);
+    expect(result.days).toBe(0);
+    expect(result.totalDays).toBe(0);
+    expect(result.totalWeeks).toBe(0);
+    expect(result.remainderDays).toBe(0);
+  });
+
+  // Leap-day birthday (2000-02-29) checked against a non-leap year, using
+  // the "resolves to March 1" convention: computed with Node directly from
+  // the same borrow logic implemented in ageBreakdown, so a reviewer can
+  // verify independently -
+  //   years = 2026 - 2000 = 26, months = 2 - 1 = 1 (Mar index 2, Feb index 1)
+  //   days = 1 - 29 = -28 -> borrow: months -> 0, days += daysInMonth(Feb
+  //     2026) = 28 (non-leap) -> days = 0
+  //   result: 26 years, 0 months, 0 days
+  //   totalDays = 9497, totalWeeks = 1356, remainderDays = 5
+  test('leap-day birthday resolves cleanly against a non-leap-year as-of date (March 1 convention)', () => {
+    const result = ageBreakdown(utc('2000-02-29'), utc('2026-03-01'));
+    expect(result.years).toBe(26);
+    expect(result.months).toBe(0);
+    expect(result.days).toBe(0);
+    expect(result.totalDays).toBe(9497);
+    expect(result.totalWeeks).toBe(1356);
+    expect(result.remainderDays).toBe(5);
+  });
+
+  test('throws when the as-of date is before the birth date', () => {
+    expect(() => ageBreakdown(utc('2020-06-01'), utc('2020-05-01'))).toThrow();
   });
 });
