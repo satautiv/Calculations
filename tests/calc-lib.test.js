@@ -40,6 +40,7 @@ const {
   doughWaterForHydration,
   calculateProgressiveTax,
   salaryAfterTax,
+  convertSalary,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -725,5 +726,31 @@ describe('salaryAfterTax', () => {
   test('clamps net income at 0 instead of going negative for an over-deducting bracket table', () => {
     const { netIncome } = salaryAfterTax(10000, [{ from: 0, rate: 0.9 }], 50);
     expect(netIncome).toBe(0);
+  });
+});
+
+describe('convertSalary', () => {
+  test('matches the worked example: €25/hr, 40 hrs/week, 52 weeks/year -> €52,000/year', () => {
+    const { annual, monthly } = convertSalary(25, 'hourly', 40, 52);
+    expect(annual).toBe(52000);
+    expect(monthly).toBeCloseTo(4333.33, 2);
+  });
+
+  test('fewer paid weeks per year lowers the annual figure', () => {
+    const { annual, monthly } = convertSalary(25, 'hourly', 40, 48);
+    expect(annual).toBe(48000);
+    expect(monthly).toBe(4000);
+  });
+
+  test('converts from monthly to hourly and annual', () => {
+    const { annual, hourly } = convertSalary(4333.33, 'monthly', 40, 52);
+    expect(annual).toBeCloseTo(51999.96, 2);
+    expect(hourly).toBeCloseTo(25, 1);
+  });
+
+  test('converts from annual to monthly and hourly', () => {
+    const { monthly, hourly } = convertSalary(52000, 'annual', 40, 52);
+    expect(monthly).toBeCloseTo(4333.33, 2);
+    expect(hourly).toBe(25);
   });
 });

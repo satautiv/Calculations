@@ -1564,3 +1564,33 @@ document.getElementById('salary-calc').addEventListener('click', () => {
     <div class="hint">Income tax: ${formatMoney(tax)} &middot; Social security: ${formatMoney(socialSecurity)}</div>
   `;
 });
+
+// --- Salary converter ---
+document.getElementById('sc-calc').addEventListener('click', () => {
+  const period = document.getElementById('sc-period').value;
+  const amount = parseFloat(document.getElementById('sc-amount').value);
+  const hoursPerWeek = parseFloat(document.getElementById('sc-hours-per-week').value);
+  const weeksPerYear = parseFloat(document.getElementById('sc-weeks-per-year').value);
+
+  if (!amount || amount <= 0) {
+    showError('sc-result', 'Enter a valid amount greater than zero.');
+    return;
+  }
+
+  if (!hoursPerWeek || hoursPerWeek <= 0 || hoursPerWeek > 168) {
+    showError('sc-result', 'Enter a valid hours-per-week value between 1 and 168.');
+    return;
+  }
+
+  if (!weeksPerYear || weeksPerYear <= 0 || weeksPerYear > 52) {
+    showError('sc-result', 'Enter a valid weeks-per-year value between 1 and 52.');
+    return;
+  }
+
+  const { annual, monthly, hourly } = convertSalary(amount, period, hoursPerWeek, weeksPerYear);
+
+  document.getElementById('sc-result').innerHTML = `
+    <div class="headline">${formatMoney(annual)} / year</div>
+    <div>${formatMoney(monthly)} / month &middot; ${formatMoney(hourly)} / hour</div>
+  `;
+});
