@@ -388,6 +388,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Find the calendar date a number of days before or after a starting date, plus its day of the week.',
     keywords: ['date plus days', 'date minus days', 'add days', 'subtract days', 'day of week', 'general'],
   },
+  {
+    id: 'voltage-plug-checker',
+    name: 'Voltage & Plug Type Checker',
+    category: 'Travel',
+    description: 'Check whether you need a plug adapter, a voltage converter, both, or neither when traveling between two countries.',
+    keywords: ['voltage', 'plug adapter', 'plug type', 'travel adapter', 'mains electricity', 'travel'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

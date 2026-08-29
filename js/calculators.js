@@ -3522,3 +3522,41 @@ document.getElementById('date-pm-calc').addEventListener('click', () => {
     <div>${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} ${verb} ${startLabel} is ${weekday}, ${resultLabel}.</div>
   `;
 });
+
+// --- Country voltage and plug type checker ---
+
+const VOLTAGE_RECOMMENDATION_TEXT = {
+  none: 'No adapter or converter needed.',
+  adapter: 'You need a plug adapter (shape only).',
+  converter: 'You need a voltage converter (plug shape is fine).',
+  both: 'You need both a plug adapter and a voltage converter.',
+};
+
+document.getElementById('voltage-calc').addEventListener('click', () => {
+  const home = document.getElementById('voltage-home').value;
+  const destination = document.getElementById('voltage-destination').value;
+  const dualVoltage = document.getElementById('voltage-dual').checked;
+
+  if (!home || !destination) {
+    showError('voltage-result', 'Select both a home country and a destination country.');
+    return;
+  }
+
+  const result = checkPlugAdapterNeeds(home, destination, dualVoltage);
+
+  if (result.error) {
+    showError('voltage-result', result.error);
+    return;
+  }
+
+  const frequencyNote = result.home.frequency !== result.destination.frequency
+    ? `<div class="hint">Frequency differs (${result.home.frequency}Hz vs ${result.destination.frequency}Hz) &mdash; not usually an issue for modern electronics, but can matter for motor-driven appliances like some clocks.</div>`
+    : '';
+
+  document.getElementById('voltage-result').innerHTML = `
+    <div class="headline">${VOLTAGE_RECOMMENDATION_TEXT[result.recommendation]}</div>
+    <div>${home}: ${result.home.voltage}V, ${result.home.frequency}Hz, Type ${result.home.plugTypes.join('/')}</div>
+    <div>${destination}: ${result.destination.voltage}V, ${result.destination.frequency}Hz, Type ${result.destination.plugTypes.join('/')}</div>
+    ${frequencyNote}
+  `;
+});

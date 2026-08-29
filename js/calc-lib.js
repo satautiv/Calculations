@@ -1422,6 +1422,92 @@ function weekdayName(date) {
   return WEEKDAY_NAMES[date.getUTCDay()];
 }
 
+// --- Country voltage and plug type checker ---
+
+// Static reference dataset (mains voltage, frequency, and IEC plug type
+// letters A-N) for a selection of countries, compiled from standard
+// reference sources (e.g. IEC World Plugs). Not a live lookup. Where a
+// country genuinely uses more than one voltage/plug combination, one
+// representative value is used.
+const COUNTRY_ELECTRICITY_DATA = {
+  'United States': { voltage: 120, frequency: 60, plugTypes: ['A', 'B'] },
+  'Canada': { voltage: 120, frequency: 60, plugTypes: ['A', 'B'] },
+  'Mexico': { voltage: 127, frequency: 60, plugTypes: ['A', 'B'] },
+  'Brazil': { voltage: 127, frequency: 60, plugTypes: ['C', 'N'] },
+  'Colombia': { voltage: 110, frequency: 60, plugTypes: ['A', 'B'] },
+  'Peru': { voltage: 220, frequency: 60, plugTypes: ['A', 'C'] },
+  'Argentina': { voltage: 220, frequency: 50, plugTypes: ['C', 'I'] },
+  'Chile': { voltage: 220, frequency: 50, plugTypes: ['C', 'L'] },
+  'United Kingdom': { voltage: 230, frequency: 50, plugTypes: ['G'] },
+  'Ireland': { voltage: 230, frequency: 50, plugTypes: ['G'] },
+  'France': { voltage: 230, frequency: 50, plugTypes: ['C', 'E'] },
+  'Germany': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Spain': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Italy': { voltage: 230, frequency: 50, plugTypes: ['C', 'F', 'L'] },
+  'Netherlands': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Belgium': { voltage: 230, frequency: 50, plugTypes: ['C', 'E'] },
+  'Switzerland': { voltage: 230, frequency: 50, plugTypes: ['C', 'J'] },
+  'Austria': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Portugal': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Greece': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Poland': { voltage: 230, frequency: 50, plugTypes: ['C', 'E'] },
+  'Sweden': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Norway': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Denmark': { voltage: 230, frequency: 50, plugTypes: ['C', 'K'] },
+  'Finland': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Russia': { voltage: 220, frequency: 50, plugTypes: ['C', 'F'] },
+  'Turkey': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'China': { voltage: 220, frequency: 50, plugTypes: ['A', 'C', 'I'] },
+  'Japan': { voltage: 100, frequency: 50, plugTypes: ['A', 'B'] },
+  'South Korea': { voltage: 220, frequency: 60, plugTypes: ['C', 'F'] },
+  'India': { voltage: 230, frequency: 50, plugTypes: ['C', 'D', 'M'] },
+  'Australia': { voltage: 230, frequency: 50, plugTypes: ['I'] },
+  'New Zealand': { voltage: 230, frequency: 50, plugTypes: ['I'] },
+  'South Africa': { voltage: 230, frequency: 50, plugTypes: ['C', 'D', 'M', 'N'] },
+  'Egypt': { voltage: 220, frequency: 50, plugTypes: ['C', 'F'] },
+  'Nigeria': { voltage: 230, frequency: 50, plugTypes: ['D', 'G'] },
+  'Kenya': { voltage: 240, frequency: 50, plugTypes: ['G'] },
+  'United Arab Emirates': { voltage: 230, frequency: 50, plugTypes: ['G'] },
+  'Saudi Arabia': { voltage: 230, frequency: 60, plugTypes: ['A', 'G'] },
+  'Israel': { voltage: 230, frequency: 50, plugTypes: ['C', 'H'] },
+  'Thailand': { voltage: 230, frequency: 50, plugTypes: ['A', 'C'] },
+  'Vietnam': { voltage: 220, frequency: 50, plugTypes: ['A', 'C'] },
+  'Singapore': { voltage: 230, frequency: 50, plugTypes: ['G'] },
+  'Malaysia': { voltage: 230, frequency: 50, plugTypes: ['G'] },
+  'Indonesia': { voltage: 230, frequency: 50, plugTypes: ['C', 'F'] },
+  'Philippines': { voltage: 220, frequency: 60, plugTypes: ['A', 'B', 'C'] },
+};
+
+// Default voltage-compatibility tolerance: destination voltage within 10% of
+// home voltage is treated as safe for a non-dual-voltage device.
+const VOLTAGE_TOLERANCE_FRACTION = 0.10;
+
+// Looks up the home/destination country records and returns a plug-shape and
+// voltage comparison plus one of four recommendations: 'none', 'adapter',
+// 'converter', or 'both'. Returns { error } instead if either country isn't
+// in the dataset. `dualVoltageDevice` (device rated ~100-240V) skips the
+// voltage check entirely, since only plug shape matters in that case.
+function checkPlugAdapterNeeds(homeCountryName, destinationCountryName, dualVoltageDevice, dataset = COUNTRY_ELECTRICITY_DATA) {
+  const home = dataset[homeCountryName];
+  const destination = dataset[destinationCountryName];
+
+  if (!home || !destination) {
+    return { error: 'Data not available for this country.' };
+  }
+
+  const plugMatch = home.plugTypes.some(type => destination.plugTypes.includes(type));
+  const voltageCompatible = !!dualVoltageDevice
+    || Math.abs(home.voltage - destination.voltage) <= home.voltage * VOLTAGE_TOLERANCE_FRACTION;
+
+  let recommendation;
+  if (plugMatch && voltageCompatible) recommendation = 'none';
+  else if (!plugMatch && voltageCompatible) recommendation = 'adapter';
+  else if (plugMatch && !voltageCompatible) recommendation = 'converter';
+  else recommendation = 'both';
+
+  return { home, destination, plugMatch, voltageCompatible, recommendation };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1541,5 +1627,8 @@ if (typeof module !== 'undefined' && module.exports) {
     WEEKDAY_NAMES,
     addDaysToDate,
     weekdayName,
+    COUNTRY_ELECTRICITY_DATA,
+    VOLTAGE_TOLERANCE_FRACTION,
+    checkPlugAdapterNeeds,
   };
 }
