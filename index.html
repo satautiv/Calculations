@@ -2208,6 +2208,69 @@
     <button class="calc-btn" id="bulk-calc">Calculate</button>
     <div class="result" id="bulk-result"></div>
   </section>
+
+  <section id="running-pace-calculator" class="view tab-panel">
+    <h2>Running Pace Calculator</h2>
+    <p class="hint">Converts between running pace, total time, and distance &mdash; enter the two you know and solve for the third.</p>
+    <div class="field">
+      <label for="pace-solve-for">Solve for</label>
+      <select id="pace-solve-for">
+        <option value="pace">Pace</option>
+        <option value="time">Time</option>
+        <option value="distance">Distance</option>
+      </select>
+    </div>
+
+    <div id="pace-distance-fields">
+      <div class="field">
+        <label for="pace-distance">Distance</label>
+        <input type="number" id="pace-distance" min="0" step="0.01" placeholder="e.g. 10">
+      </div>
+      <div class="field">
+        <label for="pace-distance-unit">Distance unit</label>
+        <select id="pace-distance-unit">
+          <option value="km">km</option>
+          <option value="mi">miles</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="pace-time-fields">
+      <div class="field">
+        <label for="pace-time-h">Total time &mdash; hours</label>
+        <input type="number" id="pace-time-h" min="0" step="1" placeholder="e.g. 0">
+      </div>
+      <div class="field">
+        <label for="pace-time-m">Total time &mdash; minutes</label>
+        <input type="number" id="pace-time-m" min="0" max="59" step="1" placeholder="e.g. 50">
+      </div>
+      <div class="field">
+        <label for="pace-time-s">Total time &mdash; seconds (optional)</label>
+        <input type="number" id="pace-time-s" min="0" max="59" step="1" placeholder="e.g. 0">
+      </div>
+    </div>
+
+    <div id="pace-pace-fields" hidden>
+      <div class="field">
+        <label for="pace-pace-m">Pace &mdash; minutes</label>
+        <input type="number" id="pace-pace-m" min="0" step="1" placeholder="e.g. 5">
+      </div>
+      <div class="field">
+        <label for="pace-pace-s">Pace &mdash; seconds (optional)</label>
+        <input type="number" id="pace-pace-s" min="0" max="59" step="1" placeholder="e.g. 0">
+      </div>
+      <div class="field">
+        <label for="pace-pace-unit">Pace unit</label>
+        <select id="pace-pace-unit">
+          <option value="km">per km</option>
+          <option value="mi">per mile</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="calc-btn" id="pace-calc">Calculate</button>
+    <div class="result" id="pace-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

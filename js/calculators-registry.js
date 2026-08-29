@@ -472,6 +472,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute a recommended daily calorie surplus for lean muscle gain from your TDEE and a chosen bulk pace.',
     keywords: ['bulking', 'lean bulk', 'calorie surplus', 'muscle gain', 'tdee', 'strength'],
   },
+  {
+    id: 'running-pace-calculator',
+    name: 'Running Pace Calculator',
+    category: 'Fitness & Strength',
+    description: 'Given any two of pace, time, and distance, compute the third for a training run or race.',
+    keywords: ['running pace', 'race pace', 'min/km', 'min/mile', 'training', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

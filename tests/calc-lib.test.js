@@ -119,6 +119,10 @@ const {
   macroGrams,
   weightLossTimeline,
   bulkCalories,
+  paceFromDistanceTime,
+  timeFromDistancePace,
+  distanceFromTimePace,
+  convertPacePerUnit,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2379,5 +2383,41 @@ describe('bulkCalories', () => {
   test('rejects a surplus fraction outside 0-50%', () => {
     expect(() => bulkCalories(2800, -0.1)).toThrow();
     expect(() => bulkCalories(2800, 0.6)).toThrow();
+  });
+});
+
+// --- Running pace calculator ---
+
+describe('running pace calculator', () => {
+  test('worked example: 10 km in 50:00 gives a 5:00/km pace, ~8:03/mile', () => {
+    const paceSecPerKm = paceFromDistanceTime(10, 50 * 60);
+    expect(paceSecPerKm).toBe(300); // 5:00/km
+    const paceSecPerMile = convertPacePerUnit(paceSecPerKm, 'km', 'mi');
+    expect(Math.round(paceSecPerMile)).toBe(483); // 8:03/mile
+  });
+
+  test('worked example: solving for time at 4:30/km over a 21.1 km half marathon', () => {
+    const time = timeFromDistancePace(21.1, 4 * 60 + 30);
+    expect(time).toBeCloseTo(5697, 0); // 1:34:57
+  });
+
+  test('solving for distance from time and pace', () => {
+    const distance = distanceFromTimePace(5697, 270);
+    expect(distance).toBeCloseTo(21.1, 5);
+  });
+
+  test('converting a pace to the same unit is a no-op', () => {
+    expect(convertPacePerUnit(300, 'km', 'km')).toBe(300);
+  });
+
+  test('rejects a non-positive distance, time, or pace', () => {
+    expect(() => paceFromDistanceTime(0, 3000)).toThrow();
+    expect(() => paceFromDistanceTime(10, 0)).toThrow();
+    expect(() => timeFromDistancePace(0, 300)).toThrow();
+    expect(() => distanceFromTimePace(3000, 0)).toThrow();
+  });
+
+  test('throws for an unknown pace unit', () => {
+    expect(() => convertPacePerUnit(300, 'km', 'furlong')).toThrow();
   });
 });
