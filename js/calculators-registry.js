@@ -486,6 +486,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how much paint you need for a room, based on wall area, doors/windows, number of coats, and coverage rate.',
     keywords: ['paint', 'wall area', 'coats', 'coverage rate', 'room painting', 'home', 'diy'],
   },
+  {
+    id: 'wallpaper-calculator',
+    name: 'Wallpaper Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how many rolls of wallpaper you need, accounting for roll size, pattern repeat, and waste allowance.',
+    keywords: ['wallpaper', 'rolls', 'pattern repeat', 'strips', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

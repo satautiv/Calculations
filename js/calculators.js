@@ -4087,3 +4087,34 @@ document.getElementById('paint-calc').addEventListener('click', () => {
     showError('paint-result', err.message);
   }
 });
+
+// --- Wallpaper calculator ---
+document.getElementById('wp-calc').addEventListener('click', () => {
+  const length = parseFloat(document.getElementById('wp-length').value);
+  const width = parseFloat(document.getElementById('wp-width').value);
+  const wallHeight = parseFloat(document.getElementById('wp-height').value);
+  const rollWidth = parseFloat(document.getElementById('wp-roll-width').value);
+  const rollLength = parseFloat(document.getElementById('wp-roll-length').value);
+  const patternRepeat = parseFloat(document.getElementById('wp-pattern-repeat').value) || 0;
+  const waste = parseFloat(document.getElementById('wp-waste').value);
+
+  if (isNaN(length) || length <= 0 || isNaN(width) || width <= 0) {
+    showError('wp-result', 'Enter valid room length and width greater than zero.');
+    return;
+  }
+
+  const perimeter = 2 * (length + width);
+
+  try {
+    const { numberOfStrips, effectiveDrop, stripsPerRoll, rollsNeeded, rollsWithWaste } =
+      wallpaperRollsNeeded(perimeter, wallHeight, rollWidth, rollLength, patternRepeat, waste);
+
+    document.getElementById('wp-result').innerHTML = `
+      <div class="headline">${rollsWithWaste} rolls (with ${waste}% waste)</div>
+      <div>${rollsNeeded} rolls before waste allowance</div>
+      <div class="hint">Perimeter: ${perimeter.toFixed(2)} m &middot; Strips needed: ${numberOfStrips} &middot; Effective drop per strip: ${effectiveDrop.toFixed(2)} m &middot; Strips per roll: ${stripsPerRoll}</div>
+    `;
+  } catch (err) {
+    showError('wp-result', err.message);
+  }
+});
