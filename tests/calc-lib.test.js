@@ -129,6 +129,9 @@ const {
   flooringNeeded,
   riegelPredictedTime,
   tilesNeeded,
+  rectangularConcreteVolume,
+  cylindricalConcreteVolume,
+  concreteBagsNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2581,5 +2584,47 @@ describe('tilesNeeded', () => {
   test('rejects a negative grout width or waste percentage', () => {
     expect(() => tilesNeeded(12, 0.3, 0.3, -0.001, 10)).toThrow();
     expect(() => tilesNeeded(12, 0.3, 0.3, 0.003, -5)).toThrow();
+  });
+});
+
+// --- Concrete calculator ---
+
+describe('rectangularConcreteVolume', () => {
+  test('worked example: 3m x 2m x 0.1m slab', () => {
+    expect(rectangularConcreteVolume(3, 2, 0.1)).toBeCloseTo(0.6, 5);
+  });
+
+  test('rejects non-positive length, width, or thickness', () => {
+    expect(() => rectangularConcreteVolume(0, 2, 0.1)).toThrow();
+    expect(() => rectangularConcreteVolume(3, 0, 0.1)).toThrow();
+    expect(() => rectangularConcreteVolume(3, 2, 0)).toThrow();
+  });
+});
+
+describe('cylindricalConcreteVolume', () => {
+  test('computes a cylindrical column volume', () => {
+    expect(cylindricalConcreteVolume(0.3, 1)).toBeCloseTo(Math.PI * 0.15 ** 2, 5);
+  });
+
+  test('rejects non-positive diameter or height', () => {
+    expect(() => cylindricalConcreteVolume(0, 1)).toThrow();
+    expect(() => cylindricalConcreteVolume(0.3, 0)).toThrow();
+  });
+});
+
+describe('concreteBagsNeeded', () => {
+  test('worked example: 0.6 m³, 5% waste, 0.0125 m³ per bag (25kg)', () => {
+    const result = concreteBagsNeeded(0.6, 5, 0.0125);
+    expect(result.volumeWithWaste).toBeCloseTo(0.63, 5);
+    expect(result.bagsNeeded).toBe(51);
+  });
+
+  test('rejects a non-positive volume or yield per bag', () => {
+    expect(() => concreteBagsNeeded(0, 5, 0.0125)).toThrow();
+    expect(() => concreteBagsNeeded(0.6, 5, 0)).toThrow();
+  });
+
+  test('rejects a negative waste percentage', () => {
+    expect(() => concreteBagsNeeded(0.6, -5, 0.0125)).toThrow();
   });
 });

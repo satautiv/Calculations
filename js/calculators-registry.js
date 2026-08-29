@@ -514,6 +514,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how many tiles you need for a floor or wall, accounting for grout line width and a waste allowance.',
     keywords: ['tile', 'grout', 'flooring', 'wall tile', 'home', 'diy'],
   },
+  {
+    id: 'concrete-calculator',
+    name: 'Concrete Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate the concrete volume and number of bags needed for a slab, footing, or column.',
+    keywords: ['concrete', 'slab', 'footing', 'column', 'bags', 'ready-mix', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
