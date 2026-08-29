@@ -3897,3 +3897,33 @@ document.getElementById('tdee-calc').addEventListener('click', () => {
     showError('tdee-result', err.message);
   }
 });
+
+// --- Macro calculator ---
+document.getElementById('macro-calc').addEventListener('click', () => {
+  const kcal = parseFloat(document.getElementById('macro-kcal').value);
+  const protein = parseFloat(document.getElementById('macro-protein').value);
+  const carb = parseFloat(document.getElementById('macro-carb').value);
+  const fat = parseFloat(document.getElementById('macro-fat').value);
+
+  if (isNaN(kcal) || isNaN(protein) || isNaN(carb) || isNaN(fat)) {
+    showError('macro-result', 'Enter a valid calorie target and all three macro percentages.');
+    return;
+  }
+
+  try {
+    const { proteinG, carbG, fatG } = macroGrams(kcal, protein, carb, fat);
+
+    document.getElementById('macro-result').innerHTML = `
+      <table>
+        <thead><tr><th>Macro</th><th>Grams/day</th></tr></thead>
+        <tbody>
+          <tr><td>Protein (${protein}%)</td><td>${proteinG.toFixed(1)} g</td></tr>
+          <tr><td>Carbohydrate (${carb}%)</td><td>${carbG.toFixed(1)} g</td></tr>
+          <tr><td>Fat (${fat}%)</td><td>${fatG.toFixed(1)} g</td></tr>
+        </tbody>
+      </table>
+    `;
+  } catch (err) {
+    showError('macro-result', err.message);
+  }
+});

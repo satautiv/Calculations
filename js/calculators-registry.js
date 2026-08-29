@@ -451,6 +451,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate Total Daily Energy Expenditure (calories burned per day) from BMR and activity level using the Mifflin-St Jeor equation.',
     keywords: ['tdee', 'bmr', 'calories', 'maintenance calories', 'mifflin-st jeor', 'strength'],
   },
+  {
+    id: 'macro-calculator',
+    name: 'Macro Calculator',
+    category: 'Fitness & Strength',
+    description: 'Convert a daily calorie target and a protein/carb/fat percentage split into gram targets per macronutrient.',
+    keywords: ['macros', 'macronutrients', 'protein', 'carbs', 'fat', 'meal planning', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
