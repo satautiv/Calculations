@@ -98,6 +98,8 @@ const {
   dateDifference,
   dotsCoefficient,
   dotsScore,
+  addDaysToDate,
+  weekdayName,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1871,5 +1873,40 @@ describe('dotsScore', () => {
   test('throws for a missing or invalid sex', () => {
     expect(() => dotsScore(90, 600, undefined)).toThrow();
     expect(() => dotsScore(90, 600, 'other')).toThrow();
+  });
+});
+
+// --- Date Plus/Minus Days calculator ---
+
+describe('addDaysToDate / weekdayName', () => {
+  function utc(dateString) {
+    return new Date(`${dateString}T00:00:00Z`);
+  }
+
+  test('worked example: adding 90 days rolls over month and year correctly', () => {
+    const result = addDaysToDate(utc('2026-08-25'), 90);
+    expect(result.toISOString().slice(0, 10)).toBe('2026-11-23');
+    expect(weekdayName(result)).toBe('Monday');
+  });
+
+  test('worked example: subtracting 40 days rolls back across a month boundary', () => {
+    const result = addDaysToDate(utc('2026-08-25'), -40);
+    expect(result.toISOString().slice(0, 10)).toBe('2026-07-16');
+    expect(weekdayName(result)).toBe('Thursday');
+  });
+
+  test('adding zero days leaves the date unchanged', () => {
+    const result = addDaysToDate(utc('2026-08-25'), 0);
+    expect(result.toISOString().slice(0, 10)).toBe('2026-08-25');
+  });
+
+  test('correctly rolls over a leap-year February', () => {
+    const result = addDaysToDate(utc('2024-02-28'), 2);
+    expect(result.toISOString().slice(0, 10)).toBe('2024-03-01');
+  });
+
+  test('handles very large day counts without overflow', () => {
+    const result = addDaysToDate(utc('2000-01-01'), 20000);
+    expect(result.toISOString().slice(0, 10)).toBe('2054-10-04');
   });
 });

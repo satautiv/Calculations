@@ -3490,3 +3490,35 @@ document.getElementById('dots-calc').addEventListener('click', () => {
     ${note}
   `;
 });
+
+// --- Date Plus/Minus Days calculator ---
+document.getElementById('date-pm-calc').addEventListener('click', () => {
+  const startRaw = document.getElementById('date-pm-start').value;
+  const daysRaw = document.getElementById('date-pm-days').value;
+  const mode = document.getElementById('date-pm-mode').value;
+
+  const startDate = startRaw ? parseAgeDateInput(startRaw) : todayAsUtcMidnight();
+  if (!startDate) {
+    showError('date-pm-result', 'Enter a valid start date, or leave it blank to use today.');
+    return;
+  }
+
+  if (daysRaw === '' || !/^-?\d+$/.test(daysRaw)) {
+    showError('date-pm-result', 'Enter a whole number of days.');
+    return;
+  }
+
+  const days = parseInt(daysRaw, 10);
+  const signedDays = mode === 'subtract' ? -Math.abs(days) : Math.abs(days);
+
+  const result = addDaysToDate(startDate, signedDays);
+  const resultLabel = result.toISOString().slice(0, 10);
+  const weekday = weekdayName(result);
+  const startLabel = startRaw || startDate.toISOString().slice(0, 10);
+  const verb = mode === 'subtract' ? 'before' : 'after';
+
+  document.getElementById('date-pm-result').innerHTML = `
+    <div class="headline">${weekday}, ${resultLabel}</div>
+    <div>${Math.abs(days)} day${Math.abs(days) === 1 ? '' : 's'} ${verb} ${startLabel} is ${weekday}, ${resultLabel}.</div>
+  `;
+});
