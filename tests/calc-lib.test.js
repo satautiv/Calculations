@@ -132,6 +132,7 @@ const {
   rectangularConcreteVolume,
   cylindricalConcreteVolume,
   concreteBagsNeeded,
+  karvonenZones,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2626,5 +2627,34 @@ describe('concreteBagsNeeded', () => {
 
   test('rejects a negative waste percentage', () => {
     expect(() => concreteBagsNeeded(0.6, -5, 0.0125)).toThrow();
+  });
+});
+
+// --- Heart-rate training zone calculator ---
+
+describe('karvonenZones', () => {
+  test('worked example: age 30, resting HR 60', () => {
+    const result = karvonenZones(30, 60);
+    expect(result.maxHr).toBe(190);
+    expect(result.hrr).toBe(130);
+    const zone2 = result.zones.find(z => z.zone === 2);
+    expect(zone2.lowerBpm).toBeCloseTo(138, 5);
+    expect(zone2.upperBpm).toBeCloseTo(151, 5);
+  });
+
+  test('a measured max HR overrides the age-based estimate', () => {
+    const result = karvonenZones(30, 60, 200);
+    expect(result.maxHr).toBe(200);
+    expect(result.hrr).toBe(140);
+  });
+
+  test('rejects non-positive age or resting heart rate', () => {
+    expect(() => karvonenZones(0, 60)).toThrow();
+    expect(() => karvonenZones(30, 0)).toThrow();
+  });
+
+  test('rejects a resting heart rate at or above max heart rate', () => {
+    expect(() => karvonenZones(30, 190)).toThrow();
+    expect(() => karvonenZones(30, 60, 55)).toThrow();
   });
 });

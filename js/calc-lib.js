@@ -2010,6 +2010,40 @@ function concreteBagsNeeded(volume, wastePercent, yieldPerBag) {
   return { volumeWithWaste, bagsNeeded };
 }
 
+// --- Heart-rate training zone calculator (Karvonen method) ---
+
+const HEART_RATE_ZONES = [
+  { zone: 1, label: 'Very light (Recovery)', lower: 0.50, upper: 0.60 },
+  { zone: 2, label: 'Light (Fat burning / base endurance)', lower: 0.60, upper: 0.70 },
+  { zone: 3, label: 'Moderate (Aerobic)', lower: 0.70, upper: 0.80 },
+  { zone: 4, label: 'Hard (Threshold)', lower: 0.80, upper: 0.90 },
+  { zone: 5, label: 'Maximum (VO2max / anaerobic)', lower: 0.90, upper: 1.00 },
+];
+
+// Karvonen method: uses Heart Rate Reserve (HRR = MaxHR - RestingHR) rather
+// than a plain percentage of MaxHR, so zones account for individual fitness
+// via resting heart rate. `maxHrOverride` lets a measured MaxHR replace the
+// age-based `220 - age` estimate.
+function karvonenZones(age, restingHr, maxHrOverride) {
+  if (!age || age <= 0) throw new Error('Age must be greater than zero.');
+  if (!restingHr || restingHr <= 0) throw new Error('Resting heart rate must be greater than zero.');
+
+  const maxHr = maxHrOverride || (220 - age);
+  if (restingHr >= maxHr) {
+    throw new Error('Resting heart rate must be less than max heart rate.');
+  }
+
+  const hrr = maxHr - restingHr;
+  const zones = HEART_RATE_ZONES.map(z => ({
+    zone: z.zone,
+    label: z.label,
+    lowerBpm: restingHr + hrr * z.lower,
+    upperBpm: restingHr + hrr * z.upper,
+  }));
+
+  return { maxHr, hrr, zones };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2173,5 +2207,7 @@ if (typeof module !== 'undefined' && module.exports) {
     rectangularConcreteVolume,
     cylindricalConcreteVolume,
     concreteBagsNeeded,
+    HEART_RATE_ZONES,
+    karvonenZones,
   };
 }

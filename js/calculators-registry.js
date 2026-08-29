@@ -521,6 +521,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate the concrete volume and number of bags needed for a slab, footing, or column.',
     keywords: ['concrete', 'slab', 'footing', 'column', 'bags', 'ready-mix', 'home', 'diy'],
   },
+  {
+    id: 'heart-rate-zone-calculator',
+    name: 'Heart-Rate Training Zone Calculator',
+    category: 'Fitness & Strength',
+    description: 'Compute personalized heart-rate training zones from age and resting heart rate using the Karvonen method.',
+    keywords: ['heart rate', 'karvonen', 'training zones', 'cardio', 'hrr', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

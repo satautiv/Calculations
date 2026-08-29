@@ -2502,6 +2502,25 @@
     <button class="calc-btn" id="concrete-calc">Calculate</button>
     <div class="result" id="concrete-result"></div>
   </section>
+
+  <section id="heart-rate-zone-calculator" class="view tab-panel">
+    <h2>Heart-Rate Training Zone Calculator</h2>
+    <p class="hint">Computes personalized heart-rate training zones using the Karvonen method (Heart Rate Reserve), which accounts for your resting heart rate rather than just age.</p>
+    <div class="field">
+      <label for="hr-age">Age (years)</label>
+      <input type="number" id="hr-age" min="0" step="1" placeholder="e.g. 30">
+    </div>
+    <div class="field">
+      <label for="hr-resting">Resting heart rate (bpm)</label>
+      <input type="number" id="hr-resting" min="0" step="1" placeholder="e.g. 60">
+    </div>
+    <div class="field">
+      <label for="hr-max-override">Measured max HR (optional, overrides the 220&minus;age estimate)</label>
+      <input type="number" id="hr-max-override" min="0" step="1" placeholder="e.g. 195">
+    </div>
+    <button class="calc-btn" id="hr-calc">Calculate</button>
+    <div class="result" id="hr-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
