@@ -3798,3 +3798,39 @@ document.getElementById('ffmi-calc').addEventListener('click', () => {
     showError('ffmi-result', err.message);
   }
 });
+
+// --- Lean Body Mass calculator ---
+document.getElementById('lbm-method').addEventListener('change', (e) => {
+  const isBoer = e.target.value === 'boer';
+  document.getElementById('lbm-bodyfat-fields').hidden = isBoer;
+  document.getElementById('lbm-boer-fields').hidden = !isBoer;
+});
+
+document.getElementById('lbm-calc').addEventListener('click', () => {
+  const weight = parseFloat(document.getElementById('lbm-weight').value);
+  const method = document.getElementById('lbm-method').value;
+
+  if (isNaN(weight) || weight <= 0) {
+    showError('lbm-result', 'Enter a valid weight greater than zero.');
+    return;
+  }
+
+  try {
+    let lbm;
+    if (method === 'bodyfat') {
+      const bodyFat = parseFloat(document.getElementById('lbm-bodyfat').value);
+      lbm = leanBodyMassFromBodyFat(weight, bodyFat);
+    } else {
+      const height = parseFloat(document.getElementById('lbm-height').value);
+      const sex = document.getElementById('lbm-sex').value;
+      lbm = leanBodyMassBoer(weight, height, sex);
+    }
+
+    document.getElementById('lbm-result').innerHTML = `
+      <div class="headline">${lbm.toFixed(1)} kg</div>
+      <div>Lean body mass (${(lbm / 0.45359237).toFixed(1)} lb)</div>
+    `;
+  } catch (err) {
+    showError('lbm-result', err.message);
+  }
+});

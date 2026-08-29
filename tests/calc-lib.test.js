@@ -111,6 +111,8 @@ const {
   convertUnit,
   ffmi,
   ffmiCategory,
+  leanBodyMassFromBodyFat,
+  leanBodyMassBoer,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2194,5 +2196,42 @@ describe('ffmiCategory', () => {
     expect(ffmiCategory(22.5)).toBe('Excellent');
     expect(ffmiCategory(24)).toContain('Superior');
     expect(ffmiCategory(27)).toContain('Exceeds');
+  });
+});
+
+// --- Lean Body Mass calculator ---
+
+describe('leanBodyMassFromBodyFat', () => {
+  test('worked example: 80 kg, 20% body fat', () => {
+    expect(leanBodyMassFromBodyFat(80, 20)).toBeCloseTo(64, 5);
+  });
+
+  test('rejects non-positive weight', () => {
+    expect(() => leanBodyMassFromBodyFat(0, 20)).toThrow();
+  });
+
+  test('rejects body fat percentage outside 0-70%', () => {
+    expect(() => leanBodyMassFromBodyFat(80, -1)).toThrow();
+    expect(() => leanBodyMassFromBodyFat(80, 71)).toThrow();
+  });
+});
+
+describe('leanBodyMassBoer', () => {
+  test('worked example: man, 80 kg, 180 cm', () => {
+    expect(leanBodyMassBoer(80, 180, 'male')).toBeCloseTo(61.4, 1);
+  });
+
+  test('rejects non-positive weight or height', () => {
+    expect(() => leanBodyMassBoer(0, 180, 'male')).toThrow();
+    expect(() => leanBodyMassBoer(80, 0, 'male')).toThrow();
+  });
+
+  test('throws for a missing or invalid sex', () => {
+    expect(() => leanBodyMassBoer(80, 180, undefined)).toThrow();
+    expect(() => leanBodyMassBoer(80, 180, 'other')).toThrow();
+  });
+
+  test('rejects a height/weight combination that produces a negative estimate', () => {
+    expect(() => leanBodyMassBoer(10, 10, 'male')).toThrow();
   });
 });

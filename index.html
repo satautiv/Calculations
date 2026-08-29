@@ -2027,6 +2027,41 @@
     <button class="calc-btn" id="ffmi-calc">Calculate</button>
     <div class="result" id="ffmi-result"></div>
   </section>
+
+  <section id="lean-body-mass-calculator" class="view tab-panel">
+    <h2>Lean Body Mass Calculator</h2>
+    <p class="hint">Estimates lean body mass (everything in the body that isn't fat) either from a known body fat percentage, or from height/weight/sex alone using the Boer formula.</p>
+    <div class="field">
+      <label for="lbm-weight">Weight (kg)</label>
+      <input type="number" id="lbm-weight" min="0" step="0.1" placeholder="e.g. 80">
+    </div>
+    <div class="field">
+      <label for="lbm-method">Method</label>
+      <select id="lbm-method">
+        <option value="bodyfat">From body fat percentage</option>
+        <option value="boer">Boer formula (height + sex)</option>
+      </select>
+    </div>
+    <div class="field" id="lbm-bodyfat-fields">
+      <label for="lbm-bodyfat">Body fat percentage</label>
+      <input type="number" id="lbm-bodyfat" min="0" max="70" step="0.1" placeholder="e.g. 20">
+    </div>
+    <div id="lbm-boer-fields" hidden>
+      <div class="field">
+        <label for="lbm-height">Height (cm)</label>
+        <input type="number" id="lbm-height" min="0" step="0.1" placeholder="e.g. 180">
+      </div>
+      <div class="field">
+        <label for="lbm-sex">Sex</label>
+        <select id="lbm-sex">
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+        </select>
+      </div>
+    </div>
+    <button class="calc-btn" id="lbm-calc">Calculate</button>
+    <div class="result" id="lbm-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
