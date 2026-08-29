@@ -4470,3 +4470,32 @@ document.getElementById('bac-calc').addEventListener('click', () => {
     showError('bac-result', err.message);
   }
 });
+
+// --- Cycling FTP calculator ---
+document.getElementById('ftp-calc').addEventListener('click', () => {
+  const power = parseFloat(document.getElementById('ftp-power').value);
+
+  try {
+    const ftp = estimateFTP(power);
+    const zones = ftpPowerZones(ftp);
+
+    const rows = zones
+      .map(z => `<tr><td>${z.zone}. ${z.label}</td><td>${z.upperWatts === null ? `${z.lowerWatts}+ W` : `${z.lowerWatts}&ndash;${z.upperWatts} W`}</td></tr>`)
+      .join('');
+
+    const sanityNote = (power < 50 || power > 600)
+      ? '<div class="hint">This power output is outside the typical range for most riders; treat the estimate accordingly.</div>'
+      : '';
+
+    document.getElementById('ftp-result').innerHTML = `
+      <div class="headline">FTP: ${Math.round(ftp)} W</div>
+      <table>
+        <thead><tr><th>Zone</th><th>Power range</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${sanityNote}
+    `;
+  } catch (err) {
+    showError('ftp-result', err.message);
+  }
+});

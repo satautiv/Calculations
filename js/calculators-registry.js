@@ -570,6 +570,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate blood alcohol content from body weight, sex, drinks consumed, and time elapsed, using the Widmark formula.',
     keywords: ['bac', 'blood alcohol', 'widmark', 'drinks', 'unusual'],
   },
+  {
+    id: 'ftp-calculator',
+    name: 'Cycling FTP Calculator',
+    category: 'Fitness & Strength',
+    description: 'Estimate Functional Threshold Power (FTP) from a 20-minute test and derive the 7 Coggan power training zones.',
+    keywords: ['ftp', 'cycling', 'functional threshold power', 'power zones', 'coggan', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

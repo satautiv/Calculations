@@ -142,6 +142,8 @@ const {
   alcoholGramsFromDrinkCount,
   alcoholGramsFromVolume,
   widmarkBAC,
+  estimateFTP,
+  ftpPowerZones,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2849,5 +2851,34 @@ describe('alcoholGramsFromVolume', () => {
   test('rejects a negative volume or ABV', () => {
     expect(() => alcoholGramsFromVolume(-1, 5)).toThrow();
     expect(() => alcoholGramsFromVolume(355, -1)).toThrow();
+  });
+});
+
+// --- Cycling FTP calculator ---
+
+describe('estimateFTP / ftpPowerZones', () => {
+  test('worked example: 20-minute average power of 280W', () => {
+    const ftp = estimateFTP(280);
+    expect(ftp).toBeCloseTo(266, 5);
+
+    const zones = ftpPowerZones(ftp);
+    const zone2 = zones.find(z => z.zone === 2);
+    expect(zone2.lowerWatts).toBe(149);
+    expect(zone2.upperWatts).toBe(200);
+
+    const zone4 = zones.find(z => z.zone === 4);
+    expect(zone4.lowerWatts).toBe(242);
+    expect(zone4.upperWatts).toBe(279);
+  });
+
+  test('zone 7 has no upper bound', () => {
+    const zones = ftpPowerZones(266);
+    const zone7 = zones.find(z => z.zone === 7);
+    expect(zone7.upperWatts).toBeNull();
+  });
+
+  test('rejects a non-positive average power or FTP', () => {
+    expect(() => estimateFTP(0)).toThrow();
+    expect(() => ftpPowerZones(0)).toThrow();
   });
 });
