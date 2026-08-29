@@ -94,6 +94,7 @@ const {
   sunriseSunset,
   formatMinutesAsLocalTime,
   formatDurationHM,
+  warmupSets,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1751,5 +1752,47 @@ describe('formatDurationHM', () => {
 
   test('rounds a fractional-minute duration before formatting', () => {
     expect(formatDurationHM(970.99)).toBe('16h 11m');
+  });
+});
+
+// --- Warm-up set calculator ---
+
+describe('warmupSets', () => {
+  test('worked example: 100 kg target, 20 kg bar, 2.5 kg rounding', () => {
+    const sets = warmupSets(100, 20, 2.5);
+    expect(sets).toEqual([
+      { percent: 40, reps: 5, weight: 40, warmup: true },
+      { percent: 50, reps: 5, weight: 50, warmup: true },
+      { percent: 60, reps: 3, weight: 60, warmup: true },
+      { percent: 70, reps: 3, weight: 70, warmup: true },
+      { percent: 80, reps: 2, weight: 80, warmup: true },
+      { percent: 90, reps: 1, weight: 90, warmup: true },
+      { percent: 100, reps: null, weight: 100, warmup: false },
+    ]);
+  });
+
+  test('floors warm-up weights at the empty bar rather than showing an unloadable weight', () => {
+    const sets = warmupSets(50, 20, 2.5);
+    expect(sets[0].weight).toBe(20); // 40% of 50 = 20, already at the bar
+    expect(sets[1].weight).toBe(25); // 50% of 50 = 25
+  });
+
+  test('caps warm-up weights at the target so rounding cannot push a set above the working weight', () => {
+    const sets = warmupSets(101, 20, 5);
+    // 90% of 101 = 90.9, rounds to 90 (below target) - no capping needed here,
+    // but a tighter case: target itself not a multiple of the increment.
+    expect(sets[5].weight).toBeLessThanOrEqual(101);
+    expect(sets[6].weight).toBe(101);
+  });
+
+  test('rejects a target weight of zero or less', () => {
+    expect(() => warmupSets(0, 20, 2.5)).toThrow();
+    expect(() => warmupSets(-10, 20, 2.5)).toThrow();
+  });
+
+  test('works without an explicit bar weight or rounding increment', () => {
+    const sets = warmupSets(100);
+    expect(sets[0].weight).toBe(40);
+    expect(sets[6].weight).toBe(100);
   });
 });

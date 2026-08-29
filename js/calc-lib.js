@@ -1328,6 +1328,40 @@ function formatDurationHM(minutes) {
   return `${hours}h ${mins}m`;
 }
 
+// --- Warm-up set calculator ---
+
+// Standard percentage-based ramping scheme (popularized by powerlifting/
+// strength coaching, e.g. Jim Wendler's 5/3/1) leading up to a working weight.
+const WARMUP_SCHEME = [
+  { percent: 40, reps: 5 },
+  { percent: 50, reps: 5 },
+  { percent: 60, reps: 3 },
+  { percent: 70, reps: 3 },
+  { percent: 80, reps: 2 },
+  { percent: 90, reps: 1 },
+];
+
+// Builds a warm-up progression up to targetWeight, rounding each set to the
+// nearest loading increment (e.g. 2.5 kg / 5 lb), floored at the empty bar
+// weight and capped at the target weight itself (guards rounding the 90%
+// set up past 100%). Ends with the working set at 100% / targetWeight.
+function warmupSets(targetWeight, barWeight = 0, roundingIncrement = 0) {
+  if (!targetWeight || targetWeight <= 0) {
+    throw new Error('Target weight must be greater than zero.');
+  }
+
+  const sets = WARMUP_SCHEME.map(({ percent, reps }) => {
+    const rawWeight = targetWeight * (percent / 100);
+    let weight = roundingIncrement ? roundToIncrement(rawWeight, roundingIncrement) : rawWeight;
+    weight = Math.max(weight, barWeight);
+    weight = Math.min(weight, targetWeight);
+    return { percent, reps, weight, warmup: true };
+  });
+
+  sets.push({ percent: 100, reps: null, weight: targetWeight, warmup: false });
+  return sets;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1437,5 +1471,7 @@ if (typeof module !== 'undefined' && module.exports) {
     sunriseSunset,
     formatMinutesAsLocalTime,
     formatDurationHM,
+    WARMUP_SCHEME,
+    warmupSets,
   };
 }
