@@ -1842,6 +1842,40 @@ function bulkCalories(tdee, surplusFraction) {
   return tdee * (1 + surplusFraction);
 }
 
+// --- Running pace calculator ---
+
+// Given any two of distance (km), total time (seconds), and pace (seconds
+// per km), computes the third via the simple rate/time/distance relationship.
+function paceFromDistanceTime(distanceKm, timeSeconds) {
+  if (!distanceKm || distanceKm <= 0) throw new Error('Distance must be greater than zero.');
+  if (!timeSeconds || timeSeconds <= 0) throw new Error('Time must be greater than zero.');
+  return timeSeconds / distanceKm;
+}
+
+function timeFromDistancePace(distanceKm, paceSecPerKm) {
+  if (!distanceKm || distanceKm <= 0) throw new Error('Distance must be greater than zero.');
+  if (!paceSecPerKm || paceSecPerKm <= 0) throw new Error('Pace must be greater than zero.');
+  return distanceKm * paceSecPerKm;
+}
+
+function distanceFromTimePace(timeSeconds, paceSecPerKm) {
+  if (!timeSeconds || timeSeconds <= 0) throw new Error('Time must be greater than zero.');
+  if (!paceSecPerKm || paceSecPerKm <= 0) throw new Error('Pace must be greater than zero.');
+  return timeSeconds / paceSecPerKm;
+}
+
+const KM_PER_MILE = 1.609344;
+
+// Converts a pace expressed in seconds-per-unit between km and mi (pace is
+// time per unit distance, so it scales the opposite way from a plain
+// distance conversion: seconds-per-mile = seconds-per-km * km-per-mile).
+function convertPacePerUnit(paceSeconds, fromUnit, toUnit) {
+  if (fromUnit !== 'km' && fromUnit !== 'mi') throw new Error('Unit must be "km" or "mi".');
+  if (toUnit !== 'km' && toUnit !== 'mi') throw new Error('Unit must be "km" or "mi".');
+  if (fromUnit === toUnit) return paceSeconds;
+  return fromUnit === 'km' ? paceSeconds * KM_PER_MILE : paceSeconds / KM_PER_MILE;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1991,5 +2025,10 @@ if (typeof module !== 'undefined' && module.exports) {
     weightLossTimeline,
     BULK_PACE_SURPLUS,
     bulkCalories,
+    paceFromDistanceTime,
+    timeFromDistancePace,
+    distanceFromTimePace,
+    KM_PER_MILE,
+    convertPacePerUnit,
   };
 }

@@ -3984,3 +3984,77 @@ document.getElementById('bulk-calc').addEventListener('click', () => {
     showError('bulk-result', err.message);
   }
 });
+
+// --- Running pace calculator ---
+document.getElementById('pace-solve-for').addEventListener('change', (e) => {
+  const solveFor = e.target.value;
+  document.getElementById('pace-distance-fields').hidden = solveFor === 'distance';
+  document.getElementById('pace-time-fields').hidden = solveFor === 'time';
+  document.getElementById('pace-pace-fields').hidden = solveFor === 'pace';
+});
+
+function formatPace(paceSeconds) {
+  const totalSeconds = Math.round(paceSeconds);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+document.getElementById('pace-calc').addEventListener('click', () => {
+  const solveFor = document.getElementById('pace-solve-for').value;
+
+  try {
+    if (solveFor === 'pace') {
+      const distanceRaw = parseFloat(document.getElementById('pace-distance').value);
+      const distanceUnit = document.getElementById('pace-distance-unit').value;
+      const time = readHMSFields('pace-time-h', 'pace-time-m', 'pace-time-s');
+      const timeSeconds = timeToSeconds(time.hours, time.minutes, time.seconds);
+      const distanceKm = distanceUnit === 'mi' ? distanceRaw * KM_PER_MILE : distanceRaw;
+
+      const paceSecPerKm = paceFromDistanceTime(distanceKm, timeSeconds);
+      const paceSecPerMile = convertPacePerUnit(paceSecPerKm, 'km', 'mi');
+
+      document.getElementById('pace-result').innerHTML = `
+        <div class="headline">${formatPace(paceSecPerKm)} min/km</div>
+        <div>${formatPace(paceSecPerMile)} min/mile</div>
+      `;
+    } else if (solveFor === 'time') {
+      const distanceRaw = parseFloat(document.getElementById('pace-distance').value);
+      const distanceUnit = document.getElementById('pace-distance-unit').value;
+      const distanceKm = distanceUnit === 'mi' ? distanceRaw * KM_PER_MILE : distanceRaw;
+
+      const paceMinutes = parseFloat(document.getElementById('pace-pace-m').value);
+      const paceSecondsRaw = document.getElementById('pace-pace-s').value;
+      const paceUnit = document.getElementById('pace-pace-unit').value;
+      const paceSecondsPart = paceSecondsRaw === '' ? 0 : parseFloat(paceSecondsRaw);
+      const paceInUnit = timeToSeconds(0, paceMinutes, paceSecondsPart);
+      const paceSecPerKm = paceUnit === 'mi' ? convertPacePerUnit(paceInUnit, 'mi', 'km') : paceInUnit;
+
+      const timeSeconds = timeFromDistancePace(distanceKm, paceSecPerKm);
+
+      document.getElementById('pace-result').innerHTML = `
+        <div class="headline">${formatHMS(secondsToHMS(timeSeconds))}</div>
+        <div>Total time</div>
+      `;
+    } else {
+      const time = readHMSFields('pace-time-h', 'pace-time-m', 'pace-time-s');
+      const timeSeconds = timeToSeconds(time.hours, time.minutes, time.seconds);
+
+      const paceMinutes = parseFloat(document.getElementById('pace-pace-m').value);
+      const paceSecondsRaw = document.getElementById('pace-pace-s').value;
+      const paceUnit = document.getElementById('pace-pace-unit').value;
+      const paceSecondsPart = paceSecondsRaw === '' ? 0 : parseFloat(paceSecondsRaw);
+      const paceInUnit = timeToSeconds(0, paceMinutes, paceSecondsPart);
+      const paceSecPerKm = paceUnit === 'mi' ? convertPacePerUnit(paceInUnit, 'mi', 'km') : paceInUnit;
+
+      const distanceKm = distanceFromTimePace(timeSeconds, paceSecPerKm);
+
+      document.getElementById('pace-result').innerHTML = `
+        <div class="headline">${distanceKm.toFixed(2)} km</div>
+        <div>${(distanceKm / KM_PER_MILE).toFixed(2)} miles</div>
+      `;
+    }
+  } catch (err) {
+    showError('pace-result', err.message);
+  }
+});
