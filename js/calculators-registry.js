@@ -535,6 +535,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Suggests bedtimes or wake-up times aligned to complete 90-minute sleep cycles, to reduce grogginess from waking mid-cycle.',
     keywords: ['sleep', 'sleep cycle', 'bedtime', 'wake up', 'sleep inertia', 'unusual'],
   },
+  {
+    id: 'vo2max-calculator',
+    name: 'VO2max Estimator',
+    category: 'Fitness & Strength',
+    description: 'Estimate VO2max (aerobic fitness) from the distance covered in a 12-minute Cooper run test.',
+    keywords: ['vo2max', 'cooper test', 'aerobic fitness', 'cardiovascular fitness', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
