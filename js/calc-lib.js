@@ -1804,6 +1804,30 @@ function macroGrams(totalKcal, proteinPct, carbPct, fatPct) {
   };
 }
 
+// --- Weight-loss timeline calculator ---
+
+// Standard energy-balance approximations: 1 kg of body fat ~= 7700 kcal,
+// 1 lb of body fat ~= 3500 kcal.
+const KCAL_PER_KG_FAT = 7700;
+const KCAL_PER_LB_FAT = 3500;
+
+function weightLossTimeline(currentWeight, goalWeight, dailyDeficit, unit = 'kg') {
+  if (!currentWeight || currentWeight <= 0) throw new Error('Current weight must be greater than zero.');
+  if (!goalWeight || goalWeight <= 0) throw new Error('Goal weight must be greater than zero.');
+  if (!dailyDeficit || dailyDeficit <= 0) throw new Error('Daily calorie deficit must be greater than zero.');
+  if (goalWeight >= currentWeight) {
+    throw new Error('Goal weight must be less than current weight (this calculator is for weight loss, not gain).');
+  }
+
+  const weightToLose = currentWeight - goalWeight;
+  const kcalPerUnit = unit === 'lb' ? KCAL_PER_LB_FAT : KCAL_PER_KG_FAT;
+  const totalDeficitNeeded = weightToLose * kcalPerUnit;
+  const daysNeeded = totalDeficitNeeded / dailyDeficit;
+  const weeksNeeded = daysNeeded / 7;
+
+  return { weightToLose, totalDeficitNeeded, daysNeeded, weeksNeeded };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1948,5 +1972,8 @@ if (typeof module !== 'undefined' && module.exports) {
     tdeeFromBmr,
     MACRO_KCAL_PER_GRAM,
     macroGrams,
+    KCAL_PER_KG_FAT,
+    KCAL_PER_LB_FAT,
+    weightLossTimeline,
   };
 }

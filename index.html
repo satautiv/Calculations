@@ -2158,6 +2158,32 @@
     <button class="calc-btn" id="macro-calc">Calculate</button>
     <div class="result" id="macro-result"></div>
   </section>
+
+  <section id="weight-loss-timeline-calculator" class="view tab-panel">
+    <h2>Weight-Loss Timeline</h2>
+    <p class="hint">Estimates how long it will take to reach a goal weight given a daily calorie deficit, using the standard approximation that 1 kg of body fat &asymp; 7700 kcal (1 lb &asymp; 3500 kcal).</p>
+    <div class="field">
+      <label for="wlt-unit">Weight unit</label>
+      <select id="wlt-unit">
+        <option value="kg">kg</option>
+        <option value="lb">lb</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="wlt-current">Current weight</label>
+      <input type="number" id="wlt-current" min="0" step="0.1" placeholder="e.g. 90">
+    </div>
+    <div class="field">
+      <label for="wlt-goal">Goal weight</label>
+      <input type="number" id="wlt-goal" min="0" step="0.1" placeholder="e.g. 80">
+    </div>
+    <div class="field">
+      <label for="wlt-deficit">Daily calorie deficit (kcal)</label>
+      <input type="number" id="wlt-deficit" min="0" step="1" placeholder="e.g. 500">
+    </div>
+    <button class="calc-btn" id="wlt-calc">Calculate</button>
+    <div class="result" id="wlt-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

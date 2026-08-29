@@ -117,6 +117,7 @@ const {
   bmrMifflinStJeor,
   tdeeFromBmr,
   macroGrams,
+  weightLossTimeline,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2330,5 +2331,33 @@ describe('macroGrams', () => {
 
   test('tolerates small rounding slack around 100%', () => {
     expect(() => macroGrams(2500, 40, 30, 30.2)).not.toThrow();
+  });
+});
+
+// --- Weight-loss timeline calculator ---
+
+describe('weightLossTimeline', () => {
+  test('worked example: 90 kg to 80 kg at a 500 kcal/day deficit', () => {
+    const result = weightLossTimeline(90, 80, 500);
+    expect(result.weightToLose).toBeCloseTo(10, 5);
+    expect(result.totalDeficitNeeded).toBeCloseTo(77000, 5);
+    expect(result.daysNeeded).toBeCloseTo(154, 5);
+    expect(result.weeksNeeded).toBeCloseTo(22, 1);
+  });
+
+  test('uses the pounds-based fat energy constant when unit is lb', () => {
+    const result = weightLossTimeline(200, 190, 500, 'lb');
+    expect(result.totalDeficitNeeded).toBeCloseTo(10 * 3500, 5);
+  });
+
+  test('rejects non-positive current weight, goal weight, or deficit', () => {
+    expect(() => weightLossTimeline(0, 80, 500)).toThrow();
+    expect(() => weightLossTimeline(90, 0, 500)).toThrow();
+    expect(() => weightLossTimeline(90, 80, 0)).toThrow();
+  });
+
+  test('rejects a goal weight greater than or equal to current weight', () => {
+    expect(() => weightLossTimeline(80, 90, 500)).toThrow();
+    expect(() => weightLossTimeline(80, 80, 500)).toThrow();
   });
 });

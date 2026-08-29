@@ -3927,3 +3927,30 @@ document.getElementById('macro-calc').addEventListener('click', () => {
     showError('macro-result', err.message);
   }
 });
+
+// --- Weight-loss timeline calculator ---
+document.getElementById('wlt-calc').addEventListener('click', () => {
+  const unit = document.getElementById('wlt-unit').value;
+  const current = parseFloat(document.getElementById('wlt-current').value);
+  const goal = parseFloat(document.getElementById('wlt-goal').value);
+  const deficit = parseFloat(document.getElementById('wlt-deficit').value);
+
+  try {
+    const { weightToLose, daysNeeded, weeksNeeded } = weightLossTimeline(current, goal, deficit, unit);
+
+    let note = '';
+    if (deficit > 1500) {
+      note = '<div class="hint">A deficit this large is difficult for most people to sustain safely; consider a more moderate target.</div>';
+    } else if (daysNeeded > 365 * 2) {
+      note = '<div class="hint">This deficit produces an especially long timeline; a slightly larger (but still sustainable) deficit may be more practical.</div>';
+    }
+
+    document.getElementById('wlt-result').innerHTML = `
+      <div class="headline">${Math.round(daysNeeded).toLocaleString()} days (&asymp;${weeksNeeded.toFixed(1)} weeks)</div>
+      <div>To lose ${weightToLose.toLocaleString()} ${unit} at a ${deficit.toLocaleString()} kcal/day deficit</div>
+      ${note}
+    `;
+  } catch (err) {
+    showError('wlt-result', err.message);
+  }
+});
