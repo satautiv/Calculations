@@ -374,6 +374,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate the time between two dates, or a countdown to a future date, in days, weeks, and years/months/days.',
     keywords: ['date difference', 'countdown', 'days until', 'days since', 'days between', 'general'],
   },
+  {
+    id: 'dots-score-calculator',
+    name: 'DOTS Score',
+    category: 'Fitness & Strength',
+    description: 'Compare powerlifting totals across bodyweights and sexes using the IPF-adopted DOTS formula.',
+    keywords: ['dots', 'score', 'powerlifting', 'total', 'bodyweight', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
