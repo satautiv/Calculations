@@ -1608,6 +1608,66 @@ function glPoints(bodyweightKg, totalKg, sex, equipment) {
   return glCoefficient(bodyweightKg, sex, equipment) * totalKg;
 }
 
+// --- Unit Converter calculator ---
+
+// Every non-temperature category converts through a fixed base unit via a
+// simple multiply/divide-by-factor; temperature is affine and handled
+// separately below.
+const UNIT_CONVERSION_CATEGORIES = {
+  length: { // base: meters
+    mm: 0.001, cm: 0.01, m: 1, km: 1000,
+    in: 0.0254, ft: 0.3048, yd: 0.9144, mi: 1609.344,
+  },
+  area: { // base: square meters
+    mm2: 0.000001, cm2: 0.0001, m2: 1, hectare: 10000, km2: 1000000,
+    in2: 0.00064516, ft2: 0.09290304, yd2: 0.83612736, acre: 4046.8564224, mi2: 2589988.110336,
+  },
+  volume: { // base: liters
+    mL: 0.001, L: 1, m3: 1000,
+    usGal: 3.785411784, usQt: 0.946352946, usFlOz: 0.0295735295625, impGal: 4.54609, usCup: 0.2365882365,
+  },
+  mass: { // base: grams
+    mg: 0.001, g: 1, kg: 1000, tonne: 1000000,
+    oz: 28.349523125, lb: 453.59237, stone: 6350.29318, usTon: 907184.74,
+  },
+  speed: { // base: meters per second
+    mps: 1, kmh: 0.277777778, mph: 0.44704, knot: 0.514444444, fps: 0.3048,
+  },
+};
+
+function convertLinearUnit(category, value, fromUnit, toUnit) {
+  const table = UNIT_CONVERSION_CATEGORIES[category];
+  if (!table) throw new Error(`Unknown category: ${category}`);
+
+  const fromFactor = table[fromUnit];
+  const toFactor = table[toUnit];
+  if (fromFactor === undefined || toFactor === undefined) {
+    throw new Error(`Unknown unit for category ${category}.`);
+  }
+
+  return (value * fromFactor) / toFactor;
+}
+
+// Temperature is affine (not a simple multiply-through-base-unit), so it
+// converts via Celsius as the intermediate step.
+function convertTemperature(value, fromUnit, toUnit) {
+  let celsius;
+  if (fromUnit === 'C') celsius = value;
+  else if (fromUnit === 'F') celsius = (value - 32) * 5 / 9;
+  else if (fromUnit === 'K') celsius = value - 273.15;
+  else throw new Error(`Unknown temperature unit: ${fromUnit}`);
+
+  if (toUnit === 'C') return celsius;
+  if (toUnit === 'F') return celsius * 9 / 5 + 32;
+  if (toUnit === 'K') return celsius + 273.15;
+  throw new Error(`Unknown temperature unit: ${toUnit}`);
+}
+
+function convertUnit(category, value, fromUnit, toUnit) {
+  if (category === 'temperature') return convertTemperature(value, fromUnit, toUnit);
+  return convertLinearUnit(category, value, fromUnit, toUnit);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1738,5 +1798,9 @@ if (typeof module !== 'undefined' && module.exports) {
     GL_COEFFICIENTS,
     glCoefficient,
     glPoints,
+    UNIT_CONVERSION_CATEGORIES,
+    convertLinearUnit,
+    convertTemperature,
+    convertUnit,
   };
 }

@@ -108,6 +108,7 @@ const {
   timeOfDayDuration,
   glCoefficient,
   glPoints,
+  convertUnit,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2118,5 +2119,40 @@ describe('glPoints', () => {
     expect(() => glPoints(90, 600, 'male', undefined)).toThrow();
     expect(() => glPoints(90, 600, 'other', 'raw')).toThrow();
     expect(() => glPoints(90, 600, 'male', 'other')).toThrow();
+  });
+});
+
+// --- Unit Converter calculator ---
+
+describe('convertUnit', () => {
+  test('worked example: 5 mi to km', () => {
+    expect(convertUnit('length', 5, 'mi', 'km')).toBeCloseTo(8.04672, 5);
+  });
+
+  test('worked example: 10 lb to kg', () => {
+    expect(convertUnit('mass', 10, 'lb', 'kg')).toBeCloseTo(4.5359237, 5);
+  });
+
+  test('worked example: 100 F to C', () => {
+    expect(convertUnit('temperature', 100, 'F', 'C')).toBeCloseTo(37.78, 2);
+  });
+
+  test('same input and output unit passes the value through unchanged', () => {
+    expect(convertUnit('length', 42, 'km', 'km')).toBeCloseTo(42, 10);
+    expect(convertUnit('temperature', 42, 'C', 'C')).toBe(42);
+  });
+
+  test('a small-to-large unit conversion does not round to zero', () => {
+    expect(convertUnit('length', 5, 'mm', 'km')).toBeCloseTo(0.000005, 9);
+  });
+
+  test('round-trips through Kelvin and Fahrenheit back to Celsius', () => {
+    expect(convertUnit('temperature', 0, 'C', 'K')).toBeCloseTo(273.15, 5);
+    expect(convertUnit('temperature', 37.78, 'F', 'C') > 0).toBe(true);
+  });
+
+  test('throws for an unknown category or unit', () => {
+    expect(() => convertUnit('nonsense', 1, 'm', 'km')).toThrow();
+    expect(() => convertUnit('length', 1, 'm', 'furlong')).toThrow();
   });
 });
