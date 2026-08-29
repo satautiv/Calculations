@@ -500,6 +500,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how much flooring material and how many boxes you need for a room, including a waste allowance.',
     keywords: ['flooring', 'laminate', 'hardwood', 'vinyl plank', 'carpet', 'boxes', 'home', 'diy'],
   },
+  {
+    id: 'race-time-predictor-calculator',
+    name: 'Race Time Predictor',
+    category: 'Fitness & Strength',
+    description: 'Predict your finish time at one race distance from a known result at another, using the Riegel formula.',
+    keywords: ['race time', 'riegel', 'marathon predictor', 'running', 'race pace', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

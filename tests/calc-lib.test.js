@@ -127,6 +127,7 @@ const {
   roundUpToCans,
   wallpaperRollsNeeded,
   flooringNeeded,
+  riegelPredictedTime,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2524,5 +2525,33 @@ describe('flooringNeeded', () => {
 
   test('allows a waste percentage over 100%', () => {
     expect(() => flooringNeeded(20, 150, 2.2)).not.toThrow();
+  });
+});
+
+// --- Race time predictor calculator ---
+
+describe('riegelPredictedTime', () => {
+  // The issue's own worked example rounds (4.2195)^1.06 to "~4.556" and the
+  // final answer to "~3:25:01", but the precise value of (4.2195)^1.06 is
+  // ~4.6002, giving ~12420.5s (~3:27:00.5) - verified by direct computation,
+  // not copied from the issue's arithmetic.
+  test('worked example: 10K in 45:00 predicts a marathon time', () => {
+    const predicted = riegelPredictedTime(2700, 10, 42.195);
+    expect(predicted).toBeCloseTo(12420.54, 1);
+  });
+
+  test('known distance equal to target distance returns the same time (identity case)', () => {
+    expect(riegelPredictedTime(2700, 10, 10)).toBeCloseTo(2700, 5);
+  });
+
+  test('rejects a non-positive known time or either distance', () => {
+    expect(() => riegelPredictedTime(0, 10, 42.195)).toThrow();
+    expect(() => riegelPredictedTime(2700, 0, 42.195)).toThrow();
+    expect(() => riegelPredictedTime(2700, 10, 0)).toThrow();
+  });
+
+  test('predicts a longer time for a longer target distance', () => {
+    const predicted = riegelPredictedTime(2700, 10, 21.0975);
+    expect(predicted).toBeGreaterThan(2700);
   });
 });
