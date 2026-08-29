@@ -1876,6 +1876,35 @@ function convertPacePerUnit(paceSeconds, fromUnit, toUnit) {
   return fromUnit === 'km' ? paceSeconds * KM_PER_MILE : paceSeconds / KM_PER_MILE;
 }
 
+// --- Paint calculator ---
+
+// Paintable area after door/window deductions, total area across all coats,
+// and the resulting paint volume needed at a given coverage rate (e.g.
+// m² per liter).
+function paintNeeded(wallArea, doorCount, doorArea, windowCount, windowArea, coats, coverageRate) {
+  if (!wallArea || wallArea <= 0) throw new Error('Wall area must be greater than zero.');
+  if (!coats || coats <= 0) throw new Error('Number of coats must be greater than zero.');
+  if (!coverageRate || coverageRate <= 0) throw new Error('Coverage rate must be greater than zero.');
+
+  const deduction = (doorCount || 0) * (doorArea || 0) + (windowCount || 0) * (windowArea || 0);
+  const paintableArea = wallArea - deduction;
+  if (paintableArea <= 0) {
+    throw new Error('Door and window deductions leave no paintable area; check your measurements.');
+  }
+
+  const totalAreaToPaint = paintableArea * coats;
+  const volumeNeeded = totalAreaToPaint / coverageRate;
+
+  return { paintableArea, totalAreaToPaint, volumeNeeded };
+}
+
+// Rounds a needed paint volume up to a whole number of same-size cans.
+function roundUpToCans(volumeNeeded, canSize) {
+  if (!canSize || canSize <= 0) throw new Error('Can size must be greater than zero.');
+  const cansNeeded = Math.ceil(volumeNeeded / canSize);
+  return { cansNeeded, totalVolume: cansNeeded * canSize };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2030,5 +2059,7 @@ if (typeof module !== 'undefined' && module.exports) {
     distanceFromTimePace,
     KM_PER_MILE,
     convertPacePerUnit,
+    paintNeeded,
+    roundUpToCans,
   };
 }
