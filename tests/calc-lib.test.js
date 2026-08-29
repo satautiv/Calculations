@@ -147,6 +147,7 @@ const {
   mulchVolumeNeeded,
   roofPitchMultiplier,
   roofArea,
+  roofPitchConversions,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2949,5 +2950,31 @@ describe('roofArea', () => {
 
   test('rejects a non-positive footprint area', () => {
     expect(() => roofArea(0, 6, 12)).toThrow();
+  });
+});
+
+// --- Roof Pitch calculator ---
+
+describe('roofPitchConversions', () => {
+  test('worked example: rise 5ft over run 10ft', () => {
+    const result = roofPitchConversions(5, 10);
+    expect(result.slopeRatio).toBeCloseTo(0.5, 5);
+    expect(result.xIn12).toBeCloseTo(6, 5);
+    expect(result.angleDegrees).toBeCloseTo(26.57, 2);
+    expect(result.multiplier).toBeCloseTo(1.118, 3);
+  });
+
+  test('rejects a run of zero', () => {
+    expect(() => roofPitchConversions(5, 0)).toThrow();
+  });
+
+  test('rejects a negative rise or run', () => {
+    expect(() => roofPitchConversions(-5, 10)).toThrow();
+    expect(() => roofPitchConversions(5, -10)).toThrow();
+  });
+
+  test('handles a pitch steeper than 12/12 (45 degrees) correctly', () => {
+    const result = roofPitchConversions(18, 10);
+    expect(result.angleDegrees).toBeGreaterThan(45);
   });
 });

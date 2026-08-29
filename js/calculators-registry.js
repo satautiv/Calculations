@@ -591,6 +591,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert a roof\'s flat footprint area into its actual sloped surface area, using the pitch (rise/run).',
     keywords: ['roof area', 'roofing', 'pitch multiplier', 'shingles', 'home', 'diy'],
   },
+  {
+    id: 'roof-pitch-calculator',
+    name: 'Roof Pitch Calculator',
+    category: 'Home & DIY',
+    description: 'Convert a roof\'s rise and run into slope ratio, "X-in-12" notation, and angle in degrees.',
+    keywords: ['roof pitch', 'slope', 'x-in-12', 'roof angle', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
