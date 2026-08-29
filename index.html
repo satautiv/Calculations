@@ -2838,6 +2838,24 @@
     <button class="calc-btn" id="uv-calc">Calculate</button>
     <div class="result" id="uv-result"></div>
   </section>
+
+  <section id="pet-age-calculator" class="view tab-panel">
+    <h2>Pet Age Calculator</h2>
+    <p class="hint">Converts a dog's or cat's age into human-equivalent years, using modern research-based formulas rather than the old (inaccurate) "multiply by 7" myth. A population-average research-based estimate, not a substitute for a vet's assessment of an individual animal.</p>
+    <div class="field">
+      <label for="pet-species">Species</label>
+      <select id="pet-species">
+        <option value="dog">Dog</option>
+        <option value="cat">Cat</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="pet-age">Pet's age (years)</label>
+      <input type="number" id="pet-age" min="0" step="0.1" placeholder="e.g. 2">
+    </div>
+    <button class="calc-btn" id="pet-calc">Calculate</button>
+    <div class="result" id="pet-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

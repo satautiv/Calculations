@@ -2378,6 +2378,35 @@ function timeToBurnMinutes(uvIndex, skinType, spf) {
   return spf ? baseMinutes * spf : baseMinutes;
 }
 
+// --- Pet age calculator ---
+
+const PET_MAX_AGE_YEARS = 30;
+// ~3 weeks: below this, the dog formula's ln(age) isn't meaningful (approaches
+// -Infinity near 0), so treat it as "too young" instead.
+const DOG_MIN_AGE_YEARS = 3 / 52;
+
+// Wang et al. (2019, Cell Systems) epigenetic-clock-based formula, from a
+// single-breed (Labrador Retriever) DNA methylation study.
+function dogHumanAge(dogAgeYears) {
+  if (!dogAgeYears || dogAgeYears <= 0) throw new Error('Age must be greater than zero.');
+  if (dogAgeYears > PET_MAX_AGE_YEARS) throw new Error(`Enter a more realistic age (${PET_MAX_AGE_YEARS} years or under).`);
+  if (dogAgeYears < DOG_MIN_AGE_YEARS) {
+    throw new Error('Too young for this formula (under about 3 weeks old) - this formula applies from a few weeks of age onward.');
+  }
+
+  return 16 * Math.log(dogAgeYears) + 31;
+}
+
+// AAHA/AAFP-endorsed piecewise life-stage model, replacing the old "x7" rule.
+function catHumanAge(catAgeYears) {
+  if (!catAgeYears || catAgeYears <= 0) throw new Error('Age must be greater than zero.');
+  if (catAgeYears > PET_MAX_AGE_YEARS) throw new Error(`Enter a more realistic age (${PET_MAX_AGE_YEARS} years or under).`);
+
+  if (catAgeYears <= 1) return 15 * catAgeYears;
+  if (catAgeYears <= 2) return 15 + 9 * (catAgeYears - 1);
+  return 24 + 4 * (catAgeYears - 2);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2577,5 +2606,9 @@ if (typeof module !== 'undefined' && module.exports) {
     ladderPlan,
     FITZPATRICK_SKIN_FACTORS,
     timeToBurnMinutes,
+    PET_MAX_AGE_YEARS,
+    DOG_MIN_AGE_YEARS,
+    dogHumanAge,
+    catHumanAge,
   };
 }

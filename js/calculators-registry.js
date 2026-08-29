@@ -619,6 +619,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how many minutes you can stay in the sun before burning, based on UV index and Fitzpatrick skin type.',
     keywords: ['uv index', 'sunburn', 'fitzpatrick', 'sun safety', 'spf', 'unusual'],
   },
+  {
+    id: 'pet-age-calculator',
+    name: 'Pet Age Calculator',
+    category: 'Unusual',
+    description: "Convert a dog's or cat's age into human-equivalent years using modern, research-based formulas.",
+    keywords: ['pet age', 'dog years', 'cat years', 'human years', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

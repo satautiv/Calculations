@@ -4652,3 +4652,21 @@ document.getElementById('uv-calc').addEventListener('click', () => {
     showError('uv-result', err.message);
   }
 });
+
+// --- Pet age calculator ---
+document.getElementById('pet-calc').addEventListener('click', () => {
+  const species = document.getElementById('pet-species').value;
+  const age = parseFloat(document.getElementById('pet-age').value);
+
+  try {
+    const humanAge = species === 'cat' ? catHumanAge(age) : dogHumanAge(age);
+
+    document.getElementById('pet-result').innerHTML = `
+      <div class="headline">${humanAge.toFixed(1)} human years</div>
+      <div>${age} ${species} year${age === 1 ? '' : 's'} old</div>
+      <div class="hint">A population-average research-based estimate (single-breed study for dogs; veterinary-association guidelines for cats), not a substitute for a vet's assessment of an individual animal's health/aging.</div>
+    `;
+  } catch (err) {
+    showError('pet-result', err.message);
+  }
+});
