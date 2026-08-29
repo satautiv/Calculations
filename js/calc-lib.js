@@ -1961,6 +1961,27 @@ function riegelPredictedTime(knownTimeSeconds, knownDistanceKm, targetDistanceKm
   return knownTimeSeconds * Math.pow(targetDistanceKm / knownDistanceKm, exponent);
 }
 
+// --- Tile calculator ---
+
+// tileWidth/tileLength/groutWidth in meters; area in square meters;
+// wastePercent as a whole number (e.g. 10 for 10%).
+function tilesNeeded(area, tileWidth, tileLength, groutWidth, wastePercent) {
+  if (!area || area <= 0) throw new Error('Area to cover must be greater than zero.');
+  if (!tileWidth || tileWidth <= 0) throw new Error('Tile width must be greater than zero.');
+  if (!tileLength || tileLength <= 0) throw new Error('Tile length must be greater than zero.');
+  if (groutWidth < 0) throw new Error('Grout line width cannot be negative.');
+  if (groutWidth >= tileWidth || groutWidth >= tileLength) {
+    throw new Error('Grout line width cannot exceed the tile\'s own dimensions.');
+  }
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+
+  const effectiveArea = (tileWidth + groutWidth) * (tileLength + groutWidth);
+  const tilesForArea = area / effectiveArea;
+  const tilesNeededCount = Math.ceil(tilesForArea * (1 + wastePercent / 100));
+
+  return { effectiveArea, tilesForArea, tilesNeededCount };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2120,5 +2141,6 @@ if (typeof module !== 'undefined' && module.exports) {
     wallpaperRollsNeeded,
     flooringNeeded,
     riegelPredictedTime,
+    tilesNeeded,
   };
 }
