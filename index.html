@@ -2751,6 +2751,21 @@
     <button class="calc-btn" id="roof-area-calc">Calculate</button>
     <div class="result" id="roof-area-result"></div>
   </section>
+
+  <section id="roof-pitch-calculator" class="view tab-panel">
+    <h2>Roof Pitch Calculator</h2>
+    <p class="hint">Converts a measured rise and run into the slope ratio, "X-in-12" notation, and angle in degrees &mdash; whichever format a supplier, code table, or contractor expects.</p>
+    <div class="field">
+      <label for="pitch-rise">Rise</label>
+      <input type="number" id="pitch-rise" min="0" step="0.1" placeholder="e.g. 5">
+    </div>
+    <div class="field">
+      <label for="pitch-run">Run (same unit as rise)</label>
+      <input type="number" id="pitch-run" min="0" step="0.1" placeholder="e.g. 10">
+    </div>
+    <button class="calc-btn" id="pitch-calc">Calculate</button>
+    <div class="result" id="pitch-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

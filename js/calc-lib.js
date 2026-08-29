@@ -2250,6 +2250,23 @@ function roofArea(footprintArea, rise, run, wastePercent = 0) {
   return { multiplier, area };
 }
 
+// --- Roof Pitch calculator ---
+
+// Converts a measured rise/run into the slope ratio, "X-in-12" notation,
+// angle in degrees, and (as a cross-reference) the roof pitch multiplier
+// from roofArea's formula above.
+function roofPitchConversions(rise, run) {
+  if (!run || run <= 0) throw new Error('Run must be greater than zero.');
+  if (rise < 0) throw new Error('Rise cannot be negative.');
+
+  const slopeRatio = rise / run;
+  const xIn12 = slopeRatio * 12;
+  const angleDegrees = Math.atan(slopeRatio) * 180 / Math.PI;
+  const multiplier = roofPitchMultiplier(rise, run);
+
+  return { slopeRatio, xIn12, angleDegrees, multiplier };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2439,5 +2456,6 @@ if (typeof module !== 'undefined' && module.exports) {
     mulchVolumeNeeded,
     roofPitchMultiplier,
     roofArea,
+    roofPitchConversions,
   };
 }

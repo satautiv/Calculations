@@ -4543,3 +4543,21 @@ document.getElementById('roof-area-calc').addEventListener('click', () => {
     showError('roof-area-result', err.message);
   }
 });
+
+// --- Roof Pitch calculator ---
+document.getElementById('pitch-calc').addEventListener('click', () => {
+  const rise = parseFloat(document.getElementById('pitch-rise').value);
+  const run = parseFloat(document.getElementById('pitch-run').value);
+
+  try {
+    const { slopeRatio, xIn12, angleDegrees, multiplier } = roofPitchConversions(rise, run);
+
+    document.getElementById('pitch-result').innerHTML = `
+      <div class="headline">${xIn12.toFixed(1)}/12 &middot; ${angleDegrees.toFixed(2)}&deg;</div>
+      <div>Slope ratio: ${slopeRatio.toFixed(3)}</div>
+      <div class="hint">Roof pitch multiplier (for the Roof Area calculator): ${multiplier.toFixed(3)}</div>
+    `;
+  } catch (err) {
+    showError('pitch-result', err.message);
+  }
+});
