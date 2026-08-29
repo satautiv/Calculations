@@ -1362,6 +1362,21 @@ function warmupSets(targetWeight, barWeight = 0, roundingIncrement = 0) {
   return sets;
 }
 
+// --- Date Difference / Countdown calculator ---
+
+// Order-independent difference between two UTC-midnight dates: total days,
+// total weeks (+ remainder), and a calendar-aware years/months/days
+// breakdown (reusing ageBreakdown's borrowing math on the earlier/later
+// pair). `reversed` is true when dateA is chronologically after dateB, so
+// callers can label the result correctly regardless of input order.
+function dateDifference(dateA, dateB) {
+  const reversed = dateA.getTime() > dateB.getTime();
+  const earlier = reversed ? dateB : dateA;
+  const later = reversed ? dateA : dateB;
+  const breakdown = ageBreakdown(earlier, later);
+  return { ...breakdown, reversed };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1473,5 +1488,6 @@ if (typeof module !== 'undefined' && module.exports) {
     formatDurationHM,
     WARMUP_SCHEME,
     warmupSets,
+    dateDifference,
   };
 }
