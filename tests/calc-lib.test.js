@@ -109,6 +109,8 @@ const {
   glCoefficient,
   glPoints,
   convertUnit,
+  ffmi,
+  ffmiCategory,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2154,5 +2156,43 @@ describe('convertUnit', () => {
   test('throws for an unknown category or unit', () => {
     expect(() => convertUnit('nonsense', 1, 'm', 'km')).toThrow();
     expect(() => convertUnit('length', 1, 'm', 'furlong')).toThrow();
+  });
+});
+
+// --- FFMI (Fat-Free Mass Index) calculator ---
+
+describe('ffmi', () => {
+  test('worked example: 90 kg, 1.80 m, 15% body fat', () => {
+    const result = ffmi(90, 1.8, 15);
+    expect(result.fatFreeMass).toBeCloseTo(76.5, 5);
+    expect(result.rawFFMI).toBeCloseTo(23.6, 1);
+    expect(result.normalizedFFMI).toBeCloseTo(23.6, 1); // no height adjustment at exactly 1.8 m
+  });
+
+  test('applies a height adjustment away from 1.8 m', () => {
+    const result = ffmi(90, 1.7, 15);
+    expect(result.normalizedFFMI).toBeGreaterThan(result.rawFFMI); // shorter than 1.8m -> adjusted up
+  });
+
+  test('rejects non-positive weight or height', () => {
+    expect(() => ffmi(0, 1.8, 15)).toThrow();
+    expect(() => ffmi(90, 0, 15)).toThrow();
+  });
+
+  test('rejects body fat percentage outside 0-70%', () => {
+    expect(() => ffmi(90, 1.8, -1)).toThrow();
+    expect(() => ffmi(90, 1.8, 71)).toThrow();
+    expect(() => ffmi(90, 1.8, 100)).toThrow();
+  });
+});
+
+describe('ffmiCategory', () => {
+  test('labels values across the reference ranges', () => {
+    expect(ffmiCategory(17)).toBe('Below average');
+    expect(ffmiCategory(19)).toBe('Average');
+    expect(ffmiCategory(21)).toBe('Above average');
+    expect(ffmiCategory(22.5)).toBe('Excellent');
+    expect(ffmiCategory(24)).toContain('Superior');
+    expect(ffmiCategory(27)).toContain('Exceeds');
   });
 });

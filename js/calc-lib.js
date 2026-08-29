@@ -1668,6 +1668,35 @@ function convertUnit(category, value, fromUnit, toUnit) {
   return convertLinearUnit(category, value, fromUnit, toUnit);
 }
 
+// --- FFMI (Fat-Free Mass Index) calculator ---
+
+// Computes fat-free mass, raw FFMI, and height-normalized FFMI (scaled to an
+// equivalent 1.8 m height, correcting for FFMI's natural bias toward taller
+// people showing a lower raw score for the same muscularity).
+function ffmi(weightKg, heightM, bodyFatPercent) {
+  if (!weightKg || weightKg <= 0) throw new Error('Weight must be greater than zero.');
+  if (!heightM || heightM <= 0) throw new Error('Height must be greater than zero.');
+  if (bodyFatPercent < 0 || bodyFatPercent > 70) throw new Error('Body fat percentage must be between 0 and 70.');
+
+  const fatFreeMass = weightKg * (1 - bodyFatPercent / 100);
+  const rawFFMI = fatFreeMass / heightM ** 2;
+  const normalizedFFMI = rawFFMI + 6.1 * (1.8 - heightM);
+
+  return { fatFreeMass, rawFFMI, normalizedFFMI };
+}
+
+// Common qualitative reference ranges for (normalized) FFMI, as typically
+// cited in fitness/bodybuilding contexts for men; the ~25 "natural limit" is
+// the Kouri et al. (1995) figure often referenced for drug-free lifters.
+function ffmiCategory(normalizedFFMI) {
+  if (normalizedFFMI < 18) return 'Below average';
+  if (normalizedFFMI < 20) return 'Average';
+  if (normalizedFFMI < 22) return 'Above average';
+  if (normalizedFFMI < 23) return 'Excellent';
+  if (normalizedFFMI < 26) return 'Superior (approaching the commonly cited natural limit)';
+  return 'Exceeds the commonly cited natural limit';
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1802,5 +1831,7 @@ if (typeof module !== 'undefined' && module.exports) {
     convertLinearUnit,
     convertTemperature,
     convertUnit,
+    ffmi,
+    ffmiCategory,
   };
 }
