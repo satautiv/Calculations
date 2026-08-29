@@ -4058,3 +4058,32 @@ document.getElementById('pace-calc').addEventListener('click', () => {
     showError('pace-result', err.message);
   }
 });
+
+// --- Paint calculator ---
+document.getElementById('paint-calc').addEventListener('click', () => {
+  const wallArea = parseFloat(document.getElementById('paint-wall-area').value);
+  const doorCount = parseFloat(document.getElementById('paint-door-count').value) || 0;
+  const doorArea = parseFloat(document.getElementById('paint-door-area').value) || 0;
+  const windowCount = parseFloat(document.getElementById('paint-window-count').value) || 0;
+  const windowArea = parseFloat(document.getElementById('paint-window-area').value) || 0;
+  const coats = parseFloat(document.getElementById('paint-coats').value);
+  const coverage = parseFloat(document.getElementById('paint-coverage').value);
+  const canSize = parseFloat(document.getElementById('paint-can-size').value);
+
+  try {
+    const { paintableArea, totalAreaToPaint, volumeNeeded } = paintNeeded(
+      wallArea, doorCount, doorArea, windowCount, windowArea, coats, coverage
+    );
+    const { cansNeeded, totalVolume } = roundUpToCans(volumeNeeded, canSize);
+
+    const coatsNote = coats > 10 ? '<div class="hint">That\'s an unusually high number of coats &mdash; double-check this is intentional.</div>' : '';
+
+    document.getElementById('paint-result').innerHTML = `
+      <div class="headline">${volumeNeeded.toFixed(2)} L needed &middot; buy ${cansNeeded} &times; ${canSize} L (${totalVolume} L)</div>
+      <div>Paintable area: ${paintableArea.toFixed(2)} m&sup2; &middot; Total area across ${coats} coat${coats === 1 ? '' : 's'}: ${totalAreaToPaint.toFixed(2)} m&sup2;</div>
+      ${coatsNote}
+    `;
+  } catch (err) {
+    showError('paint-result', err.message);
+  }
+});

@@ -123,6 +123,8 @@ const {
   timeFromDistancePace,
   distanceFromTimePace,
   convertPacePerUnit,
+  paintNeeded,
+  roundUpToCans,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2419,5 +2421,45 @@ describe('running pace calculator', () => {
 
   test('throws for an unknown pace unit', () => {
     expect(() => convertPacePerUnit(300, 'km', 'furlong')).toThrow();
+  });
+});
+
+// --- Paint calculator ---
+
+describe('paintNeeded', () => {
+  test('worked example: 40 m² walls, 1 door, 2 windows, 2 coats, 10 m²/L', () => {
+    const result = paintNeeded(40, 1, 1.85, 2, 1.5, 2, 10);
+    expect(result.paintableArea).toBeCloseTo(35.15, 5);
+    expect(result.totalAreaToPaint).toBeCloseTo(70.3, 5);
+    expect(result.volumeNeeded).toBeCloseTo(7.03, 5);
+  });
+
+  test('works with no doors or windows', () => {
+    const result = paintNeeded(40, 0, 0, 0, 0, 1, 10);
+    expect(result.paintableArea).toBe(40);
+  });
+
+  test('rejects non-positive wall area, coats, or coverage rate', () => {
+    expect(() => paintNeeded(0, 0, 0, 0, 0, 2, 10)).toThrow();
+    expect(() => paintNeeded(40, 0, 0, 0, 0, 0, 10)).toThrow();
+    expect(() => paintNeeded(40, 0, 0, 0, 0, 2, 0)).toThrow();
+  });
+
+  test('rejects deductions that leave no paintable area', () => {
+    expect(() => paintNeeded(5, 2, 1.85, 2, 1.5, 2, 10)).toThrow();
+  });
+});
+
+describe('roundUpToCans', () => {
+  test('rounds a needed volume up to whole cans', () => {
+    expect(roundUpToCans(7.03, 4)).toEqual({ cansNeeded: 2, totalVolume: 8 });
+  });
+
+  test('an exact multiple needs no extra can', () => {
+    expect(roundUpToCans(8, 4)).toEqual({ cansNeeded: 2, totalVolume: 8 });
+  });
+
+  test('rejects a non-positive can size', () => {
+    expect(() => roundUpToCans(7, 0)).toThrow();
   });
 });

@@ -479,6 +479,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Given any two of pace, time, and distance, compute the third for a training run or race.',
     keywords: ['running pace', 'race pace', 'min/km', 'min/mile', 'training', 'strength'],
   },
+  {
+    id: 'paint-calculator',
+    name: 'Paint Calculator',
+    category: 'Home & DIY',
+    description: 'Estimate how much paint you need for a room, based on wall area, doors/windows, number of coats, and coverage rate.',
+    keywords: ['paint', 'wall area', 'coats', 'coverage rate', 'room painting', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
