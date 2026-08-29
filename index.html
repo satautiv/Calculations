@@ -1639,6 +1639,32 @@
     <div class="result" id="sunrise-result"></div>
   </section>
 
+  <section id="warmup-sets-calculator" class="view tab-panel">
+    <h2>Warm-Up Set Calculator</h2>
+    <p class="hint">Generates a ramping warm-up progression leading up to your working weight, so you arrive properly primed without wasting energy.</p>
+    <div class="field">
+      <label for="warmup-target">Target working weight</label>
+      <input type="number" id="warmup-target" min="0" step="0.5" placeholder="e.g. 100">
+    </div>
+    <div class="field">
+      <label for="warmup-unit">Unit</label>
+      <select id="warmup-unit">
+        <option value="kg">kg</option>
+        <option value="lb">lb</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="warmup-bar">Empty bar weight (optional)</label>
+      <input type="number" id="warmup-bar" min="0" step="0.5" placeholder="e.g. 20">
+    </div>
+    <div class="field">
+      <label for="warmup-increment">Rounding increment (optional)</label>
+      <input type="number" id="warmup-increment" min="0" step="0.25" placeholder="e.g. 2.5">
+    </div>
+    <button class="calc-btn" id="warmup-calc">Calculate</button>
+    <div class="result" id="warmup-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

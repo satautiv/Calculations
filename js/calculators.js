@@ -3369,3 +3369,46 @@ document.getElementById('sunrise-calc').addEventListener('click', () => {
     <div class="hint">Approximate local times based on the UTC offset you entered.</div>
   `;
 });
+
+// --- Warm-up set calculator ---
+document.getElementById('warmup-calc').addEventListener('click', () => {
+  const target = parseFloat(document.getElementById('warmup-target').value);
+  const unit = document.getElementById('warmup-unit').value;
+  const barRaw = document.getElementById('warmup-bar').value;
+  const incrementRaw = document.getElementById('warmup-increment').value;
+
+  if (isNaN(target) || target <= 0) {
+    showError('warmup-result', 'Enter a valid target working weight greater than zero.');
+    return;
+  }
+
+  const defaultBar = unit === 'lb' ? 45 : 20;
+  const defaultIncrement = unit === 'lb' ? 5 : 2.5;
+  const bar = barRaw === '' ? defaultBar : parseFloat(barRaw);
+  const increment = incrementRaw === '' ? defaultIncrement : parseFloat(incrementRaw);
+
+  if (isNaN(bar) || bar < 0) {
+    showError('warmup-result', 'Enter a valid, non-negative empty bar weight.');
+    return;
+  }
+
+  if (isNaN(increment) || increment < 0) {
+    showError('warmup-result', 'Enter a valid, non-negative rounding increment.');
+    return;
+  }
+
+  try {
+    const rows = warmupSets(target, bar, increment)
+      .map(({ percent, reps, weight, warmup }) => `<tr><td>${percent}%</td><td>${weight.toFixed(1)} ${unit}</td><td>${warmup ? reps : 'Working set'}</td></tr>`)
+      .join('');
+
+    document.getElementById('warmup-result').innerHTML = `
+      <table>
+        <thead><tr><th>Percent</th><th>Weight</th><th>Reps</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    `;
+  } catch (err) {
+    showError('warmup-result', err.message);
+  }
+});

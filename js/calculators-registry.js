@@ -360,6 +360,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate sunrise time, sunset time, and total daylight duration for a date and location, given its latitude, longitude, and UTC offset.',
     keywords: ['sunrise', 'sunset', 'daylight', 'solar noon', 'daylight hours', 'polar day', 'polar night', 'travel'],
   },
+  {
+    id: 'warmup-sets-calculator',
+    name: 'Warm-Up Set Calculator',
+    category: 'Fitness & Strength',
+    description: 'Generate a ramping warm-up progression of sets and reps leading up to your working weight.',
+    keywords: ['warm-up', 'warmup', 'ramping sets', 'working weight', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
