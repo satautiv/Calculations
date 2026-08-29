@@ -3870,3 +3870,30 @@ document.getElementById('bf-calc').addEventListener('click', () => {
     showError('bf-result', err.message);
   }
 });
+
+// --- TDEE (Total Daily Energy Expenditure) calculator ---
+document.getElementById('tdee-calc').addEventListener('click', () => {
+  const sex = document.getElementById('tdee-sex').value;
+  const weight = parseFloat(document.getElementById('tdee-weight').value);
+  const height = parseFloat(document.getElementById('tdee-height').value);
+  const age = parseFloat(document.getElementById('tdee-age').value);
+  const activity = document.getElementById('tdee-activity').value;
+
+  if (age < 15 || age > 100) {
+    showError('tdee-result', 'The Mifflin-St Jeor equation is validated for ages roughly 15-100; enter an age in that range.');
+    return;
+  }
+
+  try {
+    const bmr = bmrMifflinStJeor(weight, height, age, sex);
+    const tdee = tdeeFromBmr(bmr, activity);
+
+    document.getElementById('tdee-result').innerHTML = `
+      <div class="headline">${Math.round(tdee).toLocaleString()} kcal/day</div>
+      <div>Estimated TDEE (maintenance calories)</div>
+      <div class="hint">BMR: ${Math.round(bmr).toLocaleString()} kcal/day</div>
+    `;
+  } catch (err) {
+    showError('tdee-result', err.message);
+  }
+});
