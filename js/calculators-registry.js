@@ -381,6 +381,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compare powerlifting totals across bodyweights and sexes using the IPF-adopted DOTS formula.',
     keywords: ['dots', 'score', 'powerlifting', 'total', 'bodyweight', 'strength'],
   },
+  {
+    id: 'date-plus-minus-calculator',
+    name: 'Date Plus/Minus Days',
+    category: 'General',
+    description: 'Find the calendar date a number of days before or after a starting date, plus its day of the week.',
+    keywords: ['date plus days', 'date minus days', 'add days', 'subtract days', 'day of week', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

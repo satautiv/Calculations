@@ -1404,6 +1404,24 @@ function dotsScore(bodyweightKg, totalKg, sex) {
   return dotsCoefficient(bodyweightKg, sex) * totalKg;
 }
 
+// --- Date Plus/Minus Days calculator ---
+
+const WEEKDAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+// Adds (or, with a negative value, subtracts) a whole number of days to a
+// UTC-midnight date. Uses the UTC date-setter so month/year rollovers (and
+// leap years) are handled by the Date object itself rather than manual
+// month-length tables.
+function addDaysToDate(startDate, numberOfDays) {
+  const result = new Date(startDate.getTime());
+  result.setUTCDate(result.getUTCDate() + numberOfDays);
+  return result;
+}
+
+function weekdayName(date) {
+  return WEEKDAY_NAMES[date.getUTCDay()];
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1520,5 +1538,8 @@ if (typeof module !== 'undefined' && module.exports) {
     DOTS_FEMALE_BW_CAP,
     dotsCoefficient,
     dotsScore,
+    WEEKDAY_NAMES,
+    addDaysToDate,
+    weekdayName,
   };
 }
