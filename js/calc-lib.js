@@ -1543,6 +1543,43 @@ function workingDaysBetween(startDate, endDate, holidayDates = []) {
   return { workingDays, totalDays, weekendDays, holidayWeekdays, reversed };
 }
 
+// --- Time Duration calculator ---
+
+// Converts an H:M:S triple to total seconds. Hours must be non-negative;
+// minutes and seconds must each be in [0, 60). Throws on any violation.
+function timeToSeconds(hours, minutes, seconds) {
+  if (!Number.isFinite(hours) || hours < 0) throw new Error('Hours must be a non-negative number.');
+  if (!Number.isFinite(minutes) || minutes < 0 || minutes >= 60) throw new Error('Minutes must be between 0 and 59.');
+  if (!Number.isFinite(seconds) || seconds < 0 || seconds >= 60) throw new Error('Seconds must be between 0 and 59.');
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
+// Converts total seconds back to an { hours, minutes, seconds } breakdown
+// (hours uncapped, since a duration can exceed 24 hours).
+function secondsToHMS(totalSeconds) {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return { hours, minutes, seconds };
+}
+
+// Adds or subtracts two durations (in seconds). Throws if a subtraction
+// would produce a negative duration, since durations can't be negative.
+function addSubtractDurations(secondsA, secondsB, operation) {
+  const result = operation === 'subtract' ? secondsA - secondsB : secondsA + secondsB;
+  if (result < 0) throw new Error('Subtracting a larger duration from a smaller one is invalid.');
+  return result;
+}
+
+// Elapsed duration (in seconds) between two times of day (each in seconds
+// since midnight). Wraps past midnight when endSeconds < startSeconds (an
+// overnight shift), so the result is always in [0, 86400).
+function timeOfDayDuration(startSeconds, endSeconds) {
+  let diff = endSeconds - startSeconds;
+  if (diff < 0) diff += 86400;
+  return diff;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1666,5 +1703,9 @@ if (typeof module !== 'undefined' && module.exports) {
     VOLTAGE_TOLERANCE_FRACTION,
     checkPlugAdapterNeeds,
     workingDaysBetween,
+    timeToSeconds,
+    secondsToHMS,
+    addSubtractDurations,
+    timeOfDayDuration,
   };
 }

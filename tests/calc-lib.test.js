@@ -102,6 +102,10 @@ const {
   weekdayName,
   checkPlugAdapterNeeds,
   workingDaysBetween,
+  timeToSeconds,
+  secondsToHMS,
+  addSubtractDurations,
+  timeOfDayDuration,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2019,5 +2023,75 @@ describe('workingDaysBetween', () => {
   test('works with no holidays argument at all', () => {
     const result = workingDaysBetween(utc('2026-08-24'), utc('2026-08-24'));
     expect(result.workingDays).toBe(1);
+  });
+});
+
+// --- Time Duration calculator ---
+
+describe('timeToSeconds', () => {
+  test('converts H:M:S to total seconds', () => {
+    expect(timeToSeconds(1, 45, 0)).toBe(6300);
+    expect(timeToSeconds(0, 20, 0)).toBe(1200);
+  });
+
+  test('throws for negative hours', () => {
+    expect(() => timeToSeconds(-1, 0, 0)).toThrow();
+  });
+
+  test('throws for minutes or seconds out of [0, 60)', () => {
+    expect(() => timeToSeconds(1, 60, 0)).toThrow();
+    expect(() => timeToSeconds(1, -1, 0)).toThrow();
+    expect(() => timeToSeconds(1, 0, 60)).toThrow();
+    expect(() => timeToSeconds(1, 0, -1)).toThrow();
+  });
+
+  test('throws for non-numeric (NaN) components rather than silently propagating NaN', () => {
+    expect(() => timeToSeconds(NaN, 0, 0)).toThrow();
+    expect(() => timeToSeconds(1, NaN, 0)).toThrow();
+    expect(() => timeToSeconds(1, 0, NaN)).toThrow();
+  });
+});
+
+describe('secondsToHMS', () => {
+  test('breaks total seconds back into hours/minutes/seconds', () => {
+    expect(secondsToHMS(7500)).toEqual({ hours: 2, minutes: 5, seconds: 0 });
+    expect(secondsToHMS(30300)).toEqual({ hours: 8, minutes: 25, seconds: 0 });
+  });
+
+  test('does not cap hours at 24, since durations can exceed a day', () => {
+    expect(secondsToHMS(90000)).toEqual({ hours: 25, minutes: 0, seconds: 0 });
+  });
+});
+
+describe('addSubtractDurations', () => {
+  test('worked example: 1:45:00 + 0:20:00 = 2:05:00', () => {
+    const result = addSubtractDurations(timeToSeconds(1, 45, 0), timeToSeconds(0, 20, 0), 'add');
+    expect(secondsToHMS(result)).toEqual({ hours: 2, minutes: 5, seconds: 0 });
+  });
+
+  test('subtracts durations', () => {
+    const result = addSubtractDurations(timeToSeconds(1, 45, 0), timeToSeconds(0, 20, 0), 'subtract');
+    expect(secondsToHMS(result)).toEqual({ hours: 1, minutes: 25, seconds: 0 });
+  });
+
+  test('throws when subtraction would go negative', () => {
+    expect(() => addSubtractDurations(timeToSeconds(0, 20, 0), timeToSeconds(1, 45, 0), 'subtract')).toThrow();
+  });
+});
+
+describe('timeOfDayDuration', () => {
+  test('worked example: 09:15:00 to 17:40:00 is 8:25:00', () => {
+    const result = timeOfDayDuration(timeToSeconds(9, 15, 0), timeToSeconds(17, 40, 0));
+    expect(secondsToHMS(result)).toEqual({ hours: 8, minutes: 25, seconds: 0 });
+  });
+
+  test('worked example: overnight shift 22:00:00 to 06:00:00 wraps to 8:00:00', () => {
+    const result = timeOfDayDuration(timeToSeconds(22, 0, 0), timeToSeconds(6, 0, 0));
+    expect(secondsToHMS(result)).toEqual({ hours: 8, minutes: 0, seconds: 0 });
+  });
+
+  test('identical start and end time is a zero-length duration, not a full day', () => {
+    const result = timeOfDayDuration(timeToSeconds(9, 15, 0), timeToSeconds(9, 15, 0));
+    expect(result).toBe(0);
   });
 });
