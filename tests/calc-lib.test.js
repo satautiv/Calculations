@@ -1,5 +1,8 @@
 const {
   epleyOneRepMax,
+  brzyckiOneRepMax,
+  lombardiOneRepMax,
+  mayhewOneRepMax,
   percentageTable,
   wilksScore,
   calculatePlates,
@@ -96,6 +99,25 @@ describe('epleyOneRepMax', () => {
 
   test('estimates a higher max for more reps', () => {
     expect(epleyOneRepMax(100, 5)).toBeCloseTo(116.67, 1);
+  });
+});
+
+describe('brzyckiOneRepMax', () => {
+  test('estimates 1RM from weight and reps', () => {
+    expect(brzyckiOneRepMax(100, 5)).toBe(112.5);
+  });
+});
+
+describe('lombardiOneRepMax', () => {
+  test('estimates 1RM from weight and reps', () => {
+    expect(lombardiOneRepMax(100, 5)).toBeCloseTo(117.46, 2);
+  });
+});
+
+describe('mayhewOneRepMax', () => {
+  test('estimates 1RM from weight and reps', () => {
+    // Computed directly from the formula: (100*100) / (52.2 + 41.9 * e^(-0.055*5)).
+    expect(mayhewOneRepMax(100, 5)).toBeCloseTo(119.01, 2);
   });
 });
 

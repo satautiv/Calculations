@@ -86,22 +86,42 @@ function showError(elId, message) {
   document.getElementById(elId).innerHTML = `<span class="error">${message}</span>`;
 }
 
-// --- One-Rep Max (Epley formula) ---
+// --- One-Rep Max (multi-formula estimator) ---
 document.getElementById('orm-calc').addEventListener('click', () => {
   const weight = parseFloat(document.getElementById('orm-weight').value);
   const reps = parseInt(document.getElementById('orm-reps').value, 10);
   const unit = document.getElementById('orm-unit').value;
 
-  if (!weight || weight <= 0 || !reps || reps < 1) {
+  if (!weight || weight <= 0 || !reps || reps < 1 || !Number.isInteger(reps)) {
     showError('orm-result', 'Enter a valid weight and rep count.');
     return;
   }
 
-  const oneRepMax = epleyOneRepMax(weight, reps);
+  const formulas = [
+    { name: 'Epley', value: epleyOneRepMax(weight, reps) },
+    { name: 'Brzycki', value: reps >= 37 ? null : brzyckiOneRepMax(weight, reps) },
+    { name: 'Lombardi', value: lombardiOneRepMax(weight, reps) },
+    { name: 'Mayhew', value: mayhewOneRepMax(weight, reps) },
+  ];
+
+  const validValues = formulas.filter(f => f.value !== null).map(f => f.value);
+  const average = validValues.reduce((sum, v) => sum + v, 0) / validValues.length;
+
+  const rows = formulas
+    .map(f => `<tr><td>${f.name}</td><td>${f.value === null ? 'N/A' : `${f.value.toFixed(1)} ${unit}`}</td></tr>`)
+    .join('');
+
+  const highRepNote = reps > 12
+    ? '<div class="hint">Rep counts above ~12 reduce the accuracy of all 1RM formulas — treat these estimates as rough guidance.</div>'
+    : '';
 
   document.getElementById('orm-result').innerHTML = `
-    <div class="headline">${oneRepMax.toFixed(1)} ${unit}</div>
-    <div>Estimated one-rep max (Epley formula)</div>
+    <div class="headline">${average.toFixed(1)} ${unit} average</div>
+    <table>
+      <thead><tr><th>Formula</th><th>Estimated 1RM</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    ${highRepNote}
   `;
 });
 
