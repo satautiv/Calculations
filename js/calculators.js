@@ -4150,3 +4150,44 @@ document.getElementById('floor-calc').addEventListener('click', () => {
     showError('floor-result', err.message);
   }
 });
+
+// --- Race time predictor calculator ---
+document.getElementById('race-known-distance').addEventListener('change', (e) => {
+  document.getElementById('race-known-custom-field').hidden = e.target.value !== 'custom';
+});
+document.getElementById('race-target-distance').addEventListener('change', (e) => {
+  document.getElementById('race-target-custom-field').hidden = e.target.value !== 'custom';
+});
+
+document.getElementById('race-calc').addEventListener('click', () => {
+  const knownDistanceSelect = document.getElementById('race-known-distance').value;
+  const targetDistanceSelect = document.getElementById('race-target-distance').value;
+
+  const knownDistanceKm = knownDistanceSelect === 'custom'
+    ? parseFloat(document.getElementById('race-known-custom').value)
+    : parseFloat(knownDistanceSelect);
+  const targetDistanceKm = targetDistanceSelect === 'custom'
+    ? parseFloat(document.getElementById('race-target-custom').value)
+    : parseFloat(targetDistanceSelect);
+
+  const knownTime = readHMSFields('race-known-time-h', 'race-known-time-m', 'race-known-time-s');
+
+  try {
+    const knownTimeSeconds = timeToSeconds(knownTime.hours, knownTime.minutes, knownTime.seconds);
+    const predictedSeconds = riegelPredictedTime(knownTimeSeconds, knownDistanceKm, targetDistanceKm);
+    const predictedPaceSecPerKm = paceFromDistanceTime(targetDistanceKm, predictedSeconds);
+
+    const ratio = targetDistanceKm / knownDistanceKm;
+    const extremeNote = (ratio > 10 || ratio < 0.1)
+      ? '<div class="hint">This is a large distance ratio; the Riegel model loses accuracy far outside the known distance\'s neighborhood, so treat this as a rough estimate.</div>'
+      : '';
+
+    document.getElementById('race-result').innerHTML = `
+      <div class="headline">${formatHMS(secondsToHMS(predictedSeconds))}</div>
+      <div>Predicted pace: ${formatPace(predictedPaceSecPerKm)} min/km</div>
+      ${extremeNote}
+    `;
+  } catch (err) {
+    showError('race-result', err.message);
+  }
+});

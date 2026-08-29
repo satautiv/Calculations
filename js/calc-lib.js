@@ -1948,6 +1948,19 @@ function flooringNeeded(area, wastePercent, areaPerBox) {
   return { areaWithWaste, boxesNeeded, totalPurchasedArea };
 }
 
+// --- Race time predictor calculator ---
+
+// Riegel formula (Peter Riegel, 1977/1981): predicts finish time at a target
+// distance from a known time at a different distance. `exponent` defaults to
+// 1.06, the commonly cited value (sometimes tuned 1.05-1.15 per runner).
+function riegelPredictedTime(knownTimeSeconds, knownDistanceKm, targetDistanceKm, exponent = 1.06) {
+  if (!knownTimeSeconds || knownTimeSeconds <= 0) throw new Error('Known time must be greater than zero.');
+  if (!knownDistanceKm || knownDistanceKm <= 0) throw new Error('Known distance must be greater than zero.');
+  if (!targetDistanceKm || targetDistanceKm <= 0) throw new Error('Target distance must be greater than zero.');
+
+  return knownTimeSeconds * Math.pow(targetDistanceKm / knownDistanceKm, exponent);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2106,5 +2119,6 @@ if (typeof module !== 'undefined' && module.exports) {
     roundUpToCans,
     wallpaperRollsNeeded,
     flooringNeeded,
+    riegelPredictedTime,
   };
 }

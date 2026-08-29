@@ -2374,6 +2374,53 @@
     <button class="calc-btn" id="floor-calc">Calculate</button>
     <div class="result" id="floor-result"></div>
   </section>
+
+  <section id="race-time-predictor-calculator" class="view tab-panel">
+    <h2>Race Time Predictor</h2>
+    <p class="hint">Predicts your finish time at a target race distance from a known/recent result at a different distance, using the Riegel endurance-performance model.</p>
+    <div class="field">
+      <label for="race-known-distance">Known distance</label>
+      <select id="race-known-distance">
+        <option value="5">5K</option>
+        <option value="10" selected>10K</option>
+        <option value="21.0975">Half marathon</option>
+        <option value="42.195">Marathon</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="field" id="race-known-custom-field" hidden>
+      <label for="race-known-custom">Known distance (km)</label>
+      <input type="number" id="race-known-custom" min="0" step="0.01" placeholder="e.g. 8">
+    </div>
+    <div class="field">
+      <label for="race-known-time-h">Known time &mdash; hours</label>
+      <input type="number" id="race-known-time-h" min="0" step="1" placeholder="e.g. 0">
+    </div>
+    <div class="field">
+      <label for="race-known-time-m">Known time &mdash; minutes</label>
+      <input type="number" id="race-known-time-m" min="0" max="59" step="1" placeholder="e.g. 45">
+    </div>
+    <div class="field">
+      <label for="race-known-time-s">Known time &mdash; seconds (optional)</label>
+      <input type="number" id="race-known-time-s" min="0" max="59" step="1" placeholder="e.g. 0">
+    </div>
+    <div class="field">
+      <label for="race-target-distance">Target distance</label>
+      <select id="race-target-distance">
+        <option value="5">5K</option>
+        <option value="10">10K</option>
+        <option value="21.0975">Half marathon</option>
+        <option value="42.195" selected>Marathon</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="field" id="race-target-custom-field" hidden>
+      <label for="race-target-custom">Target distance (km)</label>
+      <input type="number" id="race-target-custom" min="0" step="0.01" placeholder="e.g. 15">
+    </div>
+    <button class="calc-btn" id="race-calc">Calculate</button>
+    <div class="result" id="race-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
