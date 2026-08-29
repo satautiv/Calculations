@@ -2180,6 +2180,38 @@ function widmarkBAC(alcoholGrams, weightKg, sex, hoursElapsed) {
   return Math.max(0, bacRaw);
 }
 
+// --- Cycling FTP calculator ---
+
+// Coggan's 7 power training zones, as a fraction of FTP. Zone 7 has no
+// upper bound (upper: null).
+const FTP_ZONES = [
+  { zone: 1, label: 'Active Recovery', lower: 0, upper: 0.55 },
+  { zone: 2, label: 'Endurance', lower: 0.56, upper: 0.75 },
+  { zone: 3, label: 'Tempo', lower: 0.76, upper: 0.90 },
+  { zone: 4, label: 'Lactate Threshold', lower: 0.91, upper: 1.05 },
+  { zone: 5, label: 'VO2max', lower: 1.06, upper: 1.20 },
+  { zone: 6, label: 'Anaerobic Capacity', lower: 1.21, upper: 1.50 },
+  { zone: 7, label: 'Neuromuscular Power', lower: 1.51, upper: null },
+];
+
+// Coggan's method: a rider can sustain slightly higher average power for 20
+// minutes than for a full 60 minutes, hence the 5% reduction.
+function estimateFTP(avgPower20min) {
+  if (!avgPower20min || avgPower20min <= 0) throw new Error('Average power must be greater than zero.');
+  return avgPower20min * 0.95;
+}
+
+function ftpPowerZones(ftp) {
+  if (!ftp || ftp <= 0) throw new Error('FTP must be greater than zero.');
+
+  return FTP_ZONES.map(z => ({
+    zone: z.zone,
+    label: z.label,
+    lowerWatts: Math.round(ftp * z.lower),
+    upperWatts: z.upper === null ? null : Math.round(ftp * z.upper),
+  }));
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2363,5 +2395,8 @@ if (typeof module !== 'undefined' && module.exports) {
     alcoholGramsFromDrinkCount,
     alcoholGramsFromVolume,
     widmarkBAC,
+    FTP_ZONES,
+    estimateFTP,
+    ftpPowerZones,
   };
 }
