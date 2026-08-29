@@ -100,6 +100,7 @@ const {
   dotsScore,
   addDaysToDate,
   weekdayName,
+  checkPlugAdapterNeeds,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1908,5 +1909,59 @@ describe('addDaysToDate / weekdayName', () => {
   test('handles very large day counts without overflow', () => {
     const result = addDaysToDate(utc('2000-01-01'), 20000);
     expect(result.toISOString().slice(0, 10)).toBe('2054-10-04');
+  });
+});
+
+// --- Country voltage and plug type checker ---
+
+describe('checkPlugAdapterNeeds', () => {
+  const dataset = {
+    Home: { voltage: 120, frequency: 60, plugTypes: ['A', 'B'] },
+    Neither: { voltage: 230, frequency: 50, plugTypes: ['G'] },
+    SamePlugDiffVoltage: { voltage: 230, frequency: 50, plugTypes: ['A'] },
+    DiffPlugSameVoltage: { voltage: 125, frequency: 60, plugTypes: ['C'] },
+    BothMatch: { voltage: 120, frequency: 60, plugTypes: ['A'] },
+  };
+
+  test('worked example: US to UK, not dual-voltage, needs both adapter and converter', () => {
+    const result = checkPlugAdapterNeeds('United States', 'United Kingdom', false);
+    expect(result.plugMatch).toBe(false);
+    expect(result.voltageCompatible).toBe(false);
+    expect(result.recommendation).toBe('both');
+  });
+
+  test('a dual-voltage device skips the voltage check, needing only a plug adapter', () => {
+    const result = checkPlugAdapterNeeds('United States', 'United Kingdom', true);
+    expect(result.voltageCompatible).toBe(true);
+    expect(result.recommendation).toBe('adapter');
+  });
+
+  test('matching plug and voltage needs neither adapter nor converter', () => {
+    const result = checkPlugAdapterNeeds('Home', 'BothMatch', false, dataset);
+    expect(result.recommendation).toBe('none');
+  });
+
+  test('matching plug shape but incompatible voltage needs a converter only', () => {
+    const result = checkPlugAdapterNeeds('Home', 'SamePlugDiffVoltage', false, dataset);
+    expect(result.plugMatch).toBe(true);
+    expect(result.voltageCompatible).toBe(false);
+    expect(result.recommendation).toBe('converter');
+  });
+
+  test('mismatched plug shape but compatible voltage needs an adapter only', () => {
+    const result = checkPlugAdapterNeeds('Home', 'DiffPlugSameVoltage', false, dataset);
+    expect(result.plugMatch).toBe(false);
+    expect(result.voltageCompatible).toBe(true);
+    expect(result.recommendation).toBe('adapter');
+  });
+
+  test('the same country as both home and destination is trivially compatible', () => {
+    const result = checkPlugAdapterNeeds('United States', 'United States', false);
+    expect(result.recommendation).toBe('none');
+  });
+
+  test('returns an error for a country not present in the dataset', () => {
+    const result = checkPlugAdapterNeeds('Atlantis', 'United Kingdom', false);
+    expect(result.error).toBeDefined();
   });
 });
