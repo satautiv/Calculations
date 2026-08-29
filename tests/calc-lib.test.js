@@ -151,6 +151,8 @@ const {
   convertClimbingGrade,
   ladderPlan,
   timeToBurnMinutes,
+  dogHumanAge,
+  catHumanAge,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3094,5 +3096,51 @@ describe('timeToBurnMinutes', () => {
   test('rejects a non-positive SPF when provided', () => {
     expect(() => timeToBurnMinutes(7, 'II', 0)).toThrow();
     expect(() => timeToBurnMinutes(7, 'II', -5)).toThrow();
+  });
+});
+
+// --- Pet age calculator ---
+
+describe('dogHumanAge', () => {
+  test('worked example: a 2-year-old dog', () => {
+    expect(dogHumanAge(2)).toBeCloseTo(42.1, 1);
+  });
+
+  test('rejects a non-positive age', () => {
+    expect(() => dogHumanAge(0)).toThrow();
+    expect(() => dogHumanAge(-1)).toThrow();
+  });
+
+  test('rejects an age too young for the formula (under ~3 weeks)', () => {
+    expect(() => dogHumanAge(0.01)).toThrow();
+  });
+
+  test('rejects an unreasonably large age', () => {
+    expect(() => dogHumanAge(31)).toThrow();
+  });
+});
+
+describe('catHumanAge', () => {
+  test('worked example: a 5-year-old cat', () => {
+    expect(catHumanAge(5)).toBeCloseTo(36, 5);
+  });
+
+  test('first year of life is 15 human years per cat-year', () => {
+    expect(catHumanAge(1)).toBeCloseTo(15, 5);
+    expect(catHumanAge(0.5)).toBeCloseTo(7.5, 5);
+  });
+
+  test('second year adds 9 more human years (2-year-old cat = 24)', () => {
+    expect(catHumanAge(2)).toBeCloseTo(24, 5);
+  });
+
+  test('each year after the second adds 4 human years', () => {
+    expect(catHumanAge(3)).toBeCloseTo(28, 5);
+  });
+
+  test('rejects a non-positive or unreasonably large age', () => {
+    expect(() => catHumanAge(0)).toThrow();
+    expect(() => catHumanAge(-1)).toThrow();
+    expect(() => catHumanAge(31)).toThrow();
   });
 });
