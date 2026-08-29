@@ -2079,6 +2079,18 @@ function wakeTimesForBedtime(bedtimeMinutes, fallAsleepMinutes = 14) {
   });
 }
 
+// --- VO2max estimator (Cooper 12-minute run test) ---
+
+// Cooper (1968) linear regression against lab-measured VO2max; distance in
+// meters covered during a 12-minute run.
+function cooperVO2max(distanceMeters) {
+  if (!distanceMeters || distanceMeters <= 0) throw new Error('Distance must be greater than zero.');
+  if (distanceMeters <= 504.9) {
+    throw new Error('Distance must be greater than about 505m; shorter distances produce a non-physiological negative VO2max under this formula.');
+  }
+  return (distanceMeters - 504.9) / 44.73;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2247,5 +2259,6 @@ if (typeof module !== 'undefined' && module.exports) {
     SLEEP_CYCLE_MINUTES,
     bedtimesForWakeTime,
     wakeTimesForBedtime,
+    cooperVO2max,
   };
 }

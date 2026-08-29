@@ -4325,3 +4325,32 @@ document.getElementById('sleep-calc').addEventListener('click', () => {
     showError('sleep-result', err.message);
   }
 });
+
+// --- VO2max estimator (Cooper 12-minute run test) ---
+document.getElementById('vo2-calc').addEventListener('click', () => {
+  const distance = parseFloat(document.getElementById('vo2-distance').value);
+  const unit = document.getElementById('vo2-unit').value;
+
+  if (isNaN(distance) || distance <= 0) {
+    showError('vo2-result', 'Enter a valid distance greater than zero.');
+    return;
+  }
+
+  const distanceMeters = unit === 'm' ? distance : convertUnit('length', distance, unit, 'm');
+
+  try {
+    const vo2max = cooperVO2max(distanceMeters);
+
+    const extremeNote = distanceMeters > 4000
+      ? '<div class="hint">This distance is faster than world-record 12-minute-run pace; treat this estimate with caution.</div>'
+      : '';
+
+    document.getElementById('vo2-result').innerHTML = `
+      <div class="headline">${vo2max.toFixed(1)} mL/kg/min</div>
+      <div>Estimated VO2max (Cooper 12-minute run test)</div>
+      ${extremeNote}
+    `;
+  } catch (err) {
+    showError('vo2-result', err.message);
+  }
+});

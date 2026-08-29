@@ -135,6 +135,7 @@ const {
   karvonenZones,
   bedtimesForWakeTime,
   wakeTimesForBedtime,
+  cooperVO2max,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2701,5 +2702,28 @@ describe('bedtimesForWakeTime', () => {
     expect(() => bedtimesForWakeTime(1440)).toThrow();
     expect(() => bedtimesForWakeTime(7 * 60, -1)).toThrow();
     expect(() => bedtimesForWakeTime(7 * 60, 121)).toThrow();
+  });
+});
+
+// --- VO2max estimator (Cooper 12-minute run test) ---
+
+describe('cooperVO2max', () => {
+  test('worked example: 2400m in 12 minutes', () => {
+    expect(cooperVO2max(2400)).toBeCloseTo(42.4, 1);
+  });
+
+  test('rejects a non-positive distance', () => {
+    expect(() => cooperVO2max(0)).toThrow();
+    expect(() => cooperVO2max(-100)).toThrow();
+  });
+
+  test('rejects a distance at or below ~505m (would produce a negative VO2max)', () => {
+    expect(() => cooperVO2max(500)).toThrow();
+    expect(() => cooperVO2max(504.9)).toThrow();
+  });
+
+  test('accepts an unrealistically high distance rather than rejecting it', () => {
+    expect(() => cooperVO2max(4500)).not.toThrow();
+    expect(cooperVO2max(4500)).toBeGreaterThan(0);
   });
 });
