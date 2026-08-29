@@ -528,6 +528,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute personalized heart-rate training zones from age and resting heart rate using the Karvonen method.',
     keywords: ['heart rate', 'karvonen', 'training zones', 'cardio', 'hrr', 'strength'],
   },
+  {
+    id: 'sleep-cycle-calculator',
+    name: 'Sleep Cycle Calculator',
+    category: 'Unusual',
+    description: 'Suggests bedtimes or wake-up times aligned to complete 90-minute sleep cycles, to reduce grogginess from waking mid-cycle.',
+    keywords: ['sleep', 'sleep cycle', 'bedtime', 'wake up', 'sleep inertia', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

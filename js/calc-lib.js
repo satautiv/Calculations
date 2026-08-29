@@ -2044,6 +2044,41 @@ function karvonenZones(age, restingHr, maxHrOverride) {
   return { maxHr, hrr, zones };
 }
 
+// --- Sleep cycle calculator ---
+
+const SLEEP_CYCLE_MINUTES = 90;
+
+// Candidate bedtimes for a target wake-up time, one per full sleep-cycle
+// count (3-6 cycles = 4.5-9h sleep), each wrapped to a valid minutes-since-
+// midnight clock time (a bedtime the night before wraps around 0).
+function bedtimesForWakeTime(wakeMinutes, fallAsleepMinutes = 14) {
+  if (wakeMinutes < 0 || wakeMinutes >= 1440) throw new Error('Enter a valid wake-up time.');
+  if (fallAsleepMinutes < 0 || fallAsleepMinutes > 120) {
+    throw new Error('Minutes to fall asleep must be between 0 and 120.');
+  }
+
+  return [3, 4, 5, 6].map(cycles => {
+    const sleepMinutes = cycles * SLEEP_CYCLE_MINUTES;
+    const bedtimeMinutes = ((wakeMinutes - sleepMinutes - fallAsleepMinutes) % 1440 + 1440) % 1440;
+    return { cycles, sleepMinutes, bedtimeMinutes };
+  });
+}
+
+// Candidate wake-up times for a given bedtime, one per full sleep-cycle
+// count (4-6 cycles = 6-9h sleep, the range generally recommended for adults).
+function wakeTimesForBedtime(bedtimeMinutes, fallAsleepMinutes = 14) {
+  if (bedtimeMinutes < 0 || bedtimeMinutes >= 1440) throw new Error('Enter a valid bedtime.');
+  if (fallAsleepMinutes < 0 || fallAsleepMinutes > 120) {
+    throw new Error('Minutes to fall asleep must be between 0 and 120.');
+  }
+
+  return [4, 5, 6].map(cycles => {
+    const sleepMinutes = cycles * SLEEP_CYCLE_MINUTES;
+    const wakeMinutes = (bedtimeMinutes + fallAsleepMinutes + sleepMinutes) % 1440;
+    return { cycles, sleepMinutes, wakeMinutes };
+  });
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2209,5 +2244,8 @@ if (typeof module !== 'undefined' && module.exports) {
     concreteBagsNeeded,
     HEART_RATE_ZONES,
     karvonenZones,
+    SLEEP_CYCLE_MINUTES,
+    bedtimesForWakeTime,
+    wakeTimesForBedtime,
   };
 }
