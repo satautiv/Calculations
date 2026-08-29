@@ -4118,3 +4118,35 @@ document.getElementById('wp-calc').addEventListener('click', () => {
     showError('wp-result', err.message);
   }
 });
+
+// --- Flooring calculator ---
+document.getElementById('floor-calc').addEventListener('click', () => {
+  const length = parseFloat(document.getElementById('floor-length').value);
+  const width = parseFloat(document.getElementById('floor-width').value);
+  const waste = parseFloat(document.getElementById('floor-waste').value);
+  const boxCoverage = parseFloat(document.getElementById('floor-box-coverage').value);
+
+  if (isNaN(length) || length <= 0 || isNaN(width) || width <= 0) {
+    showError('floor-result', 'Enter valid room length and width greater than zero.');
+    return;
+  }
+
+  const area = length * width;
+
+  try {
+    const { areaWithWaste, boxesNeeded, totalPurchasedArea } = flooringNeeded(area, waste, boxCoverage);
+
+    const wasteNote = waste > 100
+      ? '<div class="hint">That\'s an unusually high waste percentage &mdash; double-check this is intentional.</div>'
+      : '';
+
+    document.getElementById('floor-result').innerHTML = `
+      <div class="headline">${boxesNeeded} boxes</div>
+      <div>Room area: ${area.toFixed(2)} m&sup2; &middot; Area with waste: ${areaWithWaste.toFixed(2)} m&sup2;</div>
+      <div class="hint">Total material purchased: ${totalPurchasedArea.toFixed(2)} m&sup2;</div>
+      ${wasteNote}
+    `;
+  } catch (err) {
+    showError('floor-result', err.message);
+  }
+});

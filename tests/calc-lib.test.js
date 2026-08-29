@@ -126,6 +126,7 @@ const {
   paintNeeded,
   roundUpToCans,
   wallpaperRollsNeeded,
+  flooringNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2499,5 +2500,29 @@ describe('wallpaperRollsNeeded', () => {
 
   test('rejects a negative waste percentage', () => {
     expect(() => wallpaperRollsNeeded(15, 2.4, 0.53, 10.05, 0.64, -5)).toThrow();
+  });
+});
+
+// --- Flooring calculator ---
+
+describe('flooringNeeded', () => {
+  test('worked example: 5x4 room (20 m²), 10% waste, 2.2 m² per box', () => {
+    const result = flooringNeeded(20, 10, 2.2);
+    expect(result.areaWithWaste).toBeCloseTo(22, 5);
+    expect(result.boxesNeeded).toBe(10);
+    expect(result.totalPurchasedArea).toBeCloseTo(22, 5);
+  });
+
+  test('rejects a non-positive area or area per box', () => {
+    expect(() => flooringNeeded(0, 10, 2.2)).toThrow();
+    expect(() => flooringNeeded(20, 10, 0)).toThrow();
+  });
+
+  test('rejects a negative waste percentage', () => {
+    expect(() => flooringNeeded(20, -5, 2.2)).toThrow();
+  });
+
+  test('allows a waste percentage over 100%', () => {
+    expect(() => flooringNeeded(20, 150, 2.2)).not.toThrow();
   });
 });

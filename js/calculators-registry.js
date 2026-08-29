@@ -493,6 +493,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how many rolls of wallpaper you need, accounting for roll size, pattern repeat, and waste allowance.',
     keywords: ['wallpaper', 'rolls', 'pattern repeat', 'strips', 'home', 'diy'],
   },
+  {
+    id: 'flooring-calculator',
+    name: 'Flooring Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how much flooring material and how many boxes you need for a room, including a waste allowance.',
+    keywords: ['flooring', 'laminate', 'hardwood', 'vinyl plank', 'carpet', 'boxes', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

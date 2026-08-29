@@ -2351,6 +2351,29 @@
     <button class="calc-btn" id="wp-calc">Calculate</button>
     <div class="result" id="wp-result"></div>
   </section>
+
+  <section id="flooring-calculator" class="view tab-panel">
+    <h2>Flooring Calculator</h2>
+    <p class="hint">Calculates how much flooring material (laminate, hardwood, vinyl plank, carpet, etc.) and how many boxes you need for a room, including a waste allowance for cuts and layout.</p>
+    <div class="field">
+      <label for="floor-length">Room length (m)</label>
+      <input type="number" id="floor-length" min="0" step="0.01" placeholder="e.g. 5">
+    </div>
+    <div class="field">
+      <label for="floor-width">Room width (m)</label>
+      <input type="number" id="floor-width" min="0" step="0.01" placeholder="e.g. 4">
+    </div>
+    <div class="field">
+      <label for="floor-waste">Waste allowance (%, e.g. enter 10 for 10%)</label>
+      <input type="number" id="floor-waste" step="1" value="10">
+    </div>
+    <div class="field">
+      <label for="floor-box-coverage">Coverage per box (m&sup2;)</label>
+      <input type="number" id="floor-box-coverage" min="0" step="0.01" placeholder="e.g. 2.2">
+    </div>
+    <button class="calc-btn" id="floor-calc">Calculate</button>
+    <div class="result" id="floor-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
