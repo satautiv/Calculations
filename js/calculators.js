@@ -3954,3 +3954,33 @@ document.getElementById('wlt-calc').addEventListener('click', () => {
     showError('wlt-result', err.message);
   }
 });
+
+// --- Bulking calorie calculator ---
+document.getElementById('bulk-pace').addEventListener('change', (e) => {
+  document.getElementById('bulk-custom-field').hidden = e.target.value !== 'custom';
+});
+
+document.getElementById('bulk-calc').addEventListener('click', () => {
+  const tdee = parseFloat(document.getElementById('bulk-tdee').value);
+  const pace = document.getElementById('bulk-pace').value;
+
+  const surplusFraction = pace === 'custom'
+    ? parseFloat(document.getElementById('bulk-custom-pct').value) / 100
+    : BULK_PACE_SURPLUS[pace];
+
+  if (surplusFraction === undefined || isNaN(surplusFraction)) {
+    showError('bulk-result', 'Select a bulk pace, or enter a valid custom surplus percentage.');
+    return;
+  }
+
+  try {
+    const target = bulkCalories(tdee, surplusFraction);
+
+    document.getElementById('bulk-result').innerHTML = `
+      <div class="headline">${Math.round(target).toLocaleString()} kcal/day</div>
+      <div>${(surplusFraction * 100).toFixed(0)}% surplus above a ${Math.round(tdee).toLocaleString()} kcal/day TDEE</div>
+    `;
+  } catch (err) {
+    showError('bulk-result', err.message);
+  }
+});

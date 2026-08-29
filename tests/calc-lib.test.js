@@ -118,6 +118,7 @@ const {
   tdeeFromBmr,
   macroGrams,
   weightLossTimeline,
+  bulkCalories,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2359,5 +2360,24 @@ describe('weightLossTimeline', () => {
   test('rejects a goal weight greater than or equal to current weight', () => {
     expect(() => weightLossTimeline(80, 90, 500)).toThrow();
     expect(() => weightLossTimeline(80, 80, 500)).toThrow();
+  });
+});
+
+// --- Bulking calorie calculator ---
+
+describe('bulkCalories', () => {
+  test('worked example: TDEE 2800 at lean/moderate/aggressive paces', () => {
+    expect(bulkCalories(2800, 0.10)).toBeCloseTo(3080, 5);
+    expect(bulkCalories(2800, 0.15)).toBeCloseTo(3220, 5);
+    expect(bulkCalories(2800, 0.20)).toBeCloseTo(3360, 5);
+  });
+
+  test('rejects a non-positive TDEE', () => {
+    expect(() => bulkCalories(0, 0.10)).toThrow();
+  });
+
+  test('rejects a surplus fraction outside 0-50%', () => {
+    expect(() => bulkCalories(2800, -0.1)).toThrow();
+    expect(() => bulkCalories(2800, 0.6)).toThrow();
   });
 });
