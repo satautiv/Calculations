@@ -1934,6 +1934,20 @@ function wallpaperRollsNeeded(perimeter, wallHeight, rollWidth, rollLength, patt
   return { numberOfStrips, effectiveDrop, stripsPerRoll, rollsNeeded, rollsWithWaste };
 }
 
+// --- Flooring calculator ---
+
+function flooringNeeded(area, wastePercent, areaPerBox) {
+  if (!area || area <= 0) throw new Error('Room area must be greater than zero.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+  if (!areaPerBox || areaPerBox <= 0) throw new Error('Coverage area per box must be greater than zero.');
+
+  const areaWithWaste = area * (1 + wastePercent / 100);
+  const boxesNeeded = Math.ceil(areaWithWaste / areaPerBox);
+  const totalPurchasedArea = boxesNeeded * areaPerBox;
+
+  return { areaWithWaste, boxesNeeded, totalPurchasedArea };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2091,5 +2105,6 @@ if (typeof module !== 'undefined' && module.exports) {
     paintNeeded,
     roundUpToCans,
     wallpaperRollsNeeded,
+    flooringNeeded,
   };
 }
