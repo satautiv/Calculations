@@ -125,6 +125,7 @@ const {
   convertPacePerUnit,
   paintNeeded,
   roundUpToCans,
+  wallpaperRollsNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2461,5 +2462,42 @@ describe('roundUpToCans', () => {
 
   test('rejects a non-positive can size', () => {
     expect(() => roundUpToCans(7, 0)).toThrow();
+  });
+});
+
+// --- Wallpaper calculator ---
+
+describe('wallpaperRollsNeeded', () => {
+  test('worked example: 4x3.5 room, 2.4m height, European roll, 0.64m repeat, 10% waste', () => {
+    const result = wallpaperRollsNeeded(15, 2.4, 0.53, 10.05, 0.64, 10);
+    expect(result.numberOfStrips).toBe(29);
+    expect(result.effectiveDrop).toBeCloseTo(2.56, 5);
+    expect(result.stripsPerRoll).toBe(3);
+    expect(result.rollsNeeded).toBe(10);
+    expect(result.rollsWithWaste).toBe(11);
+  });
+
+  test('plain paper (no pattern repeat) uses the wall height directly as the drop', () => {
+    const result = wallpaperRollsNeeded(15, 2.4, 0.53, 10.05, 0, 10);
+    expect(result.effectiveDrop).toBe(2.4);
+  });
+
+  test('rejects non-positive perimeter, wall height, roll width, or roll length', () => {
+    expect(() => wallpaperRollsNeeded(0, 2.4, 0.53, 10.05, 0, 10)).toThrow();
+    expect(() => wallpaperRollsNeeded(15, 0, 0.53, 10.05, 0, 10)).toThrow();
+    expect(() => wallpaperRollsNeeded(15, 2.4, 0, 10.05, 0, 10)).toThrow();
+    expect(() => wallpaperRollsNeeded(15, 2.4, 0.53, 0, 0, 10)).toThrow();
+  });
+
+  test('rejects a wall height that exceeds the roll length', () => {
+    expect(() => wallpaperRollsNeeded(15, 12, 0.53, 10.05, 0, 10)).toThrow();
+  });
+
+  test('rejects a pattern repeat larger than the roll length', () => {
+    expect(() => wallpaperRollsNeeded(15, 2.4, 0.53, 10.05, 12, 10)).toThrow();
+  });
+
+  test('rejects a negative waste percentage', () => {
+    expect(() => wallpaperRollsNeeded(15, 2.4, 0.53, 10.05, 0.64, -5)).toThrow();
   });
 });

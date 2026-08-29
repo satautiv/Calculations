@@ -1905,6 +1905,35 @@ function roundUpToCans(volumeNeeded, canSize) {
   return { cansNeeded, totalVolume: cansNeeded * canSize };
 }
 
+// --- Wallpaper calculator ---
+
+// perimeter/wallHeight/rollWidth/rollLength/patternRepeat all in meters;
+// wastePercent as a whole number (e.g. 10 for 10%). patternRepeat of 0 means
+// plain paper (no pattern matching / drop rounding).
+function wallpaperRollsNeeded(perimeter, wallHeight, rollWidth, rollLength, patternRepeat, wastePercent) {
+  if (!perimeter || perimeter <= 0) throw new Error('Wall perimeter must be greater than zero.');
+  if (!wallHeight || wallHeight <= 0) throw new Error('Wall height must be greater than zero.');
+  if (!rollWidth || rollWidth <= 0) throw new Error('Roll width must be greater than zero.');
+  if (!rollLength || rollLength <= 0) throw new Error('Roll length must be greater than zero.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+
+  const repeat = patternRepeat || 0;
+  if (repeat > rollLength) throw new Error('Pattern repeat cannot exceed the roll length.');
+
+  const numberOfStrips = Math.ceil(perimeter / rollWidth);
+  const effectiveDrop = repeat > 0 ? Math.ceil(wallHeight / repeat) * repeat : wallHeight;
+
+  const stripsPerRoll = Math.floor(rollLength / effectiveDrop);
+  if (stripsPerRoll < 1) {
+    throw new Error('Wall height (after pattern-repeat rounding) exceeds the roll length; no strips fit per roll.');
+  }
+
+  const rollsNeeded = Math.ceil(numberOfStrips / stripsPerRoll);
+  const rollsWithWaste = Math.ceil(rollsNeeded * (1 + wastePercent / 100));
+
+  return { numberOfStrips, effectiveDrop, stripsPerRoll, rollsNeeded, rollsWithWaste };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2061,5 +2090,6 @@ if (typeof module !== 'undefined' && module.exports) {
     convertPacePerUnit,
     paintNeeded,
     roundUpToCans,
+    wallpaperRollsNeeded,
   };
 }
