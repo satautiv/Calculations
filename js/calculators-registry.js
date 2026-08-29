@@ -430,6 +430,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute Fat-Free Mass Index (FFMI), a height-normalized measure of muscularity, from weight, height, and body fat percentage.',
     keywords: ['ffmi', 'fat-free mass index', 'muscularity', 'natural limit', 'lean mass', 'strength'],
   },
+  {
+    id: 'lean-body-mass-calculator',
+    name: 'Lean Body Mass Calculator',
+    category: 'Fitness & Strength',
+    description: 'Estimate lean body mass from a known body fat percentage, or from height/weight/sex alone using the Boer formula.',
+    keywords: ['lean body mass', 'lbm', 'boer formula', 'fat-free', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

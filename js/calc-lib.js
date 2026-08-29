@@ -1697,6 +1697,33 @@ function ffmiCategory(normalizedFFMI) {
   return 'Exceeds the commonly cited natural limit';
 }
 
+// --- Lean Body Mass calculator ---
+
+function leanBodyMassFromBodyFat(weightKg, bodyFatPercent) {
+  if (!weightKg || weightKg <= 0) throw new Error('Weight must be greater than zero.');
+  if (bodyFatPercent < 0 || bodyFatPercent > 70) throw new Error('Body fat percentage must be between 0 and 70.');
+
+  return weightKg * (1 - bodyFatPercent / 100);
+}
+
+// Boer (1984) formula: estimates lean body mass from height/weight/sex alone,
+// with no body-fat measurement needed.
+function leanBodyMassBoer(weightKg, heightCm, sex) {
+  if (!weightKg || weightKg <= 0) throw new Error('Weight must be greater than zero.');
+  if (!heightCm || heightCm <= 0) throw new Error('Height must be greater than zero.');
+
+  let lbm;
+  if (sex === 'male') lbm = 0.407 * weightKg + 0.267 * heightCm - 19.2;
+  else if (sex === 'female') lbm = 0.252 * weightKg + 0.473 * heightCm - 48.3;
+  else throw new Error('Sex must be "male" or "female".');
+
+  if (lbm < 0) {
+    throw new Error('This height/weight combination falls outside the Boer formula\'s validated range (produces a negative result).');
+  }
+
+  return lbm;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1833,5 +1860,7 @@ if (typeof module !== 'undefined' && module.exports) {
     convertUnit,
     ffmi,
     ffmiCategory,
+    leanBodyMassFromBodyFat,
+    leanBodyMassBoer,
   };
 }
