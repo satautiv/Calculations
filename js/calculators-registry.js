@@ -598,6 +598,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert a roof\'s rise and run into slope ratio, "X-in-12" notation, and angle in degrees.',
     keywords: ['roof pitch', 'slope', 'x-in-12', 'roof angle', 'home', 'diy'],
   },
+  {
+    id: 'climbing-grade-converter',
+    name: 'Climbing Grade Converter',
+    category: 'Fitness & Strength',
+    description: 'Convert climbing grades between the V-scale, Font, and YDS grading systems.',
+    keywords: ['climbing', 'v-scale', 'fontainebleau', 'font', 'yds', 'bouldering', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

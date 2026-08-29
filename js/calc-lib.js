@@ -2267,6 +2267,67 @@ function roofPitchConversions(rise, run) {
   return { slopeRatio, xIn12, angleDegrees, multiplier };
 }
 
+// --- Climbing grade converter ---
+
+// Standard V-scale <-> Font bouldering-grade correspondence table, most
+// widely cited by climbing gyms/guidebooks/8a.nu.
+const BOULDER_GRADE_TABLE = [
+  { v: 'VB', font: '3' },
+  { v: 'V0', font: '4' },
+  { v: 'V1', font: '5' },
+  { v: 'V2', font: '5+' },
+  { v: 'V3', font: '6A/6A+' },
+  { v: 'V4', font: '6B/6B+' },
+  { v: 'V5', font: '6C/6C+' },
+  { v: 'V6', font: '7A' },
+  { v: 'V7', font: '7A+' },
+  { v: 'V8', font: '7B/7B+' },
+  { v: 'V9', font: '7C' },
+  { v: 'V10', font: '7C+' },
+  { v: 'V11', font: '8A' },
+  { v: 'V12', font: '8A+' },
+  { v: 'V13', font: '8B' },
+  { v: 'V14', font: '8B+' },
+  { v: 'V15', font: '8C' },
+  { v: 'V16', font: '8C+' },
+  { v: 'V17', font: '9A' },
+];
+
+// YDS (Yosemite Decimal System) route grades: a separate reference scale for
+// route climbing, not a bouldering scale. There is no standardized numeric
+// equivalence between YDS and V-scale/Font, so it isn't cross-converted.
+const YDS_GRADES = [
+  '5.0', '5.1', '5.2', '5.3', '5.4', '5.5', '5.6', '5.7', '5.8', '5.9',
+  '5.10a', '5.10b', '5.10c', '5.10d', '5.11a', '5.11b', '5.11c', '5.11d',
+  '5.12a', '5.12b', '5.12c', '5.12d', '5.13a', '5.13b', '5.13c', '5.13d',
+  '5.14a', '5.14b', '5.14c', '5.14d', '5.15a', '5.15b', '5.15c', '5.15d',
+];
+
+function isValidClimbingGrade(system, grade) {
+  if (system === 'yds') return YDS_GRADES.includes(grade);
+  if (system === 'v' || system === 'font') return BOULDER_GRADE_TABLE.some(row => row[system] === grade);
+  return false;
+}
+
+// Converts a grade between systems. V<->Font is a direct table lookup;
+// same-system is the identity case. YDS is a different type of scale (route
+// vs. bouldering) with no standardized direct equivalence to V-scale/Font,
+// so converting across that boundary throws rather than guessing.
+function convertClimbingGrade(system, grade, targetSystem) {
+  if (!system || !targetSystem) throw new Error('Select both a source and target grading system.');
+  if (!isValidClimbingGrade(system, grade)) throw new Error(`Unrecognized ${system} grade: ${grade}`);
+
+  if (system === targetSystem) return grade;
+
+  const boulderSystems = ['v', 'font'];
+  if (boulderSystems.includes(system) && boulderSystems.includes(targetSystem)) {
+    const entry = BOULDER_GRADE_TABLE.find(row => row[system] === grade);
+    return entry[targetSystem];
+  }
+
+  throw new Error('YDS route grades and V-scale/Font bouldering grades are different types of scales with no standardized direct equivalence; compare grades within the same discipline instead.');
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2457,5 +2518,9 @@ if (typeof module !== 'undefined' && module.exports) {
     roofPitchMultiplier,
     roofArea,
     roofPitchConversions,
+    BOULDER_GRADE_TABLE,
+    YDS_GRADES,
+    isValidClimbingGrade,
+    convertClimbingGrade,
   };
 }

@@ -4561,3 +4561,36 @@ document.getElementById('pitch-calc').addEventListener('click', () => {
     showError('pitch-result', err.message);
   }
 });
+
+// --- Climbing grade converter ---
+function climbingGradeOptions(system) {
+  if (system === 'v') return BOULDER_GRADE_TABLE.map(row => row.v);
+  if (system === 'font') return BOULDER_GRADE_TABLE.map(row => row.font);
+  return YDS_GRADES;
+}
+
+function populateClimbingGradeDropdown() {
+  const system = document.getElementById('grade-from-system').value;
+  const select = document.getElementById('grade-from-value');
+  select.innerHTML = climbingGradeOptions(system).map(g => `<option value="${g}">${g}</option>`).join('');
+}
+
+document.getElementById('grade-from-system').addEventListener('change', populateClimbingGradeDropdown);
+populateClimbingGradeDropdown();
+
+document.getElementById('grade-calc').addEventListener('click', () => {
+  const fromSystem = document.getElementById('grade-from-system').value;
+  const fromGrade = document.getElementById('grade-from-value').value;
+  const toSystem = document.getElementById('grade-to-system').value;
+
+  try {
+    const result = convertClimbingGrade(fromSystem, fromGrade, toSystem);
+
+    document.getElementById('grade-result').innerHTML = `
+      <div class="headline">${result}</div>
+      <div>${fromGrade} (${fromSystem === 'v' ? 'V-scale' : fromSystem === 'font' ? 'Font' : 'YDS'}) &rarr; ${toSystem === 'v' ? 'V-scale' : toSystem === 'font' ? 'Font' : 'YDS'}</div>
+    `;
+  } catch (err) {
+    showError('grade-result', err.message);
+  }
+});
