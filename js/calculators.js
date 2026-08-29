@@ -4251,3 +4251,34 @@ document.getElementById('concrete-calc').addEventListener('click', () => {
     showError('concrete-result', err.message);
   }
 });
+
+// --- Heart-rate training zone calculator ---
+document.getElementById('hr-calc').addEventListener('click', () => {
+  const age = parseFloat(document.getElementById('hr-age').value);
+  const restingHr = parseFloat(document.getElementById('hr-resting').value);
+  const maxHrRaw = document.getElementById('hr-max-override').value;
+  const maxHrOverride = maxHrRaw === '' ? undefined : parseFloat(maxHrRaw);
+
+  const ageNote = (age < 10 || age > 100)
+    ? '<div class="hint">The 220&minus;age MaxHR estimate isn\'t well validated outside typical adult ages; consider entering a measured max HR instead.</div>'
+    : '';
+
+  try {
+    const { maxHr, hrr, zones } = karvonenZones(age, restingHr, maxHrOverride);
+
+    const rows = zones
+      .map(z => `<tr><td>${z.zone}. ${z.label}</td><td>${Math.round(z.lowerBpm)}&ndash;${Math.round(z.upperBpm)} bpm</td></tr>`)
+      .join('');
+
+    document.getElementById('hr-result').innerHTML = `
+      <div class="headline">MaxHR ${maxHr} bpm &middot; HRR ${hrr} bpm</div>
+      <table>
+        <thead><tr><th>Zone</th><th>Target HR</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      ${ageNote}
+    `;
+  } catch (err) {
+    showError('hr-result', err.message);
+  }
+});
