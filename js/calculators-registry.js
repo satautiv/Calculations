@@ -402,6 +402,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Count business days (Mon-Fri) between two dates, optionally excluding a list of holiday dates.',
     keywords: ['working days', 'business days', 'weekdays', 'holidays', 'delivery time', 'general'],
   },
+  {
+    id: 'time-duration-calculator',
+    name: 'Time Duration Calculator',
+    category: 'General',
+    description: 'Add or subtract H:MM:SS durations, or compute the elapsed time between two times of day (including overnight shifts).',
+    keywords: ['time duration', 'add time', 'subtract time', 'elapsed time', 'clock in', 'clock out', 'hours worked', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

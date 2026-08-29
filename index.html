@@ -1859,6 +1859,82 @@
     <button class="calc-btn" id="workdays-calc">Calculate</button>
     <div class="result" id="workdays-result"></div>
   </section>
+
+  <section id="time-duration-calculator" class="view tab-panel">
+    <h2>Time Duration Calculator</h2>
+    <p class="hint">Add or subtract two H:MM:SS durations, or compute the elapsed time between two times of day (24-hour, supports overnight shifts).</p>
+    <div class="field">
+      <label for="duration-mode">Mode</label>
+      <select id="duration-mode">
+        <option value="durations">Add/subtract two durations</option>
+        <option value="timeofday">Duration between two times of day</option>
+      </select>
+    </div>
+
+    <div id="duration-durations-fields">
+      <div class="field">
+        <label for="duration-op">Operation</label>
+        <select id="duration-op">
+          <option value="add">Add</option>
+          <option value="subtract">Subtract</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="duration-a-h">Duration A &mdash; hours</label>
+        <input type="number" id="duration-a-h" min="0" step="1" placeholder="e.g. 1">
+      </div>
+      <div class="field">
+        <label for="duration-a-m">Duration A &mdash; minutes</label>
+        <input type="number" id="duration-a-m" min="0" max="59" step="1" placeholder="e.g. 45">
+      </div>
+      <div class="field">
+        <label for="duration-a-s">Duration A &mdash; seconds (optional)</label>
+        <input type="number" id="duration-a-s" min="0" max="59" step="1" placeholder="e.g. 0">
+      </div>
+      <div class="field">
+        <label for="duration-b-h">Duration B &mdash; hours</label>
+        <input type="number" id="duration-b-h" min="0" step="1" placeholder="e.g. 0">
+      </div>
+      <div class="field">
+        <label for="duration-b-m">Duration B &mdash; minutes</label>
+        <input type="number" id="duration-b-m" min="0" max="59" step="1" placeholder="e.g. 20">
+      </div>
+      <div class="field">
+        <label for="duration-b-s">Duration B &mdash; seconds (optional)</label>
+        <input type="number" id="duration-b-s" min="0" max="59" step="1" placeholder="e.g. 0">
+      </div>
+    </div>
+
+    <div id="duration-timeofday-fields" hidden>
+      <div class="field">
+        <label for="duration-start-h">Start time &mdash; hours (0&ndash;23)</label>
+        <input type="number" id="duration-start-h" min="0" max="23" step="1" placeholder="e.g. 9">
+      </div>
+      <div class="field">
+        <label for="duration-start-m">Start time &mdash; minutes</label>
+        <input type="number" id="duration-start-m" min="0" max="59" step="1" placeholder="e.g. 15">
+      </div>
+      <div class="field">
+        <label for="duration-start-s">Start time &mdash; seconds (optional)</label>
+        <input type="number" id="duration-start-s" min="0" max="59" step="1" placeholder="e.g. 0">
+      </div>
+      <div class="field">
+        <label for="duration-end-h">End time &mdash; hours (0&ndash;23)</label>
+        <input type="number" id="duration-end-h" min="0" max="23" step="1" placeholder="e.g. 17">
+      </div>
+      <div class="field">
+        <label for="duration-end-m">End time &mdash; minutes</label>
+        <input type="number" id="duration-end-m" min="0" max="59" step="1" placeholder="e.g. 40">
+      </div>
+      <div class="field">
+        <label for="duration-end-s">End time &mdash; seconds (optional)</label>
+        <input type="number" id="duration-end-s" min="0" max="59" step="1" placeholder="e.g. 0">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="duration-calc">Calculate</button>
+    <div class="result" id="duration-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

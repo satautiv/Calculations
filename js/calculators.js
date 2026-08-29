@@ -3603,3 +3603,64 @@ document.getElementById('workdays-calc').addEventListener('click', () => {
     ${skippedNote}
   `;
 });
+
+// --- Time Duration calculator ---
+document.getElementById('duration-mode').addEventListener('change', (e) => {
+  const isTimeOfDay = e.target.value === 'timeofday';
+  document.getElementById('duration-durations-fields').hidden = isTimeOfDay;
+  document.getElementById('duration-timeofday-fields').hidden = !isTimeOfDay;
+});
+
+// Reads an H/M/S field trio, defaulting a blank field to 0 (per issue: missing
+// fields like seconds should default rather than error).
+function readHMSFields(hoursId, minutesId, secondsId) {
+  const hoursRaw = document.getElementById(hoursId).value;
+  const minutesRaw = document.getElementById(minutesId).value;
+  const secondsRaw = document.getElementById(secondsId).value;
+  return {
+    hours: hoursRaw === '' ? 0 : parseFloat(hoursRaw),
+    minutes: minutesRaw === '' ? 0 : parseFloat(minutesRaw),
+    seconds: secondsRaw === '' ? 0 : parseFloat(secondsRaw),
+  };
+}
+
+function formatHMS({ hours, minutes, seconds }) {
+  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+document.getElementById('duration-calc').addEventListener('click', () => {
+  const mode = document.getElementById('duration-mode').value;
+
+  try {
+    if (mode === 'durations') {
+      const a = readHMSFields('duration-a-h', 'duration-a-m', 'duration-a-s');
+      const b = readHMSFields('duration-b-h', 'duration-b-m', 'duration-b-s');
+      const operation = document.getElementById('duration-op').value;
+
+      const secondsA = timeToSeconds(a.hours, a.minutes, a.seconds);
+      const secondsB = timeToSeconds(b.hours, b.minutes, b.seconds);
+      const resultSeconds = addSubtractDurations(secondsA, secondsB, operation);
+
+      document.getElementById('duration-result').innerHTML = `
+        <div class="headline">${formatHMS(secondsToHMS(resultSeconds))}</div>
+        <div>${formatHMS(secondsToHMS(secondsA))} ${operation === 'subtract' ? '-' : '+'} ${formatHMS(secondsToHMS(secondsB))}</div>
+      `;
+    } else {
+      const start = readHMSFields('duration-start-h', 'duration-start-m', 'duration-start-s');
+      const end = readHMSFields('duration-end-h', 'duration-end-m', 'duration-end-s');
+
+      const startSeconds = timeToSeconds(start.hours, start.minutes, start.seconds);
+      const endSeconds = timeToSeconds(end.hours, end.minutes, end.seconds);
+      const wrapped = endSeconds < startSeconds;
+      const diffSeconds = timeOfDayDuration(startSeconds, endSeconds);
+
+      document.getElementById('duration-result').innerHTML = `
+        <div class="headline">${formatHMS(secondsToHMS(diffSeconds))}</div>
+        <div>${formatHMS(start)} to ${formatHMS(end)}</div>
+        ${wrapped ? '<div class="hint">Crossed midnight into the next day.</div>' : ''}
+      `;
+    }
+  } catch (err) {
+    showError('duration-result', err.message);
+  }
+});
