@@ -1840,6 +1840,25 @@
     <button class="calc-btn" id="voltage-calc">Calculate</button>
     <div class="result" id="voltage-result"></div>
   </section>
+
+  <section id="working-days-calculator" class="view tab-panel">
+    <h2>Working Days Calculator</h2>
+    <p class="hint">Counts business days (Monday-Friday) between two dates, inclusive of both endpoints, optionally excluding a list of holiday dates.</p>
+    <div class="field">
+      <label for="workdays-start">Start date</label>
+      <input type="date" id="workdays-start">
+    </div>
+    <div class="field">
+      <label for="workdays-end">End date</label>
+      <input type="date" id="workdays-end">
+    </div>
+    <div class="field">
+      <label for="workdays-holidays">Holiday dates (optional, one per line, YYYY-MM-DD)</label>
+      <textarea id="workdays-holidays" rows="4" placeholder="e.g.&#10;2026-08-27&#10;2026-12-25"></textarea>
+    </div>
+    <button class="calc-btn" id="workdays-calc">Calculate</button>
+    <div class="result" id="workdays-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

@@ -1508,6 +1508,41 @@ function checkPlugAdapterNeeds(homeCountryName, destinationCountryName, dualVolt
   return { home, destination, plugMatch, voltageCompatible, recommendation };
 }
 
+// --- Working Days calculator ---
+
+// Counts business days (Mon-Fri) between two UTC-midnight dates, inclusive
+// of both endpoints, optionally excluding a list of holiday dates (compared
+// by exact UTC-midnight timestamp, so callers must normalize holiday inputs
+// the same way). Order-independent: `reversed` reports whether startDate was
+// chronologically after endDate, but the day count itself is unaffected.
+function workingDaysBetween(startDate, endDate, holidayDates = []) {
+  const reversed = startDate.getTime() > endDate.getTime();
+  const earlier = reversed ? endDate : startDate;
+  const later = reversed ? startDate : endDate;
+  const holidaySet = new Set(holidayDates.map(d => d.getTime()));
+
+  let workingDays = 0;
+  let weekendDays = 0;
+  let holidayWeekdays = 0;
+  let totalDays = 0;
+
+  const current = new Date(earlier.getTime());
+  while (current.getTime() <= later.getTime()) {
+    totalDays++;
+    const dayOfWeek = current.getUTCDay();
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+      weekendDays++;
+    } else if (holidaySet.has(current.getTime())) {
+      holidayWeekdays++;
+    } else {
+      workingDays++;
+    }
+    current.setUTCDate(current.getUTCDate() + 1);
+  }
+
+  return { workingDays, totalDays, weekendDays, holidayWeekdays, reversed };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1630,5 +1665,6 @@ if (typeof module !== 'undefined' && module.exports) {
     COUNTRY_ELECTRICITY_DATA,
     VOLTAGE_TOLERANCE_FRACTION,
     checkPlugAdapterNeeds,
+    workingDaysBetween,
   };
 }

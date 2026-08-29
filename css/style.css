@@ -191,7 +191,8 @@ main:has(#calculator-index.active) {
 }
 
 .field input,
-.field select {
+.field select,
+.field textarea {
   width: 100%;
   padding: 0.6rem 0.75rem;
   background: var(--bg);
@@ -201,8 +202,14 @@ main:has(#calculator-index.active) {
   font-size: 1rem;
 }
 
+.field textarea {
+  font-family: inherit;
+  resize: vertical;
+}
+
 .field input:focus,
-.field select:focus {
+.field select:focus,
+.field textarea:focus {
   outline: none;
   border-color: var(--accent);
 }

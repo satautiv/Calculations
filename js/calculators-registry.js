@@ -395,6 +395,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Check whether you need a plug adapter, a voltage converter, both, or neither when traveling between two countries.',
     keywords: ['voltage', 'plug adapter', 'plug type', 'travel adapter', 'mains electricity', 'travel'],
   },
+  {
+    id: 'working-days-calculator',
+    name: 'Working Days Calculator',
+    category: 'General',
+    description: 'Count business days (Mon-Fri) between two dates, optionally excluding a list of holiday dates.',
+    keywords: ['working days', 'business days', 'weekdays', 'holidays', 'delivery time', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
