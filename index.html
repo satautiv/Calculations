@@ -2184,6 +2184,30 @@
     <button class="calc-btn" id="wlt-calc">Calculate</button>
     <div class="result" id="wlt-result"></div>
   </section>
+
+  <section id="bulking-calorie-calculator" class="view tab-panel">
+    <h2>Bulking Calorie Calculator</h2>
+    <p class="hint">Computes a recommended daily calorie target for lean muscle gain, starting from your TDEE (see the TDEE calculator) and applying a moderate surplus sized to limit excess fat gain.</p>
+    <div class="field">
+      <label for="bulk-tdee">TDEE (kcal/day)</label>
+      <input type="number" id="bulk-tdee" min="0" step="1" placeholder="e.g. 2800">
+    </div>
+    <div class="field">
+      <label for="bulk-pace">Bulk pace</label>
+      <select id="bulk-pace">
+        <option value="lean">Lean (+10%)</option>
+        <option value="moderate">Moderate (+15%)</option>
+        <option value="aggressive">Aggressive (+20%)</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="field" id="bulk-custom-field" hidden>
+      <label for="bulk-custom-pct">Custom surplus (%)</label>
+      <input type="number" id="bulk-custom-pct" min="0" max="50" step="1" placeholder="e.g. 12">
+    </div>
+    <button class="calc-btn" id="bulk-calc">Calculate</button>
+    <div class="result" id="bulk-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

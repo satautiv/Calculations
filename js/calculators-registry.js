@@ -465,6 +465,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how many days/weeks it will take to reach a goal weight given a daily calorie deficit.',
     keywords: ['weight loss', 'cutting', 'calorie deficit', 'goal weight', 'timeline', 'strength'],
   },
+  {
+    id: 'bulking-calorie-calculator',
+    name: 'Bulking Calorie Calculator',
+    category: 'Fitness & Strength',
+    description: 'Compute a recommended daily calorie surplus for lean muscle gain from your TDEE and a chosen bulk pace.',
+    keywords: ['bulking', 'lean bulk', 'calorie surplus', 'muscle gain', 'tdee', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

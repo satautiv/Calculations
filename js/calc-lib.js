@@ -1828,6 +1828,20 @@ function weightLossTimeline(currentWeight, goalWeight, dailyDeficit, unit = 'kg'
   return { weightToLose, totalDeficitNeeded, daysNeeded, weeksNeeded };
 }
 
+// --- Bulking calorie calculator ---
+
+// Evidence-informed "lean bulk" surplus guidance (~10-20% above TDEE) sized
+// to favor muscle growth while limiting excess fat gain.
+const BULK_PACE_SURPLUS = { lean: 0.10, moderate: 0.15, aggressive: 0.20 };
+
+function bulkCalories(tdee, surplusFraction) {
+  if (!tdee || tdee <= 0) throw new Error('TDEE must be greater than zero.');
+  if (surplusFraction < 0 || surplusFraction > 0.5) {
+    throw new Error('Surplus must be between 0% and 50%.');
+  }
+  return tdee * (1 + surplusFraction);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1975,5 +1989,7 @@ if (typeof module !== 'undefined' && module.exports) {
     KCAL_PER_KG_FAT,
     KCAL_PER_LB_FAT,
     weightLossTimeline,
+    BULK_PACE_SURPLUS,
+    bulkCalories,
   };
 }
