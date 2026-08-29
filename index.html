@@ -1616,6 +1616,29 @@
     <div class="result" id="age-result"></div>
   </section>
 
+  <section id="sunrise-sunset-calculator" class="view tab-panel">
+    <h2>Sunrise/Sunset &amp; Daylight Calculator</h2>
+    <p class="hint">Estimates sunrise, sunset, and total daylight duration for a date and location using a standard solar-position approximation (accurate to within a minute or two). Enter the location's UTC offset manually — there's no live time-zone database here.</p>
+    <div class="field">
+      <label for="sunrise-date">Date</label>
+      <input type="date" id="sunrise-date">
+    </div>
+    <div class="field">
+      <label for="sunrise-latitude">Latitude (degrees, -90 to 90, +north)</label>
+      <input type="number" id="sunrise-latitude" min="-90" max="90" step="0.0001" placeholder="e.g. 48.8566">
+    </div>
+    <div class="field">
+      <label for="sunrise-longitude">Longitude (degrees, -180 to 180, +east)</label>
+      <input type="number" id="sunrise-longitude" min="-180" max="180" step="0.0001" placeholder="e.g. 2.3522">
+    </div>
+    <div class="field">
+      <label for="sunrise-utc-offset">UTC offset (hours)</label>
+      <input type="number" id="sunrise-utc-offset" min="-12" max="14" step="0.25" placeholder="e.g. 2">
+    </div>
+    <button class="calc-btn" id="sunrise-calc">Calculate</button>
+    <div class="result" id="sunrise-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

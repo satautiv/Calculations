@@ -90,6 +90,10 @@ const {
   solveProportion,
   luggageWeightCheck,
   ageBreakdown,
+  dayOfYear,
+  sunriseSunset,
+  formatMinutesAsLocalTime,
+  formatDurationHM,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1683,5 +1687,69 @@ describe('ageBreakdown', () => {
 
   test('throws when the as-of date is before the birth date', () => {
     expect(() => ageBreakdown(utc('2020-06-01'), utc('2020-05-01'))).toThrow();
+  });
+});
+
+// --- Sunrise/Sunset & Daylight calculator ---
+
+describe('dayOfYear', () => {
+  test('January 1st is day 1', () => {
+    expect(dayOfYear(2023, 1, 1)).toBe(1);
+  });
+
+  test('June 21st in a non-leap year is day 172', () => {
+    expect(dayOfYear(2023, 6, 21)).toBe(172);
+  });
+
+  test('December 31st in a non-leap year is day 365', () => {
+    expect(dayOfYear(2023, 12, 31)).toBe(365);
+  });
+});
+
+describe('sunriseSunset', () => {
+  // Worked example: Paris (48.8566N, 2.3522E), June 21 (day 172), UTC+2
+  // (CEST — Paris observes daylight saving time in June, not its UTC+1
+  // standard/winter offset). Precise values below were computed by running
+  // this exact implementation with Node, not hand-derived from the formula.
+  test('Paris on the June solstice (day 172, UTC+2) matches the worked example', () => {
+    const result = sunriseSunset(172, 48.8566, 2.3522, 2);
+    expect(result.sunriseMinutesUTC).toBeCloseTo(226.42, 1);
+    expect(result.sunsetMinutesUTC).toBeCloseTo(1197.41, 1);
+    expect(result.daylightMinutes).toBeCloseTo(970.99, 1);
+    expect(formatMinutesAsLocalTime(result.sunriseMinutesUTC, 2)).toBe('05:46');
+    expect(formatMinutesAsLocalTime(result.sunsetMinutesUTC, 2)).toBe('21:57');
+    expect(formatDurationHM(result.daylightMinutes)).toBe('16h 11m');
+  });
+
+  test('polar day near the summer solstice at 70N (day 172)', () => {
+    const result = sunriseSunset(172, 70, 0, 0);
+    expect(result.polarDay).toBe(true);
+    expect(result.polarNight).toBeUndefined();
+  });
+
+  test('polar night near the winter solstice at 70N (day 355)', () => {
+    const result = sunriseSunset(355, 70, 0, 0);
+    expect(result.polarNight).toBe(true);
+    expect(result.polarDay).toBeUndefined();
+  });
+});
+
+describe('formatMinutesAsLocalTime', () => {
+  test('wraps a negative UTC-adjusted time into the previous day\'s clock time', () => {
+    expect(formatMinutesAsLocalTime(30, -2)).toBe('22:30');
+  });
+
+  test('wraps a UTC-adjusted time past midnight into the next day\'s clock time', () => {
+    expect(formatMinutesAsLocalTime(1430, 2)).toBe('01:50');
+  });
+});
+
+describe('formatDurationHM', () => {
+  test('formats a whole-minute duration as Hh Mm', () => {
+    expect(formatDurationHM(971)).toBe('16h 11m');
+  });
+
+  test('rounds a fractional-minute duration before formatting', () => {
+    expect(formatDurationHM(970.99)).toBe('16h 11m');
   });
 });
