@@ -437,6 +437,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate lean body mass from a known body fat percentage, or from height/weight/sex alone using the Boer formula.',
     keywords: ['lean body mass', 'lbm', 'boer formula', 'fat-free', 'strength'],
   },
+  {
+    id: 'body-fat-calculator',
+    name: 'Body-Fat Percentage Estimator',
+    category: 'Fitness & Strength',
+    description: 'Estimate body fat percentage from tape-measure circumferences using the US Navy method.',
+    keywords: ['body fat', 'navy method', 'waist', 'neck', 'hip', 'tape measure', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -2062,6 +2062,43 @@
     <button class="calc-btn" id="lbm-calc">Calculate</button>
     <div class="result" id="lbm-result"></div>
   </section>
+
+  <section id="body-fat-calculator" class="view tab-panel">
+    <h2>Body-Fat Percentage Estimator</h2>
+    <p class="hint">Estimates body fat percentage from tape-measure circumferences using the US Navy method (Hodgdon &amp; Beckett, 1984) &mdash; no calipers required. Typical accuracy is &plusmn;3-4%.</p>
+    <div class="field">
+      <label for="bf-sex">Sex</label>
+      <select id="bf-sex">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bf-unit">Measurement unit</label>
+      <select id="bf-unit">
+        <option value="in">Inches</option>
+        <option value="cm">Centimeters</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="bf-height">Height</label>
+      <input type="number" id="bf-height" min="0" step="0.1" placeholder="e.g. 70">
+    </div>
+    <div class="field">
+      <label for="bf-neck">Neck circumference</label>
+      <input type="number" id="bf-neck" min="0" step="0.1" placeholder="e.g. 15">
+    </div>
+    <div class="field">
+      <label for="bf-waist">Waist circumference</label>
+      <input type="number" id="bf-waist" min="0" step="0.1" placeholder="e.g. 34">
+    </div>
+    <div class="field" id="bf-hip-field" hidden>
+      <label for="bf-hip">Hip circumference (women only)</label>
+      <input type="number" id="bf-hip" min="0" step="0.1" placeholder="e.g. 38">
+    </div>
+    <button class="calc-btn" id="bf-calc">Calculate</button>
+    <div class="result" id="bf-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

@@ -113,6 +113,7 @@ const {
   ffmiCategory,
   leanBodyMassFromBodyFat,
   leanBodyMassBoer,
+  navyBodyFatPercent,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2233,5 +2234,38 @@ describe('leanBodyMassBoer', () => {
 
   test('rejects a height/weight combination that produces a negative estimate', () => {
     expect(() => leanBodyMassBoer(10, 10, 'male')).toThrow();
+  });
+});
+
+// --- Body-fat percentage estimator (US Navy method) ---
+
+describe('navyBodyFatPercent', () => {
+  test('worked example: man, waist 34in, neck 15in, height 70in', () => {
+    expect(navyBodyFatPercent('male', 70, 15, 34)).toBeCloseTo(17.5, 1);
+  });
+
+  test('women require a hip measurement', () => {
+    expect(() => navyBodyFatPercent('female', 65, 13, 30, undefined)).toThrow();
+    expect(navyBodyFatPercent('female', 65, 13, 30, 38)).toBeGreaterThan(0);
+  });
+
+  test('rejects a non-positive height, neck, or waist', () => {
+    expect(() => navyBodyFatPercent('male', 0, 15, 34)).toThrow();
+    expect(() => navyBodyFatPercent('male', 70, 0, 34)).toThrow();
+    expect(() => navyBodyFatPercent('male', 70, 15, 0)).toThrow();
+  });
+
+  test('rejects waist <= neck for men (log argument would be zero or negative)', () => {
+    expect(() => navyBodyFatPercent('male', 70, 34, 34)).toThrow();
+    expect(() => navyBodyFatPercent('male', 70, 40, 34)).toThrow();
+  });
+
+  test('rejects waist + hip <= neck for women', () => {
+    expect(() => navyBodyFatPercent('female', 65, 60, 20, 20)).toThrow();
+  });
+
+  test('throws for a missing or invalid sex', () => {
+    expect(() => navyBodyFatPercent(undefined, 70, 15, 34)).toThrow();
+    expect(() => navyBodyFatPercent('other', 70, 15, 34)).toThrow();
   });
 });

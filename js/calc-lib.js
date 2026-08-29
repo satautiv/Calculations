@@ -1724,6 +1724,32 @@ function leanBodyMassBoer(weightKg, heightCm, sex) {
   return lbm;
 }
 
+// --- Body-fat percentage estimator (US Navy method) ---
+
+// US Navy method (Hodgdon & Beckett, 1984). All measurements in inches;
+// callers must convert cm inputs to inches before calling. `hipIn` is
+// required for women and ignored for men.
+function navyBodyFatPercent(sex, heightIn, neckIn, waistIn, hipIn) {
+  if (!heightIn || heightIn <= 0) throw new Error('Height must be greater than zero.');
+  if (!neckIn || neckIn <= 0) throw new Error('Neck measurement must be greater than zero.');
+  if (!waistIn || waistIn <= 0) throw new Error('Waist measurement must be greater than zero.');
+
+  if (sex === 'male') {
+    const diff = waistIn - neckIn;
+    if (diff <= 0) throw new Error('Waist measurement must be greater than neck measurement.');
+    return 86.010 * Math.log10(diff) - 70.041 * Math.log10(heightIn) + 36.76;
+  }
+
+  if (sex === 'female') {
+    if (!hipIn || hipIn <= 0) throw new Error('Hip measurement is required for women.');
+    const diff = waistIn + hipIn - neckIn;
+    if (diff <= 0) throw new Error('Waist plus hip must be greater than neck.');
+    return 163.205 * Math.log10(diff) - 97.684 * Math.log10(heightIn) - 78.387;
+  }
+
+  throw new Error('Sex must be "male" or "female".');
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1862,5 +1888,6 @@ if (typeof module !== 'undefined' && module.exports) {
     ffmiCategory,
     leanBodyMassFromBodyFat,
     leanBodyMassBoer,
+    navyBodyFatPercent,
   };
 }

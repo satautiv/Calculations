@@ -3834,3 +3834,39 @@ document.getElementById('lbm-calc').addEventListener('click', () => {
     showError('lbm-result', err.message);
   }
 });
+
+// --- Body-fat percentage estimator (US Navy method) ---
+document.getElementById('bf-sex').addEventListener('change', (e) => {
+  document.getElementById('bf-hip-field').hidden = e.target.value !== 'female';
+});
+
+document.getElementById('bf-calc').addEventListener('click', () => {
+  const sex = document.getElementById('bf-sex').value;
+  const unit = document.getElementById('bf-unit').value;
+  const heightRaw = parseFloat(document.getElementById('bf-height').value);
+  const neckRaw = parseFloat(document.getElementById('bf-neck').value);
+  const waistRaw = parseFloat(document.getElementById('bf-waist').value);
+  const hipRaw = parseFloat(document.getElementById('bf-hip').value);
+
+  const toInches = value => (unit === 'cm' ? value / 2.54 : value);
+  const heightIn = toInches(heightRaw);
+  const neckIn = toInches(neckRaw);
+  const waistIn = toInches(waistRaw);
+  const hipIn = isNaN(hipRaw) ? undefined : toInches(hipRaw);
+
+  try {
+    const bodyFat = navyBodyFatPercent(sex, heightIn, neckIn, waistIn, hipIn);
+
+    const rangeNote = (bodyFat < 2 || bodyFat > 60)
+      ? '<div class="hint">This result is outside a typical plausible range; the tape method is an estimate with roughly &plusmn;3-4% accuracy.</div>'
+      : '';
+
+    document.getElementById('bf-result').innerHTML = `
+      <div class="headline">${bodyFat.toFixed(1)}%</div>
+      <div>Estimated body fat percentage (US Navy method)</div>
+      ${rangeNote}
+    `;
+  } catch (err) {
+    showError('bf-result', err.message);
+  }
+});
