@@ -4524,3 +4524,22 @@ document.getElementById('mulch-calc').addEventListener('click', () => {
     showError('mulch-result', err.message);
   }
 });
+
+// --- Roof Area calculator ---
+document.getElementById('roof-area-calc').addEventListener('click', () => {
+  const footprint = parseFloat(document.getElementById('roof-footprint').value);
+  const rise = parseFloat(document.getElementById('roof-rise').value);
+  const run = parseFloat(document.getElementById('roof-run').value);
+  const waste = parseFloat(document.getElementById('roof-waste').value) || 0;
+
+  try {
+    const { multiplier, area } = roofArea(footprint, rise, run, waste);
+
+    document.getElementById('roof-area-result').innerHTML = `
+      <div class="headline">${area.toFixed(1)} m&sup2;</div>
+      <div>Pitch multiplier: ${multiplier.toFixed(3)} &middot; Footprint: ${footprint} m&sup2;</div>
+    `;
+  } catch (err) {
+    showError('roof-area-result', err.message);
+  }
+});

@@ -2728,6 +2728,29 @@
     <button class="calc-btn" id="mulch-calc">Calculate</button>
     <div class="result" id="mulch-result"></div>
   </section>
+
+  <section id="roof-area-calculator" class="view tab-panel">
+    <h2>Roof Area Calculator</h2>
+    <p class="hint">Converts a roof's flat footprint area (building outline as seen from above) into its actual sloped surface area, since roofing material needs to cover the slope, not the footprint.</p>
+    <div class="field">
+      <label for="roof-footprint">Footprint area (m&sup2;)</label>
+      <input type="number" id="roof-footprint" min="0" step="0.1" placeholder="e.g. 150">
+    </div>
+    <div class="field">
+      <label for="roof-rise">Pitch &mdash; rise</label>
+      <input type="number" id="roof-rise" min="0" step="0.1" placeholder="e.g. 6">
+    </div>
+    <div class="field">
+      <label for="roof-run">Pitch &mdash; run</label>
+      <input type="number" id="roof-run" min="0" step="0.1" value="12">
+    </div>
+    <div class="field">
+      <label for="roof-waste">Complexity waste allowance (%, optional, for hips/valleys/dormers)</label>
+      <input type="number" id="roof-waste" min="0" step="1" value="0">
+    </div>
+    <button class="calc-btn" id="roof-area-calc">Calculate</button>
+    <div class="result" id="roof-area-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

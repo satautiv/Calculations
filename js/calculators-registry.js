@@ -584,6 +584,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how much mulch or garden soil (by volume and bags) you need to cover a garden bed to a target depth.',
     keywords: ['mulch', 'soil', 'garden bed', 'topsoil', 'bags', 'home', 'diy'],
   },
+  {
+    id: 'roof-area-calculator',
+    name: 'Roof Area Calculator',
+    category: 'Home & DIY',
+    description: 'Convert a roof\'s flat footprint area into its actual sloped surface area, using the pitch (rise/run).',
+    keywords: ['roof area', 'roofing', 'pitch multiplier', 'shingles', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

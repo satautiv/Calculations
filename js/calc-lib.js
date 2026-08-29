@@ -2227,6 +2227,29 @@ function mulchVolumeNeeded(area, depth, wastePercent) {
   return { volume, volumeWithWaste };
 }
 
+// --- Roof Area / Roof Pitch calculators ---
+
+// Purely geometric: 1/cos(slope angle), the hypotenuse-to-base ratio of the
+// roof cross-section triangle. Shared by the Roof Area and Roof Pitch
+// calculators. `run` of 0 is a vertical wall, not a valid roof.
+function roofPitchMultiplier(rise, run) {
+  if (!run || run <= 0) throw new Error('Run must be greater than zero.');
+  if (rise < 0) throw new Error('Rise cannot be negative.');
+  return Math.sqrt(1 + (rise / run) ** 2);
+}
+
+// Converts a flat footprint area to the actual sloped roofing-material area,
+// with an optional waste allowance for hips/valleys/dormers.
+function roofArea(footprintArea, rise, run, wastePercent = 0) {
+  if (!footprintArea || footprintArea <= 0) throw new Error('Footprint area must be greater than zero.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+
+  const multiplier = roofPitchMultiplier(rise, run);
+  const area = footprintArea * multiplier * (1 + wastePercent / 100);
+
+  return { multiplier, area };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2414,5 +2437,7 @@ if (typeof module !== 'undefined' && module.exports) {
     estimateFTP,
     ftpPowerZones,
     mulchVolumeNeeded,
+    roofPitchMultiplier,
+    roofArea,
   };
 }
