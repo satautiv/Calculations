@@ -577,6 +577,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate Functional Threshold Power (FTP) from a 20-minute test and derive the 7 Coggan power training zones.',
     keywords: ['ftp', 'cycling', 'functional threshold power', 'power zones', 'coggan', 'strength'],
   },
+  {
+    id: 'mulch-soil-calculator',
+    name: 'Mulch/Soil Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how much mulch or garden soil (by volume and bags) you need to cover a garden bed to a target depth.',
+    keywords: ['mulch', 'soil', 'garden bed', 'topsoil', 'bags', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

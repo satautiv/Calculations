@@ -4499,3 +4499,28 @@ document.getElementById('ftp-calc').addEventListener('click', () => {
     showError('ftp-result', err.message);
   }
 });
+
+// --- Mulch/Soil calculator ---
+document.getElementById('mulch-calc').addEventListener('click', () => {
+  const area = parseFloat(document.getElementById('mulch-area').value);
+  const depthCm = parseFloat(document.getElementById('mulch-depth').value);
+  const waste = parseFloat(document.getElementById('mulch-waste').value);
+  const bagVolume = parseFloat(document.getElementById('mulch-bag-size').value);
+
+  const depthNote = depthCm > 100
+    ? '<div class="hint">That\'s an unusually deep layer (over 1m) &mdash; double-check you didn\'t mean a smaller unit.</div>'
+    : '';
+
+  try {
+    const { volume, volumeWithWaste } = mulchVolumeNeeded(area, depthCm / 100, waste);
+    const { cansNeeded: bagsNeeded } = roundUpToCans(volumeWithWaste, bagVolume);
+
+    document.getElementById('mulch-result').innerHTML = `
+      <div class="headline">${bagsNeeded} bags</div>
+      <div>Volume: ${volume.toFixed(3)} m&sup3; &middot; With waste allowance: ${volumeWithWaste.toFixed(3)} m&sup3;</div>
+      ${depthNote}
+    `;
+  } catch (err) {
+    showError('mulch-result', err.message);
+  }
+});

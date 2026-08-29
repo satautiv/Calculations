@@ -144,6 +144,7 @@ const {
   widmarkBAC,
   estimateFTP,
   ftpPowerZones,
+  mulchVolumeNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2880,5 +2881,29 @@ describe('estimateFTP / ftpPowerZones', () => {
   test('rejects a non-positive average power or FTP', () => {
     expect(() => estimateFTP(0)).toThrow();
     expect(() => ftpPowerZones(0)).toThrow();
+  });
+});
+
+// --- Mulch/Soil calculator ---
+
+describe('mulchVolumeNeeded', () => {
+  test('worked example: 4x2m bed, 7cm depth, 10% waste', () => {
+    const result = mulchVolumeNeeded(8, 0.07, 10);
+    expect(result.volume).toBeCloseTo(0.56, 5);
+    expect(result.volumeWithWaste).toBeCloseTo(0.616, 5);
+  });
+
+  test('worked example bag count via roundUpToCans: 0.616 m³ at 0.057 m³/bag', () => {
+    const { volumeWithWaste } = mulchVolumeNeeded(8, 0.07, 10);
+    expect(roundUpToCans(volumeWithWaste, 0.057).cansNeeded).toBe(11);
+  });
+
+  test('rejects non-positive area or depth', () => {
+    expect(() => mulchVolumeNeeded(0, 0.07, 10)).toThrow();
+    expect(() => mulchVolumeNeeded(8, 0, 10)).toThrow();
+  });
+
+  test('rejects a negative waste percentage', () => {
+    expect(() => mulchVolumeNeeded(8, 0.07, -5)).toThrow();
   });
 });

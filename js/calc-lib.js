@@ -2212,6 +2212,21 @@ function ftpPowerZones(ftp) {
   }));
 }
 
+// --- Mulch/Soil calculator ---
+
+// area and depth in consistent length units (e.g. m and m, giving m³);
+// wastePercent as a whole number. Bag-count conversion reuses roundUpToCans.
+function mulchVolumeNeeded(area, depth, wastePercent) {
+  if (!area || area <= 0) throw new Error('Area must be greater than zero.');
+  if (!depth || depth <= 0) throw new Error('Depth must be greater than zero.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+
+  const volume = area * depth;
+  const volumeWithWaste = volume * (1 + wastePercent / 100);
+
+  return { volume, volumeWithWaste };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2398,5 +2413,6 @@ if (typeof module !== 'undefined' && module.exports) {
     FTP_ZONES,
     estimateFTP,
     ftpPowerZones,
+    mulchVolumeNeeded,
   };
 }

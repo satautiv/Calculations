@@ -2701,6 +2701,33 @@
     <button class="calc-btn" id="ftp-calc">Calculate</button>
     <div class="result" id="ftp-result"></div>
   </section>
+
+  <section id="mulch-soil-calculator" class="view tab-panel">
+    <h2>Mulch/Soil Calculator</h2>
+    <p class="hint">Calculates how much mulch or garden soil you need to cover a bed to a target depth. Typical mulch depth is 5&ndash;10 cm; a new raised bed typically wants 15&ndash;20 cm of soil.</p>
+    <div class="field">
+      <label for="mulch-area">Area to cover (m&sup2;)</label>
+      <input type="number" id="mulch-area" min="0" step="0.01" placeholder="e.g. 8">
+    </div>
+    <div class="field">
+      <label for="mulch-depth">Depth (cm)</label>
+      <input type="number" id="mulch-depth" min="0" step="0.5" placeholder="e.g. 7">
+    </div>
+    <div class="field">
+      <label for="mulch-waste">Waste allowance (%, e.g. enter 10 for 10%)</label>
+      <input type="number" id="mulch-waste" min="0" step="1" value="10">
+    </div>
+    <div class="field">
+      <label for="mulch-bag-size">Bag volume</label>
+      <select id="mulch-bag-size">
+        <option value="0.05">50 L bag</option>
+        <option value="0.057" selected>2 cu ft bag (&asymp;0.057 m&sup3;)</option>
+        <option value="0.085">3 cu ft bag (&asymp;0.085 m&sup3;)</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="mulch-calc">Calculate</button>
+    <div class="result" id="mulch-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
