@@ -133,6 +133,8 @@ const {
   cylindricalConcreteVolume,
   concreteBagsNeeded,
   karvonenZones,
+  bedtimesForWakeTime,
+  wakeTimesForBedtime,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2656,5 +2658,48 @@ describe('karvonenZones', () => {
   test('rejects a resting heart rate at or above max heart rate', () => {
     expect(() => karvonenZones(30, 190)).toThrow();
     expect(() => karvonenZones(30, 60, 55)).toThrow();
+  });
+});
+
+// --- Sleep cycle calculator ---
+
+describe('wakeTimesForBedtime', () => {
+  test('worked example: bedtime 23:00, 14min buffer, 5 cycles -> wake 06:44', () => {
+    const results = wakeTimesForBedtime(23 * 60, 14);
+    const fiveCycles = results.find(r => r.cycles === 5);
+    expect(fiveCycles.wakeMinutes).toBe(6 * 60 + 44);
+  });
+
+  test('returns 4, 5, and 6 cycle options', () => {
+    const results = wakeTimesForBedtime(23 * 60);
+    expect(results.map(r => r.cycles)).toEqual([4, 5, 6]);
+  });
+
+  test('rejects an invalid bedtime or an out-of-range fall-asleep buffer', () => {
+    expect(() => wakeTimesForBedtime(-1)).toThrow();
+    expect(() => wakeTimesForBedtime(1440)).toThrow();
+    expect(() => wakeTimesForBedtime(23 * 60, -1)).toThrow();
+    expect(() => wakeTimesForBedtime(23 * 60, 121)).toThrow();
+  });
+});
+
+describe('bedtimesForWakeTime', () => {
+  test('wraps a bedtime the previous night correctly (e.g. a 7am wake-up)', () => {
+    const results = bedtimesForWakeTime(7 * 60, 14);
+    const sixCycles = results.find(r => r.cycles === 6);
+    // 6 cycles = 540 min + 14 min buffer = 554 min before 07:00 -> previous day
+    expect(sixCycles.bedtimeMinutes).toBe(((7 * 60 - 554) % 1440 + 1440) % 1440);
+  });
+
+  test('returns 3, 4, 5, and 6 cycle options', () => {
+    const results = bedtimesForWakeTime(7 * 60);
+    expect(results.map(r => r.cycles)).toEqual([3, 4, 5, 6]);
+  });
+
+  test('rejects an invalid wake time or an out-of-range fall-asleep buffer', () => {
+    expect(() => bedtimesForWakeTime(-1)).toThrow();
+    expect(() => bedtimesForWakeTime(1440)).toThrow();
+    expect(() => bedtimesForWakeTime(7 * 60, -1)).toThrow();
+    expect(() => bedtimesForWakeTime(7 * 60, 121)).toThrow();
   });
 });

@@ -4282,3 +4282,46 @@ document.getElementById('hr-calc').addEventListener('click', () => {
     showError('hr-result', err.message);
   }
 });
+
+// --- Sleep cycle calculator ---
+document.getElementById('sleep-mode').addEventListener('change', (e) => {
+  document.getElementById('sleep-time-label').textContent = e.target.value === 'bed' ? 'Bedtime' : 'Wake-up time';
+});
+
+document.getElementById('sleep-calc').addEventListener('click', () => {
+  const mode = document.getElementById('sleep-mode').value;
+  const timeRaw = document.getElementById('sleep-time').value;
+  const buffer = parseFloat(document.getElementById('sleep-buffer').value);
+
+  if (!timeRaw) {
+    showError('sleep-result', 'Enter a valid time.');
+    return;
+  }
+
+  const [hours, minutes] = timeRaw.split(':').map(Number);
+  const timeMinutes = hours * 60 + minutes;
+
+  try {
+    let rows;
+    let headingLabel;
+    if (mode === 'bed') {
+      const results = wakeTimesForBedtime(timeMinutes, buffer);
+      headingLabel = 'Wake-up time';
+      rows = results.map(r => `<tr><td>${minutesToTimeLabel(r.wakeMinutes)}</td><td>${r.cycles} cycles</td><td>${(r.sleepMinutes / 60).toFixed(1)}h</td></tr>`).join('');
+    } else {
+      const results = bedtimesForWakeTime(timeMinutes, buffer);
+      headingLabel = 'Bedtime';
+      rows = results.map(r => `<tr><td>${minutesToTimeLabel(r.bedtimeMinutes)}</td><td>${r.cycles} cycles</td><td>${(r.sleepMinutes / 60).toFixed(1)}h</td></tr>`).join('');
+    }
+
+    document.getElementById('sleep-result').innerHTML = `
+      <table>
+        <thead><tr><th>${headingLabel}</th><th>Sleep cycles</th><th>Sleep duration</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+      <div class="hint">Falling asleep is assumed to take ${buffer} minute${buffer === 1 ? '' : 's'}.</div>
+    `;
+  } catch (err) {
+    showError('sleep-result', err.message);
+  }
+});
