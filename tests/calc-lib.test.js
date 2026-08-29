@@ -137,6 +137,7 @@ const {
   wakeTimesForBedtime,
   cooperVO2max,
   dailyWaterIntake,
+  caffeineRemaining,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2756,5 +2757,35 @@ describe('dailyWaterIntake', () => {
   test('throws for an invalid activity level or climate', () => {
     expect(() => dailyWaterIntake(70, 'extreme', 'temperate')).toThrow();
     expect(() => dailyWaterIntake(70, 'moderate', 'arctic')).toThrow();
+  });
+});
+
+// --- Caffeine half-life calculator ---
+
+describe('caffeineRemaining', () => {
+  test('worked example: 95mg dose, default 5h half-life, checked 8h later', () => {
+    expect(caffeineRemaining(95, 8)).toBeCloseTo(31.3, 1);
+  });
+
+  test('zero elapsed time returns the full dose', () => {
+    expect(caffeineRemaining(95, 0)).toBeCloseTo(95, 5);
+  });
+
+  test('a custom half-life changes the decay rate', () => {
+    const fast = caffeineRemaining(95, 8, 3);
+    const slow = caffeineRemaining(95, 8, 7);
+    expect(fast).toBeLessThan(slow);
+  });
+
+  test('approaches (but never errors on) zero for very large elapsed times', () => {
+    const remaining = caffeineRemaining(95, 1000);
+    expect(remaining).toBeGreaterThanOrEqual(0);
+    expect(remaining).toBeLessThan(0.001);
+  });
+
+  test('rejects a negative dose, negative elapsed hours, or non-positive half-life', () => {
+    expect(() => caffeineRemaining(-10, 8)).toThrow();
+    expect(() => caffeineRemaining(95, -1)).toThrow();
+    expect(() => caffeineRemaining(95, 8, 0)).toThrow();
   });
 });

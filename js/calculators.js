@@ -4376,3 +4376,37 @@ document.getElementById('water-calc').addEventListener('click', () => {
     showError('water-result', err.message);
   }
 });
+
+// --- Caffeine half-life calculator ---
+document.getElementById('caf-preset').addEventListener('change', (e) => {
+  if (e.target.value) {
+    document.getElementById('caf-dose').value = e.target.value;
+  }
+});
+
+document.getElementById('caf-calc').addEventListener('click', () => {
+  const dose = parseFloat(document.getElementById('caf-dose').value);
+  const elapsed = parseFloat(document.getElementById('caf-elapsed').value);
+  const halfLifeRaw = document.getElementById('caf-halflife').value;
+  const halfLife = halfLifeRaw === '' ? 5 : parseFloat(halfLifeRaw);
+
+  try {
+    const remaining = caffeineRemaining(dose, elapsed, halfLife);
+
+    const futureRows = [1, 2, 3, 4, 5, 6, 8, 10, 12]
+      .map(h => `<tr><td>+${h}h</td><td>${caffeineRemaining(dose, elapsed + h, halfLife).toFixed(1)} mg</td></tr>`)
+      .join('');
+
+    document.getElementById('caf-result').innerHTML = `
+      <div class="headline">${remaining.toFixed(1)} mg still active</div>
+      <div>${dose} mg consumed, ${elapsed}h ago, ${halfLife}h half-life</div>
+      <table>
+        <thead><tr><th>From now</th><th>Remaining</th></tr></thead>
+        <tbody>${futureRows}</tbody>
+      </table>
+      <div class="hint">A simplified population-average model for general awareness, not a medical tool &mdash; actual caffeine metabolism varies significantly by individual.</div>
+    `;
+  } catch (err) {
+    showError('caf-result', err.message);
+  }
+});
