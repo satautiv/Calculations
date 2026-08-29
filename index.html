@@ -2448,6 +2448,60 @@
     <button class="calc-btn" id="tile-calc">Calculate</button>
     <div class="result" id="tile-result"></div>
   </section>
+
+  <section id="concrete-calculator" class="view tab-panel">
+    <h2>Concrete Calculator</h2>
+    <p class="hint">Calculates the concrete volume needed for a slab, footing, or column, and converts it into a number of pre-mixed bags.</p>
+    <div class="field">
+      <label for="concrete-shape">Shape</label>
+      <select id="concrete-shape">
+        <option value="rectangular">Rectangular slab/footing</option>
+        <option value="cylindrical">Cylindrical column/post footing</option>
+      </select>
+    </div>
+
+    <div id="concrete-rectangular-fields">
+      <div class="field">
+        <label for="concrete-length">Length (m)</label>
+        <input type="number" id="concrete-length" min="0" step="0.01" placeholder="e.g. 3">
+      </div>
+      <div class="field">
+        <label for="concrete-width">Width (m)</label>
+        <input type="number" id="concrete-width" min="0" step="0.01" placeholder="e.g. 2">
+      </div>
+      <div class="field">
+        <label for="concrete-thickness">Thickness (cm)</label>
+        <input type="number" id="concrete-thickness" min="0" step="0.1" placeholder="e.g. 10">
+      </div>
+    </div>
+
+    <div id="concrete-cylindrical-fields" hidden>
+      <div class="field">
+        <label for="concrete-diameter">Diameter (cm)</label>
+        <input type="number" id="concrete-diameter" min="0" step="0.1" placeholder="e.g. 30">
+      </div>
+      <div class="field">
+        <label for="concrete-height">Height (m)</label>
+        <input type="number" id="concrete-height" min="0" step="0.01" placeholder="e.g. 1">
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="concrete-waste">Waste allowance (%, e.g. enter 5 for 5%)</label>
+      <input type="number" id="concrete-waste" min="0" step="1" value="5">
+    </div>
+    <div class="field">
+      <label for="concrete-bag-size">Bag size</label>
+      <select id="concrete-bag-size">
+        <option value="0.01">20 kg bag (&asymp;0.01 m&sup3;)</option>
+        <option value="0.0125" selected>25 kg bag (&asymp;0.0125 m&sup3;)</option>
+        <option value="0.01274">60 lb bag (&asymp;0.45 cu ft)</option>
+        <option value="0.016990">80 lb bag (&asymp;0.6 cu ft)</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="concrete-calc">Calculate</button>
+    <div class="result" id="concrete-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

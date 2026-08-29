@@ -1982,6 +1982,34 @@ function tilesNeeded(area, tileWidth, tileLength, groutWidth, wastePercent) {
   return { effectiveArea, tilesForArea, tilesNeededCount };
 }
 
+// --- Concrete calculator ---
+
+// All dimensions in meters, volume in cubic meters.
+function rectangularConcreteVolume(length, width, thickness) {
+  if (!length || length <= 0) throw new Error('Length must be greater than zero.');
+  if (!width || width <= 0) throw new Error('Width must be greater than zero.');
+  if (!thickness || thickness <= 0) throw new Error('Thickness must be greater than zero.');
+  return length * width * thickness;
+}
+
+function cylindricalConcreteVolume(diameter, height) {
+  if (!diameter || diameter <= 0) throw new Error('Diameter must be greater than zero.');
+  if (!height || height <= 0) throw new Error('Height must be greater than zero.');
+  return Math.PI * (diameter / 2) ** 2 * height;
+}
+
+// volume/yieldPerBag in cubic meters; wastePercent as a whole number.
+function concreteBagsNeeded(volume, wastePercent, yieldPerBag) {
+  if (!volume || volume <= 0) throw new Error('Volume must be greater than zero.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+  if (!yieldPerBag || yieldPerBag <= 0) throw new Error('Yield per bag must be greater than zero.');
+
+  const volumeWithWaste = volume * (1 + wastePercent / 100);
+  const bagsNeeded = Math.ceil(volumeWithWaste / yieldPerBag);
+
+  return { volumeWithWaste, bagsNeeded };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2142,5 +2170,8 @@ if (typeof module !== 'undefined' && module.exports) {
     flooringNeeded,
     riegelPredictedTime,
     tilesNeeded,
+    rectangularConcreteVolume,
+    cylindricalConcreteVolume,
+    concreteBagsNeeded,
   };
 }

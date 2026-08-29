@@ -4214,3 +4214,40 @@ document.getElementById('tile-calc').addEventListener('click', () => {
     showError('tile-result', err.message);
   }
 });
+
+// --- Concrete calculator ---
+document.getElementById('concrete-shape').addEventListener('change', (e) => {
+  const isCylindrical = e.target.value === 'cylindrical';
+  document.getElementById('concrete-rectangular-fields').hidden = isCylindrical;
+  document.getElementById('concrete-cylindrical-fields').hidden = !isCylindrical;
+});
+
+document.getElementById('concrete-calc').addEventListener('click', () => {
+  const shape = document.getElementById('concrete-shape').value;
+  const waste = parseFloat(document.getElementById('concrete-waste').value);
+  const yieldPerBag = parseFloat(document.getElementById('concrete-bag-size').value);
+
+  try {
+    let volume;
+    if (shape === 'cylindrical') {
+      const diameter = parseFloat(document.getElementById('concrete-diameter').value) / 100;
+      const height = parseFloat(document.getElementById('concrete-height').value);
+      volume = cylindricalConcreteVolume(diameter, height);
+    } else {
+      const length = parseFloat(document.getElementById('concrete-length').value);
+      const width = parseFloat(document.getElementById('concrete-width').value);
+      const thickness = parseFloat(document.getElementById('concrete-thickness').value) / 100;
+      volume = rectangularConcreteVolume(length, width, thickness);
+    }
+
+    const { volumeWithWaste, bagsNeeded } = concreteBagsNeeded(volume, waste, yieldPerBag);
+
+    document.getElementById('concrete-result').innerHTML = `
+      <div class="headline">${bagsNeeded} bags</div>
+      <div>Volume: ${volume.toFixed(3)} m&sup3; &middot; With ${waste}% waste: ${volumeWithWaste.toFixed(3)} m&sup3;</div>
+      <div class="hint">Ready-mix equivalent: ${volumeWithWaste.toFixed(2)} m&sup3; (${(volumeWithWaste * 1.30795).toFixed(2)} cu yd)</div>
+    `;
+  } catch (err) {
+    showError('concrete-result', err.message);
+  }
+});
