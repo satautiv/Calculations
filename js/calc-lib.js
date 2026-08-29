@@ -1262,6 +1262,72 @@ function ageBreakdown(birthDate, asOfDate) {
   return { years, months, days, totalDays, totalWeeks, remainderDays };
 }
 
+// --- Sunrise/Sunset & Daylight calculator ---
+
+// Day-of-year (1-365/366) for a calendar date, via UTC date math so it's
+// unaffected by local time zone / DST of the machine running it.
+function dayOfYear(year, month, day) {
+  return Math.round((Date.UTC(year, month - 1, day) - Date.UTC(year, 0, 1)) / 86400000) + 1;
+}
+
+// Approximate sunrise/sunset using the standard closed-form solar-position
+// approximation (the method behind NOAA's solar calculator / the "sunrise
+// equation"), simplified to use solar noon (hour = 12) rather than the
+// current time of day. Returns one of three shapes: { polarDay: true },
+// { polarNight: true }, or { sunriseMinutesUTC, sunsetMinutesUTC,
+// daylightMinutes } (all in minutes from UTC midnight) for a normal day.
+function sunriseSunset(dayOfYearValue, latDeg, lonDeg, utcOffsetHours) {
+  const gamma = (2 * Math.PI / 365) * (dayOfYearValue - 1);
+
+  const eqtime = 229.18 * (
+    0.000075
+    + 0.001868 * Math.cos(gamma)
+    - 0.032077 * Math.sin(gamma)
+    - 0.014615 * Math.cos(2 * gamma)
+    - 0.040849 * Math.sin(2 * gamma)
+  );
+
+  const decl = 0.006918
+    - 0.399912 * Math.cos(gamma)
+    + 0.070257 * Math.sin(gamma)
+    - 0.006758 * Math.cos(2 * gamma)
+    + 0.000907 * Math.sin(2 * gamma)
+    - 0.002697 * Math.cos(3 * gamma)
+    + 0.00148 * Math.sin(3 * gamma);
+
+  const lat = latDeg * Math.PI / 180;
+  const cosHA = Math.cos(90.833 * Math.PI / 180) / (Math.cos(lat) * Math.cos(decl)) - Math.tan(lat) * Math.tan(decl);
+
+  if (cosHA < -1) return { polarDay: true };
+  if (cosHA > 1) return { polarNight: true };
+
+  const ha = Math.acos(cosHA);
+  const haDeg = ha * 180 / Math.PI;
+
+  const solarNoonUTCmin = 720 - 4 * lonDeg - eqtime;
+  const sunriseMinutesUTC = solarNoonUTCmin - 4 * haDeg;
+  const sunsetMinutesUTC = solarNoonUTCmin + 4 * haDeg;
+  const daylightMinutes = sunsetMinutesUTC - sunriseMinutesUTC;
+
+  return { sunriseMinutesUTC, sunsetMinutesUTC, daylightMinutes };
+}
+
+// Converts UTC minutes-from-midnight (which may be negative or beyond 1440
+// once a UTC offset is applied) into a local "HH:MM" clock time, wrapping
+// around the 24-hour day as needed.
+function formatMinutesAsLocalTime(utcMinutes, utcOffsetHours) {
+  const localMinutes = ((utcMinutes + utcOffsetHours * 60) % 1440 + 1440) % 1440;
+  return minutesToTimeLabel(localMinutes);
+}
+
+// Formats a duration given in minutes as "Hh Mm", e.g. 971 -> "16h 11m".
+function formatDurationHM(minutes) {
+  const totalMinutes = Math.round(minutes);
+  const hours = Math.floor(totalMinutes / 60);
+  const mins = totalMinutes % 60;
+  return `${hours}h ${mins}m`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1367,5 +1433,9 @@ if (typeof module !== 'undefined' && module.exports) {
     simpleAverage,
     weightedAverage,
     ageBreakdown,
+    dayOfYear,
+    sunriseSunset,
+    formatMinutesAsLocalTime,
+    formatDurationHM,
   };
 }

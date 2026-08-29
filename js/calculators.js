@@ -3310,3 +3310,62 @@ document.getElementById('age-calc').addEventListener('click', () => {
     showError('age-result', err.message);
   }
 });
+
+// --- Sunrise/Sunset & Daylight calculator ---
+document.getElementById('sunrise-calc').addEventListener('click', () => {
+  const dateRaw = document.getElementById('sunrise-date').value;
+  const lat = parseFloat(document.getElementById('sunrise-latitude').value);
+  const lon = parseFloat(document.getElementById('sunrise-longitude').value);
+  const utcOffset = parseFloat(document.getElementById('sunrise-utc-offset').value);
+
+  if (!dateRaw) {
+    showError('sunrise-result', 'Enter a valid date.');
+    return;
+  }
+
+  const [year, month, day] = dateRaw.split('-').map(Number);
+
+  if (isNaN(lat) || lat < -90 || lat > 90) {
+    showError('sunrise-result', 'Enter a valid latitude between -90 and 90.');
+    return;
+  }
+
+  if (isNaN(lon) || lon < -180 || lon > 180) {
+    showError('sunrise-result', 'Enter a valid longitude between -180 and 180.');
+    return;
+  }
+
+  if (isNaN(utcOffset) || utcOffset < -12 || utcOffset > 14) {
+    showError('sunrise-result', 'Enter a valid UTC offset between -12 and +14.');
+    return;
+  }
+
+  const doy = dayOfYear(year, month, day);
+  const result = sunriseSunset(doy, lat, lon, utcOffset);
+
+  if (result.polarDay) {
+    document.getElementById('sunrise-result').innerHTML = `
+      <div class="headline">Polar day (24h daylight)</div>
+      <div>The sun does not set at this location on this date.</div>
+    `;
+    return;
+  }
+
+  if (result.polarNight) {
+    document.getElementById('sunrise-result').innerHTML = `
+      <div class="headline">Polar night (0h daylight)</div>
+      <div>The sun does not rise at this location on this date.</div>
+    `;
+    return;
+  }
+
+  const sunrise = formatMinutesAsLocalTime(result.sunriseMinutesUTC, utcOffset);
+  const sunset = formatMinutesAsLocalTime(result.sunsetMinutesUTC, utcOffset);
+  const daylight = formatDurationHM(result.daylightMinutes);
+
+  document.getElementById('sunrise-result').innerHTML = `
+    <div class="headline">Sunrise ${sunrise} &middot; Sunset ${sunset}</div>
+    <div>Daylight duration: ${daylight}</div>
+    <div class="hint">Approximate local times based on the UTC offset you entered.</div>
+  `;
+});

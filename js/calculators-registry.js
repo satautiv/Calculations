@@ -353,6 +353,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate exact age in years, months, and days from a birth date, as of today or any date, plus total days and weeks lived.',
     keywords: ['age', 'birthday', 'date of birth', 'years old', 'days lived', 'weeks lived', 'general'],
   },
+  {
+    id: 'sunrise-sunset-calculator',
+    name: 'Sunrise/Sunset & Daylight Calculator',
+    category: 'Travel',
+    description: 'Estimate sunrise time, sunset time, and total daylight duration for a date and location, given its latitude, longitude, and UTC offset.',
+    keywords: ['sunrise', 'sunset', 'daylight', 'solar noon', 'daylight hours', 'polar day', 'polar night', 'travel'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
