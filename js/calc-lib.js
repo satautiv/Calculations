@@ -2328,6 +2328,31 @@ function convertClimbingGrade(system, grade, targetSystem) {
   throw new Error('YDS route grades and V-scale/Font bouldering grades are different types of scales with no standardized direct equivalence; compare grades within the same discipline instead.');
 }
 
+// --- Ladder Angle/Safety calculator ---
+
+// OSHA/ANSI-cited safe climbing angle range for the 4:1 rule (~75.5°/75.96°
+// depending on rounding), with ~68° as the commonly cited lower bound.
+const LADDER_SAFE_ANGLE_MIN_DEGREES = 68;
+const LADDER_SAFE_ANGLE_MAX_DEGREES = 76;
+
+// If baseDistance is omitted, uses the 4:1 rule default (supportHeight / 4).
+// `extension` (default 1, e.g. meters or feet matching the other inputs) is
+// the recommended stand-off above the support point for stepping off safely.
+function ladderPlan(supportHeight, baseDistance, extension = 1) {
+  if (!supportHeight || supportHeight <= 0) throw new Error('Support height must be greater than zero.');
+  if (extension < 0) throw new Error('Extension cannot be negative.');
+
+  const distance = (baseDistance === undefined || baseDistance === null) ? supportHeight / 4 : baseDistance;
+  if (!distance || distance <= 0) throw new Error('Base distance must be greater than zero.');
+
+  const angleDegrees = Math.atan(supportHeight / distance) * 180 / Math.PI;
+  const isSafeAngle = angleDegrees >= LADDER_SAFE_ANGLE_MIN_DEGREES && angleDegrees <= LADDER_SAFE_ANGLE_MAX_DEGREES;
+  const lengthToSupport = Math.sqrt(supportHeight ** 2 + distance ** 2);
+  const recommendedLength = Math.sqrt((supportHeight + extension) ** 2 + distance ** 2);
+
+  return { baseDistance: distance, angleDegrees, isSafeAngle, lengthToSupport, recommendedLength };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2522,5 +2547,8 @@ if (typeof module !== 'undefined' && module.exports) {
     YDS_GRADES,
     isValidClimbingGrade,
     convertClimbingGrade,
+    LADDER_SAFE_ANGLE_MIN_DEGREES,
+    LADDER_SAFE_ANGLE_MAX_DEGREES,
+    ladderPlan,
   };
 }

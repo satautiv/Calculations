@@ -4594,3 +4594,29 @@ document.getElementById('grade-calc').addEventListener('click', () => {
     showError('grade-result', err.message);
   }
 });
+
+// --- Ladder Angle/Safety calculator ---
+document.getElementById('ladder-calc').addEventListener('click', () => {
+  const height = parseFloat(document.getElementById('ladder-height').value);
+  const baseRaw = document.getElementById('ladder-base').value;
+  const base = baseRaw === '' ? undefined : parseFloat(baseRaw);
+  const extension = parseFloat(document.getElementById('ladder-extension').value) || 0;
+
+  try {
+    const { baseDistance, angleDegrees, isSafeAngle, lengthToSupport, recommendedLength } = ladderPlan(height, base, extension);
+
+    const safetyNote = isSafeAngle
+      ? '<div class="hint">This angle is within the commonly cited safe range (&asymp;68&deg;&ndash;76&deg;).</div>'
+      : '<div class="hint"><strong>Warning:</strong> this angle is outside the commonly cited safe range (&asymp;68&deg;&ndash;76&deg;) &mdash; too shallow risks the base sliding out, too steep risks tipping backward.</div>';
+
+    document.getElementById('ladder-result').innerHTML = `
+      <div class="headline">Base distance: ${baseDistance.toFixed(2)} &middot; Angle: ${angleDegrees.toFixed(1)}&deg;</div>
+      <div>Minimum ladder length to reach support: ${lengthToSupport.toFixed(2)}</div>
+      <div>Recommended length (with stand-off extension): ${recommendedLength.toFixed(2)}</div>
+      ${safetyNote}
+      <div class="hint">General guidance only &mdash; always follow the ladder manufacturer's instructions and, for anything beyond routine home use, a professional site-specific safety assessment.</div>
+    `;
+  } catch (err) {
+    showError('ladder-result', err.message);
+  }
+});

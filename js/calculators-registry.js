@@ -605,6 +605,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert climbing grades between the V-scale, Font, and YDS grading systems.',
     keywords: ['climbing', 'v-scale', 'fontainebleau', 'font', 'yds', 'bouldering', 'strength'],
   },
+  {
+    id: 'ladder-safety-calculator',
+    name: 'Ladder Angle/Safety Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate the safe base-to-wall distance and minimum ladder length using the 4:1 rule.',
+    keywords: ['ladder', 'ladder safety', '4:1 rule', 'ladder angle', 'osha', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
