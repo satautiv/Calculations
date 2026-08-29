@@ -549,6 +549,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate how much water to drink per day based on body weight, activity level, and climate.',
     keywords: ['water intake', 'hydration', 'daily water', 'fluid intake', 'strength'],
   },
+  {
+    id: 'caffeine-half-life-calculator',
+    name: 'Caffeine Half-Life Calculator',
+    category: 'Unusual',
+    description: 'See how much caffeine is still active in your body over time, based on exponential decay and its average half-life.',
+    keywords: ['caffeine', 'half-life', 'coffee', 'decay', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

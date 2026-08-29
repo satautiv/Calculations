@@ -2114,6 +2114,20 @@ function dailyWaterIntake(weightKg, activityLevel = 'sedentary', climate = 'temp
   return { baseIntakeMl, totalIntakeMl };
 }
 
+// --- Caffeine half-life calculator ---
+
+// Quick-preset doses (mg) for common caffeine sources.
+const CAFFEINE_PRESETS_MG = { coffee: 95, espresso: 63, tea: 47, energyDrink: 80 };
+
+// First-order exponential decay: remaining = dose * 0.5^(elapsed/halfLife).
+function caffeineRemaining(doseMg, elapsedHours, halfLifeHours = 5) {
+  if (doseMg < 0) throw new Error('Dose must be non-negative.');
+  if (elapsedHours < 0) throw new Error('Elapsed hours must be non-negative.');
+  if (!halfLifeHours || halfLifeHours <= 0) throw new Error('Half-life must be greater than zero.');
+
+  return doseMg * Math.pow(0.5, elapsedHours / halfLifeHours);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2287,5 +2301,7 @@ if (typeof module !== 'undefined' && module.exports) {
     WATER_ACTIVITY_BONUS_ML,
     WATER_CLIMATE_BONUS_ML,
     dailyWaterIntake,
+    CAFFEINE_PRESETS_MG,
+    caffeineRemaining,
   };
 }
