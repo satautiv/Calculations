@@ -1680,6 +1680,28 @@
     <div class="result" id="date-diff-result"></div>
   </section>
 
+  <section id="dots-score-calculator" class="view tab-panel">
+    <h2>DOTS Score</h2>
+    <p class="hint">Compare powerlifting totals across bodyweights and sexes using the IPF-adopted DOTS formula (the modern successor to Wilks).</p>
+    <div class="field">
+      <label for="dots-bw">Bodyweight (kg)</label>
+      <input type="number" id="dots-bw" min="0" step="0.1" placeholder="e.g. 90">
+    </div>
+    <div class="field">
+      <label for="dots-total">Total lifted &mdash; squat + bench + deadlift (kg)</label>
+      <input type="number" id="dots-total" min="0" step="0.5" placeholder="e.g. 600">
+    </div>
+    <div class="field">
+      <label for="dots-sex">Sex</label>
+      <select id="dots-sex">
+        <option value="male">Male</option>
+        <option value="female">Female</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="dots-calc">Calculate</button>
+    <div class="result" id="dots-result"></div>
+  </section>
+
 </main>
 
 <script src="js/calc-lib.js"></script>

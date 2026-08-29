@@ -1377,6 +1377,33 @@ function dateDifference(dateA, dateB) {
   return { ...breakdown, reversed };
 }
 
+// --- DOTS score calculator ---
+
+// Coefficients for the DOTS formula (Tim Henriques; IPF-adopted 2020),
+// bodyweight (BW) in kg: coefficient = 500 / (A*BW^4 + B*BW^3 + C*BW^2 + D*BW + E).
+const DOTS_COEFFICIENTS = {
+  male: { a: -0.0000010930, b: 0.0007391293, c: -0.1918759221, d: 24.0900756, e: -307.75076 },
+  female: { a: -0.0000010706, b: 0.0005158568, c: -0.1126655495, d: 13.6175032, e: -57.96288 },
+};
+
+// The women's coefficients are only validated up to 150 kg bodyweight; the
+// official method clamps heavier bodyweights to 150 kg for the calculation.
+const DOTS_FEMALE_BW_CAP = 150;
+
+function dotsCoefficient(bodyweightKg, sex) {
+  const coeffs = DOTS_COEFFICIENTS[sex];
+  if (!coeffs) throw new Error('Sex must be "male" or "female".');
+
+  const bw = sex === 'female' ? Math.min(bodyweightKg, DOTS_FEMALE_BW_CAP) : bodyweightKg;
+  const { a, b, c, d, e } = coeffs;
+  const denom = a * bw ** 4 + b * bw ** 3 + c * bw ** 2 + d * bw + e;
+  return 500 / denom;
+}
+
+function dotsScore(bodyweightKg, totalKg, sex) {
+  return dotsCoefficient(bodyweightKg, sex) * totalKg;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1489,5 +1516,9 @@ if (typeof module !== 'undefined' && module.exports) {
     WARMUP_SCHEME,
     warmupSets,
     dateDifference,
+    DOTS_COEFFICIENTS,
+    DOTS_FEMALE_BW_CAP,
+    dotsCoefficient,
+    dotsScore,
   };
 }

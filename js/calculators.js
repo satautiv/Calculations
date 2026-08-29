@@ -3458,3 +3458,35 @@ document.getElementById('date-diff-calc').addEventListener('click', () => {
     <div class="hint">Total weeks: ${totalWeeks.toLocaleString()} week${totalWeeks === 1 ? '' : 's'} and ${remainderDays} day${remainderDays === 1 ? '' : 's'}</div>
   `;
 });
+
+// --- DOTS score calculator ---
+document.getElementById('dots-calc').addEventListener('click', () => {
+  const bw = parseFloat(document.getElementById('dots-bw').value);
+  const total = parseFloat(document.getElementById('dots-total').value);
+  const sex = document.getElementById('dots-sex').value;
+
+  if (!bw || bw <= 0 || !total || total <= 0) {
+    showError('dots-result', 'Enter a valid bodyweight and total lifted.');
+    return;
+  }
+
+  if (!sex) {
+    showError('dots-result', 'Select a sex.');
+    return;
+  }
+
+  const score = dotsScore(bw, total, sex);
+
+  let note = '';
+  if (sex === 'female' && bw > DOTS_FEMALE_BW_CAP) {
+    note = `<div class="hint">The women's formula is only validated up to ${DOTS_FEMALE_BW_CAP} kg; the calculation used ${DOTS_FEMALE_BW_CAP} kg instead of your entered bodyweight.</div>`;
+  } else if (bw < 40) {
+    note = '<div class="hint">Bodyweight is below the formula\'s validated range (~40 kg+); the estimate may be less accurate.</div>';
+  }
+
+  document.getElementById('dots-result').innerHTML = `
+    <div class="headline">${score.toFixed(1)}</div>
+    <div>DOTS score (relative strength)</div>
+    ${note}
+  `;
+});

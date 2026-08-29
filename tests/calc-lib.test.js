@@ -96,6 +96,8 @@ const {
   formatDurationHM,
   warmupSets,
   dateDifference,
+  dotsCoefficient,
+  dotsScore,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1844,5 +1846,30 @@ describe('dateDifference', () => {
     const result = dateDifference(utc('1950-01-01'), utc('2050-01-01'));
     expect(result.years).toBe(100);
     expect(result.totalDays).toBeGreaterThan(36000);
+  });
+});
+
+// --- DOTS score calculator ---
+
+describe('dotsScore', () => {
+  test('worked example: men, 90 kg bodyweight, 600 kg total', () => {
+    expect(dotsScore(90, 600, 'male')).toBeCloseTo(387.96, 1);
+  });
+
+  test('women, 60 kg bodyweight, 300 kg total', () => {
+    expect(dotsScore(60, 300, 'female')).toBeCloseTo(332.56, 1);
+  });
+
+  test('clamps women\'s bodyweight to 150 kg for the calculation', () => {
+    expect(dotsCoefficient(150, 'female')).toBeCloseTo(dotsCoefficient(200, 'female'), 10);
+  });
+
+  test('does not clamp men\'s bodyweight', () => {
+    expect(dotsCoefficient(150, 'male')).not.toBeCloseTo(dotsCoefficient(200, 'male'), 5);
+  });
+
+  test('throws for a missing or invalid sex', () => {
+    expect(() => dotsScore(90, 600, undefined)).toThrow();
+    expect(() => dotsScore(90, 600, 'other')).toThrow();
   });
 });
