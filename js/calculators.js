@@ -3560,3 +3560,46 @@ document.getElementById('voltage-calc').addEventListener('click', () => {
     ${frequencyNote}
   `;
 });
+
+// --- Working Days calculator ---
+document.getElementById('workdays-calc').addEventListener('click', () => {
+  const startRaw = document.getElementById('workdays-start').value;
+  const endRaw = document.getElementById('workdays-end').value;
+  const holidaysRaw = document.getElementById('workdays-holidays').value;
+
+  const startDate = parseAgeDateInput(startRaw);
+  if (!startDate) {
+    showError('workdays-result', 'Enter a valid start date.');
+    return;
+  }
+
+  const endDate = parseAgeDateInput(endRaw);
+  if (!endDate) {
+    showError('workdays-result', 'Enter a valid end date.');
+    return;
+  }
+
+  const holidayEntries = holidaysRaw.split(/[\n,]+/).map(entry => entry.trim()).filter(Boolean);
+  const holidayDates = [];
+  let skippedCount = 0;
+  holidayEntries.forEach(entry => {
+    const parsed = parseAgeDateInput(entry);
+    if (parsed) {
+      holidayDates.push(parsed);
+    } else {
+      skippedCount++;
+    }
+  });
+
+  const { workingDays, totalDays, weekendDays, holidayWeekdays } = workingDaysBetween(startDate, endDate, holidayDates);
+
+  const skippedNote = skippedCount > 0
+    ? `<div class="hint">Skipped ${skippedCount} unrecognized holiday date${skippedCount === 1 ? '' : 's'}.</div>`
+    : '';
+
+  document.getElementById('workdays-result').innerHTML = `
+    <div class="headline">${workingDays.toLocaleString()} working day${workingDays === 1 ? '' : 's'}</div>
+    <div>Total calendar days: ${totalDays.toLocaleString()} &middot; Weekend days excluded: ${weekendDays.toLocaleString()} &middot; Holiday weekdays excluded: ${holidayWeekdays.toLocaleString()}</div>
+    ${skippedNote}
+  `;
+});

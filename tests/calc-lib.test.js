@@ -101,6 +101,7 @@ const {
   addDaysToDate,
   weekdayName,
   checkPlugAdapterNeeds,
+  workingDaysBetween,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1963,5 +1964,60 @@ describe('checkPlugAdapterNeeds', () => {
   test('returns an error for a country not present in the dataset', () => {
     const result = checkPlugAdapterNeeds('Atlantis', 'United Kingdom', false);
     expect(result.error).toBeDefined();
+  });
+});
+
+// --- Working Days calculator ---
+
+describe('workingDaysBetween', () => {
+  function utc(dateString) {
+    return new Date(`${dateString}T00:00:00Z`);
+  }
+
+  test('worked example: Mon 2026-08-24 to Fri 2026-09-04, no holidays, is 10 working days', () => {
+    const result = workingDaysBetween(utc('2026-08-24'), utc('2026-09-04'));
+    expect(result.workingDays).toBe(10);
+    expect(result.totalDays).toBe(12);
+    expect(result.weekendDays).toBe(2);
+    expect(result.holidayWeekdays).toBe(0);
+    expect(result.reversed).toBe(false);
+  });
+
+  test('worked example: excluding a weekday holiday (2026-08-27, Thursday) drops it to 9', () => {
+    const result = workingDaysBetween(utc('2026-08-24'), utc('2026-09-04'), [utc('2026-08-27')]);
+    expect(result.workingDays).toBe(9);
+    expect(result.holidayWeekdays).toBe(1);
+  });
+
+  test('a holiday that falls on a weekend has no effect (not double-counted)', () => {
+    const result = workingDaysBetween(utc('2026-08-24'), utc('2026-09-04'), [utc('2026-08-29')]); // Saturday
+    expect(result.workingDays).toBe(10);
+    expect(result.holidayWeekdays).toBe(0);
+  });
+
+  test('a holiday outside the date range is ignored', () => {
+    const result = workingDaysBetween(utc('2026-08-24'), utc('2026-09-04'), [utc('2026-01-01')]);
+    expect(result.workingDays).toBe(10);
+  });
+
+  test('handles start/end given in reverse chronological order transparently', () => {
+    const forward = workingDaysBetween(utc('2026-08-24'), utc('2026-09-04'));
+    const backward = workingDaysBetween(utc('2026-09-04'), utc('2026-08-24'));
+    expect(backward.workingDays).toBe(forward.workingDays);
+    expect(backward.reversed).toBe(true);
+  });
+
+  test('identical start and end date counts as 1 if a weekday, 0 if a weekend', () => {
+    const weekday = workingDaysBetween(utc('2026-08-24'), utc('2026-08-24')); // Monday
+    expect(weekday.workingDays).toBe(1);
+    expect(weekday.totalDays).toBe(1);
+
+    const weekend = workingDaysBetween(utc('2026-08-29'), utc('2026-08-29')); // Saturday
+    expect(weekend.workingDays).toBe(0);
+  });
+
+  test('works with no holidays argument at all', () => {
+    const result = workingDaysBetween(utc('2026-08-24'), utc('2026-08-24'));
+    expect(result.workingDays).toBe(1);
   });
 });
