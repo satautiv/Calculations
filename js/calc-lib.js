@@ -2128,6 +2128,22 @@ function caffeineRemaining(doseMg, elapsedHours, halfLifeHours = 5) {
   return doseMg * Math.pow(0.5, elapsedHours / halfLifeHours);
 }
 
+// --- Gravel calculator ---
+
+// area in m², depth in m, density in tonnes/m³, wastePercent as a whole number.
+function gravelNeeded(area, depth, density, wastePercent) {
+  if (!area || area <= 0) throw new Error('Area must be greater than zero.');
+  if (!depth || depth <= 0) throw new Error('Depth must be greater than zero.');
+  if (!density || density <= 0) throw new Error('Density must be greater than zero.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+
+  const volume = area * depth;
+  const volumeWithWaste = volume * (1 + wastePercent / 100);
+  const weight = volumeWithWaste * density;
+
+  return { volume, volumeWithWaste, weight };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2303,5 +2319,6 @@ if (typeof module !== 'undefined' && module.exports) {
     dailyWaterIntake,
     CAFFEINE_PRESETS_MG,
     caffeineRemaining,
+    gravelNeeded,
   };
 }

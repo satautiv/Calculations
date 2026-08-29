@@ -4410,3 +4410,27 @@ document.getElementById('caf-calc').addEventListener('click', () => {
     showError('caf-result', err.message);
   }
 });
+
+// --- Gravel calculator ---
+document.getElementById('gravel-calc').addEventListener('click', () => {
+  const area = parseFloat(document.getElementById('gravel-area').value);
+  const depthCm = parseFloat(document.getElementById('gravel-depth').value);
+  const density = parseFloat(document.getElementById('gravel-density').value);
+  const waste = parseFloat(document.getElementById('gravel-waste').value);
+
+  const depthNote = depthCm > 100
+    ? '<div class="hint">That\'s an unusually deep gravel layer (over 1m) &mdash; double-check you didn\'t mean a smaller unit.</div>'
+    : '';
+
+  try {
+    const { volume, volumeWithWaste, weight } = gravelNeeded(area, depthCm / 100, density, waste);
+
+    document.getElementById('gravel-result').innerHTML = `
+      <div class="headline">${weight.toFixed(2)} tonnes</div>
+      <div>Volume: ${volume.toFixed(3)} m&sup3; &middot; With waste allowance: ${volumeWithWaste.toFixed(3)} m&sup3;</div>
+      ${depthNote}
+    `;
+  } catch (err) {
+    showError('gravel-result', err.message);
+  }
+});

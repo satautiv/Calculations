@@ -556,6 +556,13 @@ const CALCULATOR_REGISTRY = [
     description: 'See how much caffeine is still active in your body over time, based on exponential decay and its average half-life.',
     keywords: ['caffeine', 'half-life', 'coffee', 'decay', 'unusual'],
   },
+  {
+    id: 'gravel-calculator',
+    name: 'Gravel Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how much gravel you need (by volume and weight) to cover an area to a given depth.',
+    keywords: ['gravel', 'crushed stone', 'driveway', 'density', 'tonnes', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
