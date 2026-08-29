@@ -128,6 +128,7 @@ const {
   wallpaperRollsNeeded,
   flooringNeeded,
   riegelPredictedTime,
+  tilesNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2553,5 +2554,32 @@ describe('riegelPredictedTime', () => {
   test('predicts a longer time for a longer target distance', () => {
     const predicted = riegelPredictedTime(2700, 10, 21.0975);
     expect(predicted).toBeGreaterThan(2700);
+  });
+});
+
+// --- Tile calculator ---
+
+describe('tilesNeeded', () => {
+  test('worked example: 12 m² room, 300x300mm tiles, 3mm grout, 10% waste', () => {
+    const result = tilesNeeded(12, 0.3, 0.3, 0.003, 10);
+    expect(result.effectiveArea).toBeCloseTo(0.091809, 6);
+    expect(result.tilesForArea).toBeCloseTo(130.706, 2);
+    expect(result.tilesNeededCount).toBe(144);
+  });
+
+  test('rejects non-positive area, tile width, or tile length', () => {
+    expect(() => tilesNeeded(0, 0.3, 0.3, 0.003, 10)).toThrow();
+    expect(() => tilesNeeded(12, 0, 0.3, 0.003, 10)).toThrow();
+    expect(() => tilesNeeded(12, 0.3, 0, 0.003, 10)).toThrow();
+  });
+
+  test('rejects a grout width that exceeds the tile dimensions', () => {
+    expect(() => tilesNeeded(12, 0.3, 0.3, 0.3, 10)).toThrow();
+    expect(() => tilesNeeded(12, 0.3, 0.3, 0.5, 10)).toThrow();
+  });
+
+  test('rejects a negative grout width or waste percentage', () => {
+    expect(() => tilesNeeded(12, 0.3, 0.3, -0.001, 10)).toThrow();
+    expect(() => tilesNeeded(12, 0.3, 0.3, 0.003, -5)).toThrow();
   });
 });

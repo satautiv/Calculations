@@ -4191,3 +4191,26 @@ document.getElementById('race-calc').addEventListener('click', () => {
     showError('race-result', err.message);
   }
 });
+
+// --- Tile calculator ---
+document.getElementById('tile-calc').addEventListener('click', () => {
+  const area = parseFloat(document.getElementById('tile-area').value);
+  const tileWidthMm = parseFloat(document.getElementById('tile-width').value);
+  const tileLengthMm = parseFloat(document.getElementById('tile-length').value);
+  const groutMm = parseFloat(document.getElementById('tile-grout').value);
+  const waste = parseFloat(document.getElementById('tile-waste').value);
+
+  try {
+    const { effectiveArea, tilesForArea, tilesNeededCount } = tilesNeeded(
+      area, tileWidthMm / 1000, tileLengthMm / 1000, groutMm / 1000, waste
+    );
+
+    document.getElementById('tile-result').innerHTML = `
+      <div class="headline">${tilesNeededCount} tiles</div>
+      <div>Raw tiles needed (before waste): ${tilesForArea.toFixed(1)}</div>
+      <div class="hint">Effective (grout-inclusive) tile area: ${(effectiveArea * 1e6).toFixed(0)} mm&sup2;</div>
+    `;
+  } catch (err) {
+    showError('tile-result', err.message);
+  }
+});

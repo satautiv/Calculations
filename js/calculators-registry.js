@@ -507,6 +507,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Predict your finish time at one race distance from a known result at another, using the Riegel formula.',
     keywords: ['race time', 'riegel', 'marathon predictor', 'running', 'race pace', 'strength'],
   },
+  {
+    id: 'tile-calculator',
+    name: 'Tile Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how many tiles you need for a floor or wall, accounting for grout line width and a waste allowance.',
+    keywords: ['tile', 'grout', 'flooring', 'wall tile', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

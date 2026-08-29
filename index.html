@@ -2421,6 +2421,33 @@
     <button class="calc-btn" id="race-calc">Calculate</button>
     <div class="result" id="race-result"></div>
   </section>
+
+  <section id="tile-calculator" class="view tab-panel">
+    <h2>Tile Calculator</h2>
+    <p class="hint">Calculates how many tiles you need for a floor or wall, accounting for the grout line width (which effectively enlarges each tile's footprint) and a waste allowance.</p>
+    <div class="field">
+      <label for="tile-area">Area to cover (m&sup2;)</label>
+      <input type="number" id="tile-area" min="0" step="0.01" placeholder="e.g. 12">
+    </div>
+    <div class="field">
+      <label for="tile-width">Tile width (mm)</label>
+      <input type="number" id="tile-width" min="0" step="1" placeholder="e.g. 300">
+    </div>
+    <div class="field">
+      <label for="tile-length">Tile length (mm)</label>
+      <input type="number" id="tile-length" min="0" step="1" placeholder="e.g. 300">
+    </div>
+    <div class="field">
+      <label for="tile-grout">Grout line width (mm)</label>
+      <input type="number" id="tile-grout" min="0" step="0.5" value="3">
+    </div>
+    <div class="field">
+      <label for="tile-waste">Waste allowance (%, e.g. enter 10 for 10%)</label>
+      <input type="number" id="tile-waste" min="0" step="1" value="10">
+    </div>
+    <button class="calc-btn" id="tile-calc">Calculate</button>
+    <div class="result" id="tile-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
