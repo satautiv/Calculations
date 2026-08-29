@@ -3694,3 +3694,72 @@ document.getElementById('gl-calc').addEventListener('click', () => {
     ${note}
   `;
 });
+
+// --- Unit Converter calculator ---
+
+// Display labels for each unit, keyed by category then by the same unit key
+// used in calc-lib's UNIT_CONVERSION_CATEGORIES / temperature handling.
+const UNIT_CONVERTER_LABELS = {
+  length: { mm: 'Millimeters (mm)', cm: 'Centimeters (cm)', m: 'Meters (m)', km: 'Kilometers (km)', in: 'Inches (in)', ft: 'Feet (ft)', yd: 'Yards (yd)', mi: 'Miles (mi)' },
+  area: { mm2: 'Square millimeters (mm²)', cm2: 'Square centimeters (cm²)', m2: 'Square meters (m²)', hectare: 'Hectares (ha)', km2: 'Square kilometers (km²)', in2: 'Square inches (in²)', ft2: 'Square feet (ft²)', yd2: 'Square yards (yd²)', acre: 'Acres', mi2: 'Square miles (mi²)' },
+  volume: { mL: 'Milliliters (mL)', L: 'Liters (L)', m3: 'Cubic meters (m³)', usGal: 'US gallons (gal)', usQt: 'US quarts (qt)', usFlOz: 'US fluid ounces (fl oz)', impGal: 'Imperial gallons', usCup: 'US cups' },
+  mass: { mg: 'Milligrams (mg)', g: 'Grams (g)', kg: 'Kilograms (kg)', tonne: 'Metric tons (t)', oz: 'Ounces (oz)', lb: 'Pounds (lb)', stone: 'Stone (st)', usTon: 'US tons (short tons)' },
+  temperature: { C: 'Celsius (°C)', F: 'Fahrenheit (°F)', K: 'Kelvin (K)' },
+  speed: { mps: 'Meters/second (m/s)', kmh: 'Kilometers/hour (km/h)', mph: 'Miles/hour (mph)', knot: 'Knots', fps: 'Feet/second (ft/s)' },
+};
+
+function populateUnitConverterDropdowns() {
+  const category = document.getElementById('uc-category').value;
+  const labels = UNIT_CONVERTER_LABELS[category];
+  const fromSelect = document.getElementById('uc-from');
+  const toSelect = document.getElementById('uc-to');
+  const optionsHtml = Object.entries(labels).map(([key, label]) => `<option value="${key}">${label}</option>`).join('');
+
+  fromSelect.innerHTML = optionsHtml;
+  toSelect.innerHTML = optionsHtml;
+  if (toSelect.options.length > 1) toSelect.selectedIndex = 1;
+}
+
+document.getElementById('uc-category').addEventListener('change', populateUnitConverterDropdowns);
+populateUnitConverterDropdowns();
+
+const UNIT_CONVERTER_NON_NEGATIVE_CATEGORIES = ['length', 'area', 'volume', 'mass', 'speed'];
+
+document.getElementById('uc-calc').addEventListener('click', () => {
+  const category = document.getElementById('uc-category').value;
+  const value = parseFloat(document.getElementById('uc-value').value);
+  const fromUnit = document.getElementById('uc-from').value;
+  const toUnit = document.getElementById('uc-to').value;
+
+  if (isNaN(value)) {
+    showError('uc-result', 'Enter a valid numeric value.');
+    return;
+  }
+
+  if (UNIT_CONVERTER_NON_NEGATIVE_CATEGORIES.includes(category) && value < 0) {
+    showError('uc-result', 'This category represents a physical quantity that cannot be negative.');
+    return;
+  }
+
+  let warning = '';
+  if (category === 'temperature') {
+    const celsiusEquivalent = convertUnit('temperature', value, fromUnit, 'C');
+    if (celsiusEquivalent < -273.15) {
+      warning = '<div class="hint">Warning: this value is below absolute zero.</div>';
+    }
+  }
+
+  try {
+    const result = convertUnit(category, value, fromUnit, toUnit);
+    const fromLabel = UNIT_CONVERTER_LABELS[category][fromUnit];
+    const toLabel = UNIT_CONVERTER_LABELS[category][toUnit];
+
+    document.getElementById('uc-result').innerHTML = `
+      <div class="headline">${result.toLocaleString(undefined, { maximumFractionDigits: 6 })}</div>
+      <div>${value} ${fromLabel} = ${result.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${toLabel}</div>
+      ${warning}
+    `;
+  } catch (err) {
+    showError('uc-result', err.message);
+  }
+});

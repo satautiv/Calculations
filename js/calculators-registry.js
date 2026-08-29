@@ -416,6 +416,13 @@ const CALCULATOR_REGISTRY = [
     description: "Compute the IPF's official Goodlift (GL) Points score to rank lifters across bodyweights, sexes, and raw/equipped divisions.",
     keywords: ['ipf', 'gl points', 'goodlift', 'powerlifting', 'total', 'bodyweight', 'strength'],
   },
+  {
+    id: 'unit-converter-calculator',
+    name: 'Unit Converter',
+    category: 'General',
+    description: 'Convert between units of length, area, volume, weight, temperature, and speed.',
+    keywords: ['unit converter', 'length', 'area', 'volume', 'weight', 'temperature', 'speed', 'metric', 'imperial', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
