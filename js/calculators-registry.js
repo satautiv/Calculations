@@ -612,6 +612,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate the safe base-to-wall distance and minimum ladder length using the 4:1 rule.',
     keywords: ['ladder', 'ladder safety', '4:1 rule', 'ladder angle', 'osha', 'home', 'diy'],
   },
+  {
+    id: 'uv-exposure-calculator',
+    name: 'UV Exposure / Sun Safety Calculator',
+    category: 'Unusual',
+    description: 'Estimate how many minutes you can stay in the sun before burning, based on UV index and Fitzpatrick skin type.',
+    keywords: ['uv index', 'sunburn', 'fitzpatrick', 'sun safety', 'spf', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

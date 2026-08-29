@@ -2353,6 +2353,31 @@ function ladderPlan(supportHeight, baseDistance, extension = 1) {
   return { baseDistance: distance, angleDegrees, isSafeAngle, lengthToSupport, recommendedLength };
 }
 
+// --- UV exposure / sun safety calculator ---
+
+// Fitzpatrick skin-type multipliers for the simplified public-facing
+// time-to-burn formula.
+const FITZPATRICK_SKIN_FACTORS = { I: 2.5, II: 3, III: 4, IV: 5, V: 8, VI: 15 };
+
+// A UV index of 0 has no meaningful burn risk, so returns Infinity (a
+// sentinel the caller should check for) rather than dividing by zero.
+// `spf`, if given, multiplies the safe time by roughly that factor.
+function timeToBurnMinutes(uvIndex, skinType, spf) {
+  if (uvIndex < 0) throw new Error('UV index cannot be negative.');
+
+  const factor = FITZPATRICK_SKIN_FACTORS[skinType];
+  if (!factor) throw new Error('Select a valid Fitzpatrick skin type (I-VI).');
+
+  if (spf !== undefined && spf !== null && spf <= 0) {
+    throw new Error('SPF must be greater than zero.');
+  }
+
+  if (uvIndex === 0) return Infinity;
+
+  const baseMinutes = (200 * factor) / (3 * uvIndex);
+  return spf ? baseMinutes * spf : baseMinutes;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2550,5 +2575,7 @@ if (typeof module !== 'undefined' && module.exports) {
     LADDER_SAFE_ANGLE_MIN_DEGREES,
     LADDER_SAFE_ANGLE_MAX_DEGREES,
     ladderPlan,
+    FITZPATRICK_SKIN_FACTORS,
+    timeToBurnMinutes,
   };
 }
