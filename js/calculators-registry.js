@@ -444,6 +444,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate body fat percentage from tape-measure circumferences using the US Navy method.',
     keywords: ['body fat', 'navy method', 'waist', 'neck', 'hip', 'tape measure', 'strength'],
   },
+  {
+    id: 'tdee-calculator',
+    name: 'TDEE Calculator',
+    category: 'Fitness & Strength',
+    description: 'Estimate Total Daily Energy Expenditure (calories burned per day) from BMR and activity level using the Mifflin-St Jeor equation.',
+    keywords: ['tdee', 'bmr', 'calories', 'maintenance calories', 'mifflin-st jeor', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

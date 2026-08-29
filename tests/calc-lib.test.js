@@ -114,6 +114,8 @@ const {
   leanBodyMassFromBodyFat,
   leanBodyMassBoer,
   navyBodyFatPercent,
+  bmrMifflinStJeor,
+  tdeeFromBmr,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2267,5 +2269,36 @@ describe('navyBodyFatPercent', () => {
   test('throws for a missing or invalid sex', () => {
     expect(() => navyBodyFatPercent(undefined, 70, 15, 34)).toThrow();
     expect(() => navyBodyFatPercent('other', 70, 15, 34)).toThrow();
+  });
+});
+
+// --- TDEE (Total Daily Energy Expenditure) calculator ---
+
+describe('bmrMifflinStJeor / tdeeFromBmr', () => {
+  test('worked example: man, 80 kg, 180 cm, 30 years, moderately active', () => {
+    const bmr = bmrMifflinStJeor(80, 180, 30, 'male');
+    expect(bmr).toBeCloseTo(1780, 5);
+    expect(tdeeFromBmr(bmr, 'moderate')).toBeCloseTo(2759, 5);
+  });
+
+  test('women use a different constant offset than men', () => {
+    const bmrMale = bmrMifflinStJeor(70, 170, 25, 'male');
+    const bmrFemale = bmrMifflinStJeor(70, 170, 25, 'female');
+    expect(bmrFemale).toBeLessThan(bmrMale);
+  });
+
+  test('rejects non-positive weight, height, or age', () => {
+    expect(() => bmrMifflinStJeor(0, 180, 30, 'male')).toThrow();
+    expect(() => bmrMifflinStJeor(80, 0, 30, 'male')).toThrow();
+    expect(() => bmrMifflinStJeor(80, 180, 0, 'male')).toThrow();
+  });
+
+  test('throws for a missing or invalid sex', () => {
+    expect(() => bmrMifflinStJeor(80, 180, 30, undefined)).toThrow();
+    expect(() => bmrMifflinStJeor(80, 180, 30, 'other')).toThrow();
+  });
+
+  test('throws for an invalid activity level', () => {
+    expect(() => tdeeFromBmr(1780, 'super-active')).toThrow();
   });
 });

@@ -1750,6 +1750,34 @@ function navyBodyFatPercent(sex, heightIn, neckIn, waistIn, hipIn) {
   throw new Error('Sex must be "male" or "female".');
 }
 
+// --- TDEE (Total Daily Energy Expenditure) calculator ---
+
+const ACTIVITY_MULTIPLIERS = {
+  sedentary: 1.2,
+  light: 1.375,
+  moderate: 1.55,
+  active: 1.725,
+  extra: 1.9,
+};
+
+// Mifflin-St Jeor equation: widely regarded as the most accurate BMR formula
+// for the general adult population.
+function bmrMifflinStJeor(weightKg, heightCm, age, sex) {
+  if (!weightKg || weightKg <= 0) throw new Error('Weight must be greater than zero.');
+  if (!heightCm || heightCm <= 0) throw new Error('Height must be greater than zero.');
+  if (!age || age <= 0) throw new Error('Age must be greater than zero.');
+
+  if (sex === 'male') return 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+  if (sex === 'female') return 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+  throw new Error('Sex must be "male" or "female".');
+}
+
+function tdeeFromBmr(bmr, activityLevel) {
+  const multiplier = ACTIVITY_MULTIPLIERS[activityLevel];
+  if (!multiplier) throw new Error('Select a valid activity level.');
+  return bmr * multiplier;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1889,5 +1917,8 @@ if (typeof module !== 'undefined' && module.exports) {
     leanBodyMassFromBodyFat,
     leanBodyMassBoer,
     navyBodyFatPercent,
+    ACTIVITY_MULTIPLIERS,
+    bmrMifflinStJeor,
+    tdeeFromBmr,
   };
 }
