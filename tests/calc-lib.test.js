@@ -149,6 +149,7 @@ const {
   roofArea,
   roofPitchConversions,
   convertClimbingGrade,
+  ladderPlan,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3015,5 +3016,46 @@ describe('convertClimbingGrade', () => {
   test('rejects a missing source or target system', () => {
     expect(() => convertClimbingGrade(undefined, 'V5', 'font')).toThrow();
     expect(() => convertClimbingGrade('v', 'V5', undefined)).toThrow();
+  });
+});
+
+// --- Ladder Angle/Safety calculator ---
+
+describe('ladderPlan', () => {
+  // The issue's own worked example rounds the recommended length to "~5.94m",
+  // but the precise value (verified by direct computation) is ~5.9228m.
+  test('worked example: 4.8m support height, 4:1 rule default base distance', () => {
+    const result = ladderPlan(4.8);
+    expect(result.baseDistance).toBeCloseTo(1.2, 5);
+    expect(result.lengthToSupport).toBeCloseTo(4.9477, 3);
+    expect(result.recommendedLength).toBeCloseTo(5.9228, 3);
+    expect(result.angleDegrees).toBeCloseTo(75.96, 1);
+    expect(result.isSafeAngle).toBe(true);
+  });
+
+  test('a manually entered base distance overrides the 4:1 default', () => {
+    const result = ladderPlan(4.8, 2);
+    expect(result.baseDistance).toBe(2);
+    expect(result.angleDegrees).toBeLessThan(75);
+  });
+
+  test('flags an unsafe (too shallow) angle', () => {
+    const result = ladderPlan(4.8, 4); // base distance too large -> shallow angle
+    expect(result.isSafeAngle).toBe(false);
+  });
+
+  test('flags an unsafe (too steep) angle', () => {
+    const result = ladderPlan(4.8, 0.5); // base distance too small -> steep angle
+    expect(result.isSafeAngle).toBe(false);
+  });
+
+  test('rejects a non-positive support height or base distance', () => {
+    expect(() => ladderPlan(0)).toThrow();
+    expect(() => ladderPlan(4.8, 0)).toThrow();
+    expect(() => ladderPlan(4.8, -1)).toThrow();
+  });
+
+  test('rejects a negative extension', () => {
+    expect(() => ladderPlan(4.8, 1.2, -1)).toThrow();
   });
 });

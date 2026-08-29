@@ -2793,6 +2793,25 @@
     <button class="calc-btn" id="grade-calc">Convert</button>
     <div class="result" id="grade-result"></div>
   </section>
+
+  <section id="ladder-safety-calculator" class="view tab-panel">
+    <h2>Ladder Angle/Safety Calculator</h2>
+    <p class="hint">Calculates the safe base-to-wall distance (the 4:1 rule, &asymp;75.5&deg;) and minimum ladder length for a given support height. General safety guidance &mdash; not a substitute for the ladder manufacturer's instructions or a professional site-specific assessment.</p>
+    <div class="field">
+      <label for="ladder-height">Support/wall height</label>
+      <input type="number" id="ladder-height" min="0" step="0.1" placeholder="e.g. 4.8">
+    </div>
+    <div class="field">
+      <label for="ladder-base">Base distance (optional, defaults to the 4:1 rule)</label>
+      <input type="number" id="ladder-base" min="0" step="0.1" placeholder="e.g. 1.2">
+    </div>
+    <div class="field">
+      <label for="ladder-extension">Stand-off extension above support point</label>
+      <input type="number" id="ladder-extension" min="0" step="0.1" value="1">
+    </div>
+    <button class="calc-btn" id="ladder-calc">Calculate</button>
+    <div class="result" id="ladder-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
