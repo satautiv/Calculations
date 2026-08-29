@@ -2144,6 +2144,42 @@ function gravelNeeded(area, depth, density, wastePercent) {
   return { volume, volumeWithWaste, weight };
 }
 
+// --- Blood alcohol content (BAC) calculator (Widmark formula) ---
+
+// Widmark distribution ratio (r), reflecting body water percentage;
+// population-average constants, not individually precise.
+const WIDMARK_R = { male: 0.68, female: 0.55 };
+const STANDARD_DRINK_GRAMS = 14; // US standard drink
+const ETHANOL_DENSITY_G_PER_ML = 0.789;
+const BAC_ELIMINATION_RATE_PER_HOUR = 0.015;
+
+function alcoholGramsFromDrinkCount(drinkCount) {
+  if (drinkCount < 0) throw new Error('Drink count cannot be negative.');
+  return drinkCount * STANDARD_DRINK_GRAMS;
+}
+
+function alcoholGramsFromVolume(volumeMl, abvPercent) {
+  if (volumeMl < 0) throw new Error('Volume cannot be negative.');
+  if (abvPercent < 0) throw new Error('ABV cannot be negative.');
+  return volumeMl * (abvPercent / 100) * ETHANOL_DENSITY_G_PER_ML;
+}
+
+// Estimates BAC (%) via the Widmark formula: BAC = (A / (W*r))*100 - beta*H,
+// clamped at 0 since elimination can't produce a negative BAC.
+function widmarkBAC(alcoholGrams, weightKg, sex, hoursElapsed) {
+  if (alcoholGrams < 0) throw new Error('Alcohol amount cannot be negative.');
+  if (!weightKg || weightKg <= 0) throw new Error('Weight must be greater than zero.');
+  if (hoursElapsed < 0) throw new Error('Hours elapsed cannot be negative.');
+
+  const r = WIDMARK_R[sex];
+  if (!r) throw new Error('Sex must be "male" or "female".');
+
+  const weightGrams = weightKg * 1000;
+  const bacRaw = (alcoholGrams / (weightGrams * r)) * 100 - BAC_ELIMINATION_RATE_PER_HOUR * hoursElapsed;
+
+  return Math.max(0, bacRaw);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2320,5 +2356,12 @@ if (typeof module !== 'undefined' && module.exports) {
     CAFFEINE_PRESETS_MG,
     caffeineRemaining,
     gravelNeeded,
+    WIDMARK_R,
+    STANDARD_DRINK_GRAMS,
+    ETHANOL_DENSITY_G_PER_ML,
+    BAC_ELIMINATION_RATE_PER_HOUR,
+    alcoholGramsFromDrinkCount,
+    alcoholGramsFromVolume,
+    widmarkBAC,
   };
 }

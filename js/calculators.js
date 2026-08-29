@@ -4434,3 +4434,39 @@ document.getElementById('gravel-calc').addEventListener('click', () => {
     showError('gravel-result', err.message);
   }
 });
+
+// --- Blood alcohol content (BAC) calculator ---
+document.getElementById('bac-mode').addEventListener('change', (e) => {
+  const isVolume = e.target.value === 'volume';
+  document.getElementById('bac-count-field').hidden = isVolume;
+  document.getElementById('bac-volume-fields').hidden = !isVolume;
+});
+
+document.getElementById('bac-calc').addEventListener('click', () => {
+  const weight = parseFloat(document.getElementById('bac-weight').value);
+  const sex = document.getElementById('bac-sex').value;
+  const mode = document.getElementById('bac-mode').value;
+  const hours = parseFloat(document.getElementById('bac-hours').value);
+
+  try {
+    const alcoholGrams = mode === 'volume'
+      ? alcoholGramsFromVolume(parseFloat(document.getElementById('bac-volume').value), parseFloat(document.getElementById('bac-abv').value))
+      : alcoholGramsFromDrinkCount(parseFloat(document.getElementById('bac-drink-count').value));
+
+    const bac = widmarkBAC(alcoholGrams, weight, sex, hours);
+
+    const label = bac === 0
+      ? 'No estimated alcohol remaining'
+      : bac < 0.08
+        ? 'Below the typical 0.08% legal limit'
+        : 'At or above the typical 0.08% legal limit';
+
+    document.getElementById('bac-result').innerHTML = `
+      <div class="headline">${bac.toFixed(3)}%</div>
+      <div>${label}</div>
+      <div class="hint">Entertainment/educational estimate only &mdash; not a measurement of your actual BAC. Never drive after drinking.</div>
+    `;
+  } catch (err) {
+    showError('bac-result', err.message);
+  }
+});
