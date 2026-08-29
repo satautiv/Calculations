@@ -2135,6 +2135,29 @@
     <button class="calc-btn" id="tdee-calc">Calculate</button>
     <div class="result" id="tdee-result"></div>
   </section>
+
+  <section id="macro-calculator" class="view tab-panel">
+    <h2>Macro Calculator</h2>
+    <p class="hint">Converts a daily calorie target and a protein/carb/fat percentage split (must sum to 100%) into gram targets for each macronutrient.</p>
+    <div class="field">
+      <label for="macro-kcal">Daily calorie target (kcal)</label>
+      <input type="number" id="macro-kcal" min="0" step="1" placeholder="e.g. 2500">
+    </div>
+    <div class="field">
+      <label for="macro-protein">Protein (%)</label>
+      <input type="number" id="macro-protein" min="0" max="100" step="1" value="40">
+    </div>
+    <div class="field">
+      <label for="macro-carb">Carbohydrate (%)</label>
+      <input type="number" id="macro-carb" min="0" max="100" step="1" value="30">
+    </div>
+    <div class="field">
+      <label for="macro-fat">Fat (%)</label>
+      <input type="number" id="macro-fat" min="0" max="100" step="1" value="30">
+    </div>
+    <button class="calc-btn" id="macro-calc">Calculate</button>
+    <div class="result" id="macro-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

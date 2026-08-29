@@ -1778,6 +1778,32 @@ function tdeeFromBmr(bmr, activityLevel) {
   return bmr * multiplier;
 }
 
+// --- Macro calculator ---
+
+// Atwater general energy-density factors (kcal per gram).
+const MACRO_KCAL_PER_GRAM = { protein: 4, carb: 4, fat: 9 };
+
+// Converts a daily calorie target and a protein/carb/fat percentage split
+// (which must sum to ~100%) into gram targets for each macronutrient.
+function macroGrams(totalKcal, proteinPct, carbPct, fatPct) {
+  if (!totalKcal || totalKcal <= 0) throw new Error('Calorie target must be greater than zero.');
+
+  [proteinPct, carbPct, fatPct].forEach(pct => {
+    if (pct < 0 || pct > 100) throw new Error('Each macro percentage must be between 0 and 100.');
+  });
+
+  const sum = proteinPct + carbPct + fatPct;
+  if (Math.abs(sum - 100) > 0.5) {
+    throw new Error(`Macro percentages must sum to 100% (currently ${sum}%).`);
+  }
+
+  return {
+    proteinG: (totalKcal * (proteinPct / 100)) / MACRO_KCAL_PER_GRAM.protein,
+    carbG: (totalKcal * (carbPct / 100)) / MACRO_KCAL_PER_GRAM.carb,
+    fatG: (totalKcal * (fatPct / 100)) / MACRO_KCAL_PER_GRAM.fat,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1920,5 +1946,7 @@ if (typeof module !== 'undefined' && module.exports) {
     ACTIVITY_MULTIPLIERS,
     bmrMifflinStJeor,
     tdeeFromBmr,
+    MACRO_KCAL_PER_GRAM,
+    macroGrams,
   };
 }

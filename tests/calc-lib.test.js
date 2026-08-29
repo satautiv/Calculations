@@ -116,6 +116,7 @@ const {
   navyBodyFatPercent,
   bmrMifflinStJeor,
   tdeeFromBmr,
+  macroGrams,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2300,5 +2301,34 @@ describe('bmrMifflinStJeor / tdeeFromBmr', () => {
 
   test('throws for an invalid activity level', () => {
     expect(() => tdeeFromBmr(1780, 'super-active')).toThrow();
+  });
+});
+
+// --- Macro calculator ---
+
+describe('macroGrams', () => {
+  test('worked example: 2500 kcal at 40/30/30', () => {
+    const result = macroGrams(2500, 40, 30, 30);
+    expect(result.proteinG).toBeCloseTo(250, 5);
+    expect(result.carbG).toBeCloseTo(187.5, 5);
+    expect(result.fatG).toBeCloseTo(83.3, 1);
+  });
+
+  test('rejects a non-positive calorie target', () => {
+    expect(() => macroGrams(0, 40, 30, 30)).toThrow();
+  });
+
+  test('rejects percentages that do not sum to 100%', () => {
+    expect(() => macroGrams(2500, 40, 30, 20)).toThrow();
+    expect(() => macroGrams(2500, 40, 30, 40)).toThrow();
+  });
+
+  test('rejects any individual percentage negative or over 100', () => {
+    expect(() => macroGrams(2500, -10, 60, 50)).toThrow();
+    expect(() => macroGrams(2500, 110, -20, 10)).toThrow();
+  });
+
+  test('tolerates small rounding slack around 100%', () => {
+    expect(() => macroGrams(2500, 40, 30, 30.2)).not.toThrow();
   });
 });
