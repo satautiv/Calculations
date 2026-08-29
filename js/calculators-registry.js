@@ -563,6 +563,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how much gravel you need (by volume and weight) to cover an area to a given depth.',
     keywords: ['gravel', 'crushed stone', 'driveway', 'density', 'tonnes', 'home', 'diy'],
   },
+  {
+    id: 'bac-calculator',
+    name: 'Blood Alcohol Content (BAC) Calculator',
+    category: 'Unusual',
+    description: 'Estimate blood alcohol content from body weight, sex, drinks consumed, and time elapsed, using the Widmark formula.',
+    keywords: ['bac', 'blood alcohol', 'widmark', 'drinks', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

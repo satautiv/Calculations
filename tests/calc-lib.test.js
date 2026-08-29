@@ -139,6 +139,9 @@ const {
   dailyWaterIntake,
   caffeineRemaining,
   gravelNeeded,
+  alcoholGramsFromDrinkCount,
+  alcoholGramsFromVolume,
+  widmarkBAC,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2809,5 +2812,42 @@ describe('gravelNeeded', () => {
 
   test('rejects a negative waste percentage', () => {
     expect(() => gravelNeeded(10, 0.05, 1.6, -5)).toThrow();
+  });
+});
+
+// --- Blood alcohol content (BAC) calculator ---
+
+describe('widmarkBAC', () => {
+  test('worked example: 70 kg man, 3 standard drinks (42g), 2 hours elapsed', () => {
+    const alcoholGrams = alcoholGramsFromDrinkCount(3);
+    expect(alcoholGrams).toBe(42);
+    expect(widmarkBAC(alcoholGrams, 70, 'male', 2)).toBeCloseTo(0.0582, 3);
+  });
+
+  test('clamps BAC at 0 rather than going negative after full elimination', () => {
+    expect(widmarkBAC(14, 70, 'male', 100)).toBe(0);
+  });
+
+  test('rejects a non-positive weight or negative alcohol/hours', () => {
+    expect(() => widmarkBAC(-1, 70, 'male', 2)).toThrow();
+    expect(() => widmarkBAC(42, 0, 'male', 2)).toThrow();
+    expect(() => widmarkBAC(42, 70, 'male', -1)).toThrow();
+  });
+
+  test('throws for a missing or invalid sex', () => {
+    expect(() => widmarkBAC(42, 70, undefined, 2)).toThrow();
+    expect(() => widmarkBAC(42, 70, 'other', 2)).toThrow();
+  });
+});
+
+describe('alcoholGramsFromVolume', () => {
+  test('computes grams of alcohol from volume and ABV', () => {
+    // A 355 mL beer at 5% ABV: 355 * 0.05 * 0.789 ≈ 14.0g (roughly one standard drink)
+    expect(alcoholGramsFromVolume(355, 5)).toBeCloseTo(14.0, 1);
+  });
+
+  test('rejects a negative volume or ABV', () => {
+    expect(() => alcoholGramsFromVolume(-1, 5)).toThrow();
+    expect(() => alcoholGramsFromVolume(355, -1)).toThrow();
   });
 });
