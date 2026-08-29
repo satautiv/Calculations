@@ -138,6 +138,7 @@ const {
   cooperVO2max,
   dailyWaterIntake,
   caffeineRemaining,
+  gravelNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2787,5 +2788,26 @@ describe('caffeineRemaining', () => {
     expect(() => caffeineRemaining(-10, 8)).toThrow();
     expect(() => caffeineRemaining(95, -1)).toThrow();
     expect(() => caffeineRemaining(95, 8, 0)).toThrow();
+  });
+});
+
+// --- Gravel calculator ---
+
+describe('gravelNeeded', () => {
+  test('worked example: 10x1m path, 5cm depth, 1.6 t/m³ density, 10% waste', () => {
+    const result = gravelNeeded(10, 0.05, 1.6, 10);
+    expect(result.volume).toBeCloseTo(0.5, 5);
+    expect(result.volumeWithWaste).toBeCloseTo(0.55, 5);
+    expect(result.weight).toBeCloseTo(0.88, 5);
+  });
+
+  test('rejects non-positive area, depth, or density', () => {
+    expect(() => gravelNeeded(0, 0.05, 1.6, 10)).toThrow();
+    expect(() => gravelNeeded(10, 0, 1.6, 10)).toThrow();
+    expect(() => gravelNeeded(10, 0.05, 0, 10)).toThrow();
+  });
+
+  test('rejects a negative waste percentage', () => {
+    expect(() => gravelNeeded(10, 0.05, 1.6, -5)).toThrow();
   });
 });
