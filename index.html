@@ -1994,6 +1994,39 @@
     <button class="calc-btn" id="uc-calc">Calculate</button>
     <div class="result" id="uc-result"></div>
   </section>
+
+  <section id="ffmi-calculator" class="view tab-panel">
+    <h2>FFMI Calculator</h2>
+    <p class="hint">Computes Fat-Free Mass Index (FFMI), a height-normalized measure of muscularity, from weight, height, and body fat percentage.</p>
+    <div class="field">
+      <label for="ffmi-weight">Weight</label>
+      <input type="number" id="ffmi-weight" min="0" step="0.1" placeholder="e.g. 90">
+    </div>
+    <div class="field">
+      <label for="ffmi-weight-unit">Weight unit</label>
+      <select id="ffmi-weight-unit">
+        <option value="kg">kg</option>
+        <option value="lb">lb</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ffmi-height">Height</label>
+      <input type="number" id="ffmi-height" min="0" step="0.1" placeholder="e.g. 180">
+    </div>
+    <div class="field">
+      <label for="ffmi-height-unit">Height unit</label>
+      <select id="ffmi-height-unit">
+        <option value="cm">cm</option>
+        <option value="m">m</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="ffmi-bodyfat">Body fat percentage</label>
+      <input type="number" id="ffmi-bodyfat" min="0" max="70" step="0.1" placeholder="e.g. 15">
+    </div>
+    <button class="calc-btn" id="ffmi-calc">Calculate</button>
+    <div class="result" id="ffmi-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

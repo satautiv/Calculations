@@ -423,6 +423,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert between units of length, area, volume, weight, temperature, and speed.',
     keywords: ['unit converter', 'length', 'area', 'volume', 'weight', 'temperature', 'speed', 'metric', 'imperial', 'general'],
   },
+  {
+    id: 'ffmi-calculator',
+    name: 'FFMI Calculator',
+    category: 'Fitness & Strength',
+    description: 'Compute Fat-Free Mass Index (FFMI), a height-normalized measure of muscularity, from weight, height, and body fat percentage.',
+    keywords: ['ffmi', 'fat-free mass index', 'muscularity', 'natural limit', 'lean mass', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

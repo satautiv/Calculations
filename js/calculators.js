@@ -3763,3 +3763,38 @@ document.getElementById('uc-calc').addEventListener('click', () => {
     showError('uc-result', err.message);
   }
 });
+
+// --- FFMI (Fat-Free Mass Index) calculator ---
+document.getElementById('ffmi-calc').addEventListener('click', () => {
+  const weightRaw = parseFloat(document.getElementById('ffmi-weight').value);
+  const weightUnit = document.getElementById('ffmi-weight-unit').value;
+  const heightRaw = parseFloat(document.getElementById('ffmi-height').value);
+  const heightUnit = document.getElementById('ffmi-height-unit').value;
+  const bodyFat = parseFloat(document.getElementById('ffmi-bodyfat').value);
+
+  if (isNaN(weightRaw) || weightRaw <= 0) {
+    showError('ffmi-result', 'Enter a valid weight greater than zero.');
+    return;
+  }
+
+  if (isNaN(heightRaw) || heightRaw <= 0) {
+    showError('ffmi-result', 'Enter a valid height greater than zero.');
+    return;
+  }
+
+  const weightKg = weightUnit === 'lb' ? weightRaw * 0.45359237 : weightRaw;
+  const heightM = heightUnit === 'cm' ? heightRaw / 100 : heightRaw;
+
+  try {
+    const { fatFreeMass, rawFFMI, normalizedFFMI } = ffmi(weightKg, heightM, bodyFat);
+    const category = ffmiCategory(normalizedFFMI);
+
+    document.getElementById('ffmi-result').innerHTML = `
+      <div class="headline">FFMI ${normalizedFFMI.toFixed(1)}</div>
+      <div>${category}</div>
+      <div class="hint">Raw FFMI: ${rawFFMI.toFixed(1)} &middot; Fat-free mass: ${fatFreeMass.toFixed(1)} kg</div>
+    `;
+  } catch (err) {
+    showError('ffmi-result', err.message);
+  }
+});
