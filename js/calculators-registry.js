@@ -458,6 +458,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert a daily calorie target and a protein/carb/fat percentage split into gram targets per macronutrient.',
     keywords: ['macros', 'macronutrients', 'protein', 'carbs', 'fat', 'meal planning', 'strength'],
   },
+  {
+    id: 'weight-loss-timeline-calculator',
+    name: 'Weight-Loss Timeline',
+    category: 'Fitness & Strength',
+    description: 'Estimate how many days/weeks it will take to reach a goal weight given a daily calorie deficit.',
+    keywords: ['weight loss', 'cutting', 'calorie deficit', 'goal weight', 'timeline', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
