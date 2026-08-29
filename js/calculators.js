@@ -4354,3 +4354,25 @@ document.getElementById('vo2-calc').addEventListener('click', () => {
     showError('vo2-result', err.message);
   }
 });
+
+// --- Daily water intake calculator ---
+document.getElementById('water-calc').addEventListener('click', () => {
+  const weightRaw = parseFloat(document.getElementById('water-weight').value);
+  const unit = document.getElementById('water-unit').value;
+  const activity = document.getElementById('water-activity').value;
+  const climate = document.getElementById('water-climate').value;
+
+  const weightKg = unit === 'lb' ? weightRaw / 2.20462 : weightRaw;
+
+  try {
+    const { totalIntakeMl } = dailyWaterIntake(weightKg, activity, climate);
+
+    document.getElementById('water-result').innerHTML = `
+      <div class="headline">${(totalIntakeMl / 1000).toFixed(1)} L / day</div>
+      <div>${Math.round(totalIntakeMl).toLocaleString()} mL per day</div>
+      <div class="hint">A general wellness estimate, not medical advice &mdash; those with kidney, heart, or other conditions affecting fluid balance should follow their healthcare provider's guidance.</div>
+    `;
+  } catch (err) {
+    showError('water-result', err.message);
+  }
+});

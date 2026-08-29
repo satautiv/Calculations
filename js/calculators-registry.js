@@ -542,6 +542,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate VO2max (aerobic fitness) from the distance covered in a 12-minute Cooper run test.',
     keywords: ['vo2max', 'cooper test', 'aerobic fitness', 'cardiovascular fitness', 'strength'],
   },
+  {
+    id: 'water-intake-calculator',
+    name: 'Daily Water Intake Calculator',
+    category: 'Fitness & Strength',
+    description: 'Estimate how much water to drink per day based on body weight, activity level, and climate.',
+    keywords: ['water intake', 'hydration', 'daily water', 'fluid intake', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

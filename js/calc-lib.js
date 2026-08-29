@@ -2091,6 +2091,29 @@ function cooperVO2max(distanceMeters) {
   return (distanceMeters - 504.9) / 44.73;
 }
 
+// --- Daily water intake calculator ---
+
+const WATER_ML_PER_KG = 35;
+const WATER_ACTIVITY_BONUS_ML = { sedentary: 0, moderate: 350, high: 700 };
+const WATER_CLIMATE_BONUS_ML = { temperate: 0, hot: 350 };
+
+function dailyWaterIntake(weightKg, activityLevel = 'sedentary', climate = 'temperate') {
+  if (!weightKg || weightKg < 20 || weightKg > 300) {
+    throw new Error('Weight must be within a plausible human range (20-300 kg).');
+  }
+
+  const activityBonus = WATER_ACTIVITY_BONUS_ML[activityLevel];
+  if (activityBonus === undefined) throw new Error('Select a valid activity level.');
+
+  const climateBonus = WATER_CLIMATE_BONUS_ML[climate];
+  if (climateBonus === undefined) throw new Error('Select a valid climate.');
+
+  const baseIntakeMl = weightKg * WATER_ML_PER_KG;
+  const totalIntakeMl = baseIntakeMl + activityBonus + climateBonus;
+
+  return { baseIntakeMl, totalIntakeMl };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2260,5 +2283,9 @@ if (typeof module !== 'undefined' && module.exports) {
     bedtimesForWakeTime,
     wakeTimesForBedtime,
     cooperVO2max,
+    WATER_ML_PER_KG,
+    WATER_ACTIVITY_BONUS_ML,
+    WATER_CLIMATE_BONUS_ML,
+    dailyWaterIntake,
   };
 }
