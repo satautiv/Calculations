@@ -136,6 +136,7 @@ const {
   bedtimesForWakeTime,
   wakeTimesForBedtime,
   cooperVO2max,
+  dailyWaterIntake,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2725,5 +2726,35 @@ describe('cooperVO2max', () => {
   test('accepts an unrealistically high distance rather than rejecting it', () => {
     expect(() => cooperVO2max(4500)).not.toThrow();
     expect(cooperVO2max(4500)).toBeGreaterThan(0);
+  });
+});
+
+// --- Daily water intake calculator ---
+
+describe('dailyWaterIntake', () => {
+  test('worked example: 70 kg, moderate activity, temperate climate', () => {
+    const result = dailyWaterIntake(70, 'moderate', 'temperate');
+    expect(result.baseIntakeMl).toBeCloseTo(2450, 5);
+    expect(result.totalIntakeMl).toBeCloseTo(2800, 5);
+  });
+
+  test('defaults to sedentary/temperate when not specified', () => {
+    const result = dailyWaterIntake(70);
+    expect(result.totalIntakeMl).toBeCloseTo(2450, 5);
+  });
+
+  test('stacks activity and climate bonuses', () => {
+    const result = dailyWaterIntake(70, 'high', 'hot');
+    expect(result.totalIntakeMl).toBeCloseTo(2450 + 700 + 350, 5);
+  });
+
+  test('rejects a weight outside the plausible 20-300 kg range', () => {
+    expect(() => dailyWaterIntake(10)).toThrow();
+    expect(() => dailyWaterIntake(350)).toThrow();
+  });
+
+  test('throws for an invalid activity level or climate', () => {
+    expect(() => dailyWaterIntake(70, 'extreme', 'temperate')).toThrow();
+    expect(() => dailyWaterIntake(70, 'moderate', 'arctic')).toThrow();
   });
 });
