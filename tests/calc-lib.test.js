@@ -95,6 +95,7 @@ const {
   formatMinutesAsLocalTime,
   formatDurationHM,
   warmupSets,
+  dateDifference,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -1794,5 +1795,54 @@ describe('warmupSets', () => {
     const sets = warmupSets(100);
     expect(sets[0].weight).toBe(40);
     expect(sets[6].weight).toBe(100);
+  });
+});
+
+// --- Date Difference / Countdown calculator ---
+
+describe('dateDifference', () => {
+  function utc(dateString) {
+    return new Date(`${dateString}T00:00:00Z`);
+  }
+
+  test('worked example: 2026-08-25 to 2027-01-01', () => {
+    const result = dateDifference(utc('2026-08-25'), utc('2027-01-01'));
+    expect(result.totalDays).toBe(129);
+    expect(result.totalWeeks).toBe(18);
+    expect(result.remainderDays).toBe(3);
+    expect(result.years).toBe(0);
+    expect(result.months).toBe(4);
+    expect(result.days).toBe(7);
+    expect(result.reversed).toBe(false);
+  });
+
+  test('handles dates given in reverse chronological order transparently', () => {
+    const forward = dateDifference(utc('2026-08-25'), utc('2027-01-01'));
+    const backward = dateDifference(utc('2027-01-01'), utc('2026-08-25'));
+    expect(backward.totalDays).toBe(forward.totalDays);
+    expect(backward.years).toBe(forward.years);
+    expect(backward.months).toBe(forward.months);
+    expect(backward.days).toBe(forward.days);
+    expect(backward.reversed).toBe(true);
+  });
+
+  test('identical dates produce an all-zero difference', () => {
+    const result = dateDifference(utc('2020-05-01'), utc('2020-05-01'));
+    expect(result.totalDays).toBe(0);
+    expect(result.years).toBe(0);
+    expect(result.months).toBe(0);
+    expect(result.days).toBe(0);
+    expect(result.reversed).toBe(false);
+  });
+
+  test('counts a leap year correctly within the span', () => {
+    const result = dateDifference(utc('2024-01-01'), utc('2025-01-01'));
+    expect(result.totalDays).toBe(366);
+  });
+
+  test('handles dates decades apart without overflow', () => {
+    const result = dateDifference(utc('1950-01-01'), utc('2050-01-01'));
+    expect(result.years).toBe(100);
+    expect(result.totalDays).toBeGreaterThan(36000);
   });
 });

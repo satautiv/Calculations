@@ -367,6 +367,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Generate a ramping warm-up progression of sets and reps leading up to your working weight.',
     keywords: ['warm-up', 'warmup', 'ramping sets', 'working weight', 'strength'],
   },
+  {
+    id: 'date-difference-calculator',
+    name: 'Date Difference / Countdown',
+    category: 'General',
+    description: 'Calculate the time between two dates, or a countdown to a future date, in days, weeks, and years/months/days.',
+    keywords: ['date difference', 'countdown', 'days until', 'days since', 'days between', 'general'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

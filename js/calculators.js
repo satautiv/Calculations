@@ -3412,3 +3412,49 @@ document.getElementById('warmup-calc').addEventListener('click', () => {
     showError('warmup-result', err.message);
   }
 });
+
+// --- Date Difference / Countdown calculator ---
+document.getElementById('date-diff-calc').addEventListener('click', () => {
+  const dateARaw = document.getElementById('date-diff-a').value;
+  const dateBRaw = document.getElementById('date-diff-b').value;
+
+  if (!dateBRaw) {
+    showError('date-diff-result', 'Enter a valid target date (Date B).');
+    return;
+  }
+
+  const dateB = parseAgeDateInput(dateBRaw);
+  if (!dateB) {
+    showError('date-diff-result', 'Enter a valid target date (Date B).');
+    return;
+  }
+
+  const countdownMode = !dateARaw;
+  const dateA = countdownMode ? todayAsUtcMidnight() : parseAgeDateInput(dateARaw);
+  if (!dateA) {
+    showError('date-diff-result', 'Enter a valid Date A, or leave it blank to use today.');
+    return;
+  }
+
+  const { years, months, days, totalDays, totalWeeks, remainderDays, reversed } = dateDifference(dateA, dateB);
+  const yearsMonthsDays = `${years} year${years === 1 ? '' : 's'}, ${months} month${months === 1 ? '' : 's'}, ${days} day${days === 1 ? '' : 's'}`;
+
+  let headline;
+  if (totalDays === 0) {
+    headline = 'Today (0 days)';
+  } else if (countdownMode) {
+    headline = reversed
+      ? `${totalDays.toLocaleString()} day${totalDays === 1 ? '' : 's'} since ${dateBRaw}`
+      : `${totalDays.toLocaleString()} day${totalDays === 1 ? '' : 's'} until ${dateBRaw}`;
+  } else {
+    const earlierRaw = reversed ? dateBRaw : dateARaw;
+    const laterRaw = reversed ? dateARaw : dateBRaw;
+    headline = `${totalDays.toLocaleString()} day${totalDays === 1 ? '' : 's'} between ${earlierRaw} and ${laterRaw}`;
+  }
+
+  document.getElementById('date-diff-result').innerHTML = `
+    <div class="headline">${headline}</div>
+    <div>${yearsMonthsDays}</div>
+    <div class="hint">Total weeks: ${totalWeeks.toLocaleString()} week${totalWeeks === 1 ? '' : 's'} and ${remainderDays} day${remainderDays === 1 ? '' : 's'}</div>
+  `;
+});
