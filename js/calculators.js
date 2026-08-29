@@ -3664,3 +3664,33 @@ document.getElementById('duration-calc').addEventListener('click', () => {
     showError('duration-result', err.message);
   }
 });
+
+// --- IPF GL Points calculator ---
+document.getElementById('gl-calc').addEventListener('click', () => {
+  const bw = parseFloat(document.getElementById('gl-bw').value);
+  const total = parseFloat(document.getElementById('gl-total').value);
+  const sex = document.getElementById('gl-sex').value;
+  const equipment = document.getElementById('gl-equipment').value;
+
+  if (!bw || bw <= 0 || !total || total <= 0) {
+    showError('gl-result', 'Enter a valid bodyweight and total lifted.');
+    return;
+  }
+
+  if (!sex || !equipment) {
+    showError('gl-result', 'Select a sex and equipment class.');
+    return;
+  }
+
+  const score = glPoints(bw, total, sex, equipment);
+
+  const note = (bw < 40 || bw > 200)
+    ? '<div class="hint">Bodyweight is outside typical competition weight classes (~40-200 kg); the estimate may be less meaningful at this extreme.</div>'
+    : '';
+
+  document.getElementById('gl-result').innerHTML = `
+    <div class="headline">${score.toFixed(1)}</div>
+    <div>IPF GL Points</div>
+    ${note}
+  `;
+});

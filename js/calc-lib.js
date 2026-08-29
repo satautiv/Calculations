@@ -1580,6 +1580,34 @@ function timeOfDayDuration(startSeconds, endSeconds) {
   return diff;
 }
 
+// --- IPF GL (Goodlift) Points calculator ---
+
+// Coefficients for the IPF GL formula ("GL Coefficients 2020"), bodyweight
+// (BW) in kg: coefficient = 100 / (A - B * e^(-C * BW)).
+const GL_COEFFICIENTS = {
+  male: {
+    raw: { a: 1199.72839, b: 1025.18162, c: 0.00921 },
+    equipped: { a: 1236.25115, b: 1449.21864, c: 0.01644 },
+  },
+  female: {
+    raw: { a: 610.32796, b: 1045.59282, c: 0.03048 },
+    equipped: { a: 758.63878, b: 949.31382, c: 0.02435 },
+  },
+};
+
+function glCoefficient(bodyweightKg, sex, equipment) {
+  const bySex = GL_COEFFICIENTS[sex];
+  const coeffs = bySex && bySex[equipment];
+  if (!coeffs) throw new Error('Sex must be "male" or "female" and equipment must be "raw" or "equipped".');
+
+  const { a, b, c } = coeffs;
+  return 100 / (a - b * Math.exp(-c * bodyweightKg));
+}
+
+function glPoints(bodyweightKg, totalKg, sex, equipment) {
+  return glCoefficient(bodyweightKg, sex, equipment) * totalKg;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -1707,5 +1735,8 @@ if (typeof module !== 'undefined' && module.exports) {
     secondsToHMS,
     addSubtractDurations,
     timeOfDayDuration,
+    GL_COEFFICIENTS,
+    glCoefficient,
+    glPoints,
   };
 }
