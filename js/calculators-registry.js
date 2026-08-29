@@ -409,6 +409,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Add or subtract H:MM:SS durations, or compute the elapsed time between two times of day (including overnight shifts).',
     keywords: ['time duration', 'add time', 'subtract time', 'elapsed time', 'clock in', 'clock out', 'hours worked', 'general'],
   },
+  {
+    id: 'ipf-gl-points-calculator',
+    name: 'IPF GL Points',
+    category: 'Fitness & Strength',
+    description: "Compute the IPF's official Goodlift (GL) Points score to rank lifters across bodyweights, sexes, and raw/equipped divisions.",
+    keywords: ['ipf', 'gl points', 'goodlift', 'powerlifting', 'total', 'bodyweight', 'strength'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

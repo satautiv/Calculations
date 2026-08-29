@@ -106,6 +106,8 @@ const {
   secondsToHMS,
   addSubtractDurations,
   timeOfDayDuration,
+  glCoefficient,
+  glPoints,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2093,5 +2095,28 @@ describe('timeOfDayDuration', () => {
   test('identical start and end time is a zero-length duration, not a full day', () => {
     const result = timeOfDayDuration(timeToSeconds(9, 15, 0), timeToSeconds(9, 15, 0));
     expect(result).toBe(0);
+  });
+});
+
+// --- IPF GL Points calculator ---
+
+describe('glPoints', () => {
+  test('worked example: men, raw, 90 kg bodyweight, 600 kg total', () => {
+    expect(glPoints(90, 600, 'male', 'raw')).toBeCloseTo(79.77, 1);
+  });
+
+  test('women, equipped, 70 kg bodyweight, 400 kg total', () => {
+    expect(glPoints(70, 400, 'female', 'equipped')).toBeCloseTo(68.26, 1);
+  });
+
+  test('raw and equipped use different coefficients for the same sex', () => {
+    expect(glCoefficient(90, 'male', 'raw')).not.toBeCloseTo(glCoefficient(90, 'male', 'equipped'), 5);
+  });
+
+  test('throws for a missing or invalid sex/equipment combination', () => {
+    expect(() => glPoints(90, 600, undefined, 'raw')).toThrow();
+    expect(() => glPoints(90, 600, 'male', undefined)).toThrow();
+    expect(() => glPoints(90, 600, 'other', 'raw')).toThrow();
+    expect(() => glPoints(90, 600, 'male', 'other')).toThrow();
   });
 });
