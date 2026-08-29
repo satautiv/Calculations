@@ -2812,6 +2812,32 @@
     <button class="calc-btn" id="ladder-calc">Calculate</button>
     <div class="result" id="ladder-result"></div>
   </section>
+
+  <section id="uv-exposure-calculator" class="view tab-panel">
+    <h2>UV Exposure / Sun Safety Calculator</h2>
+    <p class="hint">Estimates how many minutes you can stay in the sun before you're likely to start burning, based on the current UV index and your Fitzpatrick skin type. A rough population-average estimate for general awareness, not a substitute for real-world sun safety judgment.</p>
+    <div class="field">
+      <label for="uv-index">Current UV index</label>
+      <input type="number" id="uv-index" min="0" step="0.1" placeholder="e.g. 7">
+    </div>
+    <div class="field">
+      <label for="uv-skin-type">Skin type (Fitzpatrick scale)</label>
+      <select id="uv-skin-type">
+        <option value="I">I &mdash; Very fair, always burns, never tans</option>
+        <option value="II">II &mdash; Fair, burns easily, tans minimally</option>
+        <option value="III">III &mdash; Medium, burns moderately, tans gradually</option>
+        <option value="IV">IV &mdash; Olive, burns minimally, tans well</option>
+        <option value="V">V &mdash; Brown, rarely burns, tans easily</option>
+        <option value="VI">VI &mdash; Dark brown/black, very rarely burns</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="uv-spf">Sunscreen SPF (optional)</label>
+      <input type="number" id="uv-spf" min="0" step="1" placeholder="e.g. 30">
+    </div>
+    <button class="calc-btn" id="uv-calc">Calculate</button>
+    <div class="result" id="uv-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

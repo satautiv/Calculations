@@ -150,6 +150,7 @@ const {
   roofPitchConversions,
   convertClimbingGrade,
   ladderPlan,
+  timeToBurnMinutes,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3057,5 +3058,41 @@ describe('ladderPlan', () => {
 
   test('rejects a negative extension', () => {
     expect(() => ladderPlan(4.8, 1.2, -1)).toThrow();
+  });
+});
+
+// --- UV exposure / sun safety calculator ---
+
+describe('timeToBurnMinutes', () => {
+  test('worked example: Fitzpatrick type II at UV index 7', () => {
+    expect(timeToBurnMinutes(7, 'II')).toBeCloseTo(28.6, 1);
+  });
+
+  test('a UV index of 0 returns Infinity (no meaningful burn risk)', () => {
+    expect(timeToBurnMinutes(0, 'II')).toBe(Infinity);
+  });
+
+  test('SPF multiplies the safe time', () => {
+    const noSpf = timeToBurnMinutes(7, 'II');
+    const withSpf = timeToBurnMinutes(7, 'II', 30);
+    expect(withSpf).toBeCloseTo(noSpf * 30, 5);
+  });
+
+  test('darker skin types (higher factor) have a longer time to burn', () => {
+    expect(timeToBurnMinutes(7, 'VI')).toBeGreaterThan(timeToBurnMinutes(7, 'I'));
+  });
+
+  test('rejects a negative UV index', () => {
+    expect(() => timeToBurnMinutes(-1, 'II')).toThrow();
+  });
+
+  test('rejects an invalid skin type', () => {
+    expect(() => timeToBurnMinutes(7, 'VII')).toThrow();
+    expect(() => timeToBurnMinutes(7, undefined)).toThrow();
+  });
+
+  test('rejects a non-positive SPF when provided', () => {
+    expect(() => timeToBurnMinutes(7, 'II', 0)).toThrow();
+    expect(() => timeToBurnMinutes(7, 'II', -5)).toThrow();
   });
 });

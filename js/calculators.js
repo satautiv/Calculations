@@ -4620,3 +4620,35 @@ document.getElementById('ladder-calc').addEventListener('click', () => {
     showError('ladder-result', err.message);
   }
 });
+
+// --- UV exposure / sun safety calculator ---
+function formatBurnTime(minutes) {
+  if (!isFinite(minutes)) return 'No meaningful burn risk at this UV index';
+  if (minutes < 60) return `${minutes.toFixed(0)} minutes`;
+  const hours = Math.floor(minutes / 60);
+  const mins = Math.round(minutes % 60);
+  return `${hours}h ${mins}m`;
+}
+
+document.getElementById('uv-calc').addEventListener('click', () => {
+  const uvIndex = parseFloat(document.getElementById('uv-index').value);
+  const skinType = document.getElementById('uv-skin-type').value;
+  const spfRaw = document.getElementById('uv-spf').value;
+  const spf = spfRaw === '' ? undefined : parseFloat(spfRaw);
+
+  try {
+    const baseMinutes = timeToBurnMinutes(uvIndex, skinType);
+    const withSpfHtml = spf
+      ? `<div>With SPF ${spf}: ${formatBurnTime(timeToBurnMinutes(uvIndex, skinType, spf))}</div>`
+      : '';
+
+    document.getElementById('uv-result').innerHTML = `
+      <div class="headline">${formatBurnTime(baseMinutes)}</div>
+      <div>Estimated time to burn without sunscreen</div>
+      ${withSpfHtml}
+      <div class="hint">A rough population-average estimate; actual burn time varies with altitude, reflection off snow/sand/water, medications, time of day, and individual skin sensitivity. Reapply sunscreen regularly regardless of this estimate.</div>
+    `;
+  } catch (err) {
+    showError('uv-result', err.message);
+  }
+});
