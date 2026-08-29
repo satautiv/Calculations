@@ -148,6 +148,7 @@ const {
   roofPitchMultiplier,
   roofArea,
   roofPitchConversions,
+  convertClimbingGrade,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2976,5 +2977,43 @@ describe('roofPitchConversions', () => {
   test('handles a pitch steeper than 12/12 (45 degrees) correctly', () => {
     const result = roofPitchConversions(18, 10);
     expect(result.angleDegrees).toBeGreaterThan(45);
+  });
+});
+
+// --- Climbing grade converter ---
+
+describe('convertClimbingGrade', () => {
+  test('converts V-scale to Font per the standard table', () => {
+    expect(convertClimbingGrade('v', 'V3', 'font')).toBe('6A/6A+');
+    expect(convertClimbingGrade('v', 'V6', 'font')).toBe('7A');
+  });
+
+  test('converts Font to V-scale (the reverse direction)', () => {
+    expect(convertClimbingGrade('font', '7A', 'v')).toBe('V6');
+  });
+
+  test('handles the table endpoints (VB and V17) without interpolation', () => {
+    expect(convertClimbingGrade('v', 'VB', 'font')).toBe('3');
+    expect(convertClimbingGrade('v', 'V17', 'font')).toBe('9A');
+  });
+
+  test('same source and target system returns the grade unchanged (identity)', () => {
+    expect(convertClimbingGrade('v', 'V5', 'v')).toBe('V5');
+    expect(convertClimbingGrade('yds', '5.10a', 'yds')).toBe('5.10a');
+  });
+
+  test('rejects converting between YDS and a bouldering scale', () => {
+    expect(() => convertClimbingGrade('yds', '5.10a', 'v')).toThrow();
+    expect(() => convertClimbingGrade('v', 'V5', 'yds')).toThrow();
+  });
+
+  test('rejects an unrecognized grade string', () => {
+    expect(() => convertClimbingGrade('v', 'V99', 'font')).toThrow();
+    expect(() => convertClimbingGrade('yds', '5.99', 'yds')).toThrow();
+  });
+
+  test('rejects a missing source or target system', () => {
+    expect(() => convertClimbingGrade(undefined, 'V5', 'font')).toThrow();
+    expect(() => convertClimbingGrade('v', 'V5', undefined)).toThrow();
   });
 });
