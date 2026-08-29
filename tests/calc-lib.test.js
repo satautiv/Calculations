@@ -145,6 +145,8 @@ const {
   estimateFTP,
   ftpPowerZones,
   mulchVolumeNeeded,
+  roofPitchMultiplier,
+  roofArea,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -2905,5 +2907,47 @@ describe('mulchVolumeNeeded', () => {
 
   test('rejects a negative waste percentage', () => {
     expect(() => mulchVolumeNeeded(8, 0.07, -5)).toThrow();
+  });
+});
+
+// --- Roof Area calculator ---
+
+describe('roofPitchMultiplier', () => {
+  test('matches the reference table for common pitches', () => {
+    expect(roofPitchMultiplier(3, 12)).toBeCloseTo(1.031, 3);
+    expect(roofPitchMultiplier(4, 12)).toBeCloseTo(1.054, 3);
+    expect(roofPitchMultiplier(6, 12)).toBeCloseTo(1.118, 3);
+    expect(roofPitchMultiplier(8, 12)).toBeCloseTo(1.202, 3);
+    expect(roofPitchMultiplier(12, 12)).toBeCloseTo(1.414, 3);
+  });
+
+  test('rejects a run of zero (a vertical wall, not a roof)', () => {
+    expect(() => roofPitchMultiplier(6, 0)).toThrow();
+  });
+
+  test('rejects a negative rise', () => {
+    expect(() => roofPitchMultiplier(-1, 12)).toThrow();
+  });
+
+  test('allows an extremely steep pitch (rise much greater than run)', () => {
+    expect(() => roofPitchMultiplier(100, 12)).not.toThrow();
+  });
+});
+
+describe('roofArea', () => {
+  test('worked example: 150 m² footprint, 6-in-12 pitch', () => {
+    const result = roofArea(150, 6, 12);
+    expect(result.multiplier).toBeCloseTo(1.118, 3);
+    expect(result.area).toBeCloseTo(167.7, 1);
+  });
+
+  test('applies an optional waste allowance', () => {
+    const withWaste = roofArea(150, 6, 12, 10);
+    const withoutWaste = roofArea(150, 6, 12);
+    expect(withWaste.area).toBeCloseTo(withoutWaste.area * 1.10, 3);
+  });
+
+  test('rejects a non-positive footprint area', () => {
+    expect(() => roofArea(0, 6, 12)).toThrow();
   });
 });
