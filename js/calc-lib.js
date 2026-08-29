@@ -5,6 +5,18 @@ function epleyOneRepMax(weight, reps) {
   return reps === 1 ? weight : weight * (1 + reps / 30);
 }
 
+function brzyckiOneRepMax(weight, reps) {
+  return weight * 36 / (37 - reps);
+}
+
+function lombardiOneRepMax(weight, reps) {
+  return weight * reps ** 0.10;
+}
+
+function mayhewOneRepMax(weight, reps) {
+  return (100 * weight) / (52.2 + 41.9 * Math.exp(-0.055 * reps));
+}
+
 function percentageTable(orm, percentages = [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]) {
   return percentages.map(percent => ({ percent, weight: orm * (percent / 100) }));
 }
@@ -1253,6 +1265,9 @@ function ageBreakdown(birthDate, asOfDate) {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
+    brzyckiOneRepMax,
+    lombardiOneRepMax,
+    mayhewOneRepMax,
     percentageTable,
     wilksCoefficient,
     wilksScore,
