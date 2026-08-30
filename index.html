@@ -3058,6 +3058,51 @@
     <button class="calc-btn" id="heating-calc">Calculate</button>
     <div class="result" id="heating-result"></div>
   </section>
+
+  <section id="unix-timestamp-converter" class="view tab-panel">
+    <h2>Unix Timestamp Converter</h2>
+    <p class="hint">Convert a Unix timestamp into a human-readable date, or a date/time back into a timestamp. The epoch is 1970-01-01T00:00:00Z, counted in seconds or milliseconds and not adjusted for leap seconds.</p>
+    <div class="field">
+      <label for="unix-mode">Direction</label>
+      <select id="unix-mode">
+        <option value="to-date">Timestamp to date</option>
+        <option value="to-timestamp">Date to timestamp</option>
+      </select>
+    </div>
+    <div id="unix-to-date-fields">
+      <div class="field">
+        <label for="unix-timestamp">Timestamp</label>
+        <input type="text" id="unix-timestamp" inputmode="decimal" placeholder="e.g. 1735689600">
+      </div>
+      <div class="field">
+        <label for="unix-timestamp-unit">Unit</label>
+        <select id="unix-timestamp-unit">
+          <option value="auto">Auto-detect</option>
+          <option value="seconds">Seconds</option>
+          <option value="milliseconds">Milliseconds</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="unix-display-zone">Also show in timezone</label>
+        <select id="unix-display-zone"></select>
+      </div>
+    </div>
+    <div id="unix-to-timestamp-fields" hidden>
+      <div class="field">
+        <label for="unix-date-input">Date and time</label>
+        <input type="datetime-local" id="unix-date-input" step="1">
+      </div>
+      <div class="field">
+        <label for="unix-input-zone">Timezone of the date/time above</label>
+        <select id="unix-input-zone">
+          <option value="UTC">UTC</option>
+          <option value="local">Browser local</option>
+        </select>
+      </div>
+    </div>
+    <button class="calc-btn" id="unix-calc">Calculate</button>
+    <div class="result" id="unix-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

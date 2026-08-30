@@ -4926,3 +4926,90 @@ document.getElementById('heating-calc').addEventListener('click', () => {
     showError('heating-result', err.message);
   }
 });
+// --- Unix timestamp converter ---
+const UNIX_BROWSER_ZONE = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+(() => {
+  const zoneSelect = document.getElementById('unix-display-zone');
+  let zoneNames;
+  try {
+    zoneNames = Intl.supportedValuesOf('timeZone');
+  } catch (err) {
+    zoneNames = [];
+  }
+  const zones = Array.from(new Set([UNIX_BROWSER_ZONE, 'UTC', ...zoneNames]));
+  zoneSelect.innerHTML = zones.map((z) => `<option value="${z}">${z}</option>`).join('');
+  zoneSelect.value = UNIX_BROWSER_ZONE;
+
+  const localOption = document.querySelector('#unix-input-zone option[value="local"]');
+  if (localOption) localOption.textContent = `Browser local (${UNIX_BROWSER_ZONE})`;
+})();
+
+document.getElementById('unix-mode').addEventListener('change', (e) => {
+  const isToTimestamp = e.target.value === 'to-timestamp';
+  document.getElementById('unix-to-date-fields').hidden = isToTimestamp;
+  document.getElementById('unix-to-timestamp-fields').hidden = !isToTimestamp;
+});
+
+document.getElementById('unix-calc').addEventListener('click', () => {
+  const mode = document.getElementById('unix-mode').value;
+
+  if (mode === 'to-date') {
+    const raw = document.getElementById('unix-timestamp').value.trim();
+    if (raw === '' || isNaN(Number(raw))) {
+      showError('unix-result', 'Enter a valid numeric timestamp.');
+      return;
+    }
+    const value = Number(raw);
+    const unitChoice = document.getElementById('unix-timestamp-unit').value;
+    const unit = unitChoice === 'auto' ? detectTimestampUnit(value) : unitChoice;
+    const displayZone = document.getElementById('unix-display-zone').value;
+
+    try {
+      const date = timestampToDate(value, unit);
+      const utcIso = date.toISOString();
+      const utcFormatted = formatDateInTimeZone(date, 'UTC');
+      const zoneFormatted = formatDateInTimeZone(date, displayZone);
+
+      document.getElementById('unix-result').innerHTML = `
+        <div class="headline">${utcIso}</div>
+        <div>UTC: ${utcFormatted}</div>
+        <div>${displayZone}: ${zoneFormatted}</div>
+        <div class="hint">Interpreted as ${unit}${unitChoice === 'auto' ? ' (auto-detected - override the unit above if that is wrong)' : ''}.</div>
+      `;
+    } catch (err) {
+      showError('unix-result', err.message);
+    }
+    return;
+  }
+
+  const raw = document.getElementById('unix-date-input').value;
+  const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?/.exec(raw);
+  if (!match) {
+    showError('unix-result', 'Enter a valid date and time.');
+    return;
+  }
+  const [, year, month, day, hour, minute, second] = match;
+  const zone = document.getElementById('unix-input-zone').value;
+
+  try {
+    const { epochMs, epochSeconds } = dateFieldsToEpoch({
+      year: Number(year),
+      month: Number(month),
+      day: Number(day),
+      hour: Number(hour),
+      minute: Number(minute),
+      second: second ? Number(second) : 0,
+    }, zone);
+
+    const zoneLabel = zone === 'UTC' ? 'UTC' : `browser local (${UNIX_BROWSER_ZONE})`;
+
+    document.getElementById('unix-result').innerHTML = `
+      <div class="headline">${epochSeconds.toLocaleString()} seconds</div>
+      <div>${epochMs.toLocaleString()} milliseconds</div>
+      <div class="hint">Computed from the entered date/time treated as ${zoneLabel}.</div>
+    `;
+  } catch (err) {
+    showError('unix-result', err.message);
+  }
+});

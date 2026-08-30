@@ -663,6 +663,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Home & DIY',
     description: 'Estimate seasonal or monthly heating cost from home size, insulation, heating degree-days, and energy price.',
     keywords: ['heating cost', 'heating degree days', 'hdd', 'insulation', 'energy bill', 'home', 'diy'],
+    id: 'unix-timestamp-converter',
+    name: 'Unix Timestamp Converter',
+    category: 'Developer',
+    description: 'Convert a Unix timestamp (seconds or milliseconds) into a human-readable date, or a date/time back into an epoch timestamp.',
+    keywords: ['unix timestamp', 'epoch', 'timestamp converter', 'developer', 'date to epoch', 'utc'],
   },
 ];
 

@@ -2619,6 +2619,81 @@ function heatingCost(floorArea, insulationFactor, hdd, systemEfficiency, pricePe
 
   return { dailyHeatLossFactor, totalHeatingEnergyKwh, energyAfterEfficiencyKwh, cost };
 }
+// --- Unix timestamp converter ---
+
+// Values this large in magnitude can't be a plausible seconds-since-epoch
+// value for the visible future/past (1e12 seconds is year ~33658); treat
+// them as milliseconds instead.
+const UNIX_TIMESTAMP_MS_THRESHOLD = 1e12;
+
+function detectTimestampUnit(value) {
+  return Math.abs(value) >= UNIX_TIMESTAMP_MS_THRESHOLD ? 'milliseconds' : 'seconds';
+}
+
+// Sub-second precision (fractional seconds) is preserved by simply scaling,
+// not rejected - the JS Date epoch is milliseconds regardless of the input unit.
+function timestampToDate(value, unit = 'seconds') {
+  if (typeof value !== 'number' || !isFinite(value)) {
+    throw new Error('Enter a valid numeric timestamp.');
+  }
+  const epochMs = unit === 'milliseconds' ? value : value * 1000;
+  const date = new Date(epochMs);
+  if (isNaN(date.getTime())) {
+    throw new Error('Timestamp is out of the representable date range.');
+  }
+  return date;
+}
+
+// Wraps Intl.DateTimeFormat so calc-lib stays a pure function of its
+// arguments - the caller (calculators.js) resolves the browser's own zone
+// name via Intl.DateTimeFormat().resolvedOptions().timeZone before calling in.
+function formatDateInTimeZone(date, timeZone) {
+  try {
+    return new Intl.DateTimeFormat('en-US', { dateStyle: 'full', timeStyle: 'long', timeZone }).format(date);
+  } catch (err) {
+    throw new Error(`Unrecognized timezone: ${timeZone}`);
+  }
+}
+
+// Converts wall-clock date/time fields to an epoch, in either UTC or the
+// "local" zone (meaning: whatever zone the JS engine itself runs in - the
+// only zone besides UTC where a Date constructor can resolve wall-clock
+// fields without a timezone database). Arbitrary IANA zones aren't
+// supported here; see the issue notes for why that's out of scope for a
+// pure function.
+function dateFieldsToEpoch(fields, zone = 'UTC') {
+  const { year, month, day, hour = 0, minute = 0, second = 0 } = fields;
+  const parts = [year, month, day, hour, minute, second];
+  if (parts.some((v) => typeof v !== 'number' || !isFinite(v))) {
+    throw new Error('Enter valid numeric date/time fields.');
+  }
+
+  let epochMs;
+  let roundTrip;
+  if (zone === 'UTC') {
+    epochMs = Date.UTC(year, month - 1, day, hour, minute, second);
+    const d = new Date(epochMs);
+    roundTrip = [d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), d.getUTCHours(), d.getUTCMinutes(), d.getUTCSeconds()];
+  } else if (zone === 'local') {
+    epochMs = new Date(year, month - 1, day, hour, minute, second).getTime();
+    const d = new Date(epochMs);
+    roundTrip = [d.getFullYear(), d.getMonth() + 1, d.getDate(), d.getHours(), d.getMinutes(), d.getSeconds()];
+  } else {
+    throw new Error('Only UTC and local timezones are supported for date-to-timestamp conversion.');
+  }
+
+  if (isNaN(epochMs)) {
+    throw new Error('Timestamp is out of the representable date range.');
+  }
+  // JS Date silently rolls over invalid fields (Feb 30 -> Mar 2) instead of
+  // erroring, so an invalid calendar date is only caught by checking that
+  // the constructed date's fields still match what was entered.
+  if (roundTrip.some((v, i) => v !== parts[i])) {
+    throw new Error('Enter a valid calendar date - that date does not exist.');
+  }
+
+  return { epochMs, epochSeconds: Math.floor(epochMs / 1000) };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -2849,5 +2924,10 @@ if (typeof module !== 'undefined' && module.exports) {
     railFenceCalculation,
     INSULATION_FACTOR_PRESETS,
     heatingCost,
+    UNIX_TIMESTAMP_MS_THRESHOLD,
+    detectTimestampUnit,
+    timestampToDate,
+    formatDateInTimeZone,
+    dateFieldsToEpoch,
   };
 }
