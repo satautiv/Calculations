@@ -3019,6 +3019,45 @@
     <button class="calc-btn" id="fence-calc">Calculate</button>
     <div class="result" id="fence-result"></div>
   </section>
+
+  <section id="heating-cost-calculator" class="view tab-panel">
+    <h2>Heating Cost Calculator</h2>
+    <p class="hint">Estimates seasonal or monthly heating cost using the degree-day method, from home size, insulation quality, local heating degree-days, and energy price. A simplified estimate, not a substitute for a full home energy audit.</p>
+    <div class="field">
+      <label for="heating-floor-area">Heated floor area (m²)</label>
+      <input type="number" id="heating-floor-area" min="0" step="0.1" placeholder="e.g. 100">
+    </div>
+    <div class="field">
+      <label for="heating-insulation-preset">Insulation quality</label>
+      <select id="heating-insulation-preset">
+        <option value="poor">Poor (~2.0 W/m²·K)</option>
+        <option value="average" selected>Average (~1.0 W/m²·K)</option>
+        <option value="well-insulated">Well-insulated (~0.5 W/m²·K)</option>
+        <option value="passive-house">Passive house (~0.15 W/m²·K)</option>
+        <option value="custom">Custom</option>
+      </select>
+    </div>
+    <div class="field" id="heating-insulation-custom-field" hidden>
+      <label for="heating-insulation-custom">Custom insulation factor (W/m²·K)</label>
+      <input type="number" id="heating-insulation-custom" min="0" step="0.01" placeholder="e.g. 0.8">
+    </div>
+    <div class="field">
+      <label for="heating-hdd">Heating degree-days (HDD) for the period</label>
+      <input type="number" id="heating-hdd" min="0" step="1" placeholder="e.g. 2200">
+      <p class="hint">HDD sums, over the heating season, max(0, base temperature − average daily outdoor temperature) — typically against an 18°C base. Higher HDD means a colder season. Check your local weather service or utility for this figure; there's no live lookup here.</p>
+    </div>
+    <div class="field">
+      <label for="heating-efficiency">System efficiency / COP</label>
+      <input type="number" id="heating-efficiency" min="0" step="0.01" value="0.9" placeholder="e.g. 0.9">
+      <p class="hint">~0.85–0.95 for a modern condensing gas boiler; ~2.5–4.0 as a COP for a heat pump.</p>
+    </div>
+    <div class="field">
+      <label for="heating-price">Energy price (per kWh)</label>
+      <input type="number" id="heating-price" min="0" step="0.01" placeholder="e.g. 0.30">
+    </div>
+    <button class="calc-btn" id="heating-calc">Calculate</button>
+    <div class="result" id="heating-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
