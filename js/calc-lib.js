@@ -2637,6 +2637,30 @@ function gestationalAgeDays(mode, referenceDate, asOfDate) {
   return mode === 'conception' ? daysSinceReference + 14 : daysSinceReference;
 }
 
+// Standard obstetric milestones, each just N weeks past the same
+// LMP-equivalent reference date used to derive the due date (pass
+// `dueDate` minus 280 days so the list stays internally consistent with
+// whichever due-date calculation - LMP or conception-based - produced it).
+function pregnancyMilestones(lmpEquivalentDate) {
+  return {
+    endOfFirstTrimester: addDaysToDate(lmpEquivalentDate, 13 * 7),
+    anatomyScanStart: addDaysToDate(lmpEquivalentDate, 18 * 7),
+    anatomyScanEnd: addDaysToDate(lmpEquivalentDate, 22 * 7),
+    viability: addDaysToDate(lmpEquivalentDate, 24 * 7),
+    fullTermStart: addDaysToDate(lmpEquivalentDate, 37 * 7),
+    dueDate: addDaysToDate(lmpEquivalentDate, 40 * 7),
+  };
+}
+
+// Classifies gestational age (in days since LMP, per gestationalAgeDays) into
+// a pregnancy trimester: 1st through 12w6d, 2nd from 13w0d-27w6d, 3rd from
+// 28w0d on.
+function pregnancyTrimester(gestDays) {
+  if (gestDays < 13 * 7) return 1;
+  if (gestDays < 28 * 7) return 2;
+  return 3;
+}
+
 // --- Earth rotation and orbit distance calculator ---
 
 const EARTH_RADIUS_KM = 6371;
@@ -5183,6 +5207,8 @@ if (typeof module !== 'undefined' && module.exports) {
     dueDateFromLmp,
     dueDateFromConception,
     gestationalAgeDays,
+    pregnancyMilestones,
+    pregnancyTrimester,
     EARTH_RADIUS_KM,
     EARTH_SIDEREAL_DAY_HOURS,
     EARTH_ORBITAL_SPEED_KMH,

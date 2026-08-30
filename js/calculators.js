@@ -4798,9 +4798,27 @@ document.getElementById('pregnancy-calc').addEventListener('click', () => {
     const gestRemainderDays = gestDays % 7;
     const dueDateStr = dueDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 
+    // Derive the LMP-equivalent reference date from the already-computed due
+    // date (rather than re-deriving it per mode) so the milestone list stays
+    // internally consistent with the due date shown above, including any
+    // cycle-length adjustment applied in LMP mode.
+    const lmpEquivalentDate = addDaysToDate(dueDate, -280);
+    const milestones = pregnancyMilestones(lmpEquivalentDate);
+    const trimester = pregnancyTrimester(gestDays);
+    const trimesterLabel = trimester === 1 ? '1st' : trimester === 2 ? '2nd' : '3rd';
+    const formatMilestoneDate = (date) => date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
     document.getElementById('pregnancy-result').innerHTML = `
       <div class="headline">Estimated due date: ${dueDateStr}</div>
-      <div>Current gestational age: ${gestWeeks} week${gestWeeks === 1 ? '' : 's'}, ${gestRemainderDays} day${gestRemainderDays === 1 ? '' : 's'}</div>
+      <div>Current gestational age: ${gestWeeks} week${gestWeeks === 1 ? '' : 's'}, ${gestRemainderDays} day${gestRemainderDays === 1 ? '' : 's'} (${trimesterLabel} trimester)</div>
+      <div class="hint">Key milestones:</div>
+      <ul>
+        <li>End of first trimester (13 weeks): ${formatMilestoneDate(milestones.endOfFirstTrimester)}</li>
+        <li>Anatomy scan window (18-22 weeks): ${formatMilestoneDate(milestones.anatomyScanStart)} - ${formatMilestoneDate(milestones.anatomyScanEnd)}</li>
+        <li>Viability (24 weeks): ${formatMilestoneDate(milestones.viability)}</li>
+        <li>Full-term window start (37 weeks): ${formatMilestoneDate(milestones.fullTermStart)}</li>
+        <li>Due date (40 weeks): ${formatMilestoneDate(milestones.dueDate)}</li>
+      </ul>
       <div class="hint">A statistical estimate based on average cycle timing - only about 5% of babies arrive exactly on their estimated due date, and actual delivery dates commonly vary by 1-2 weeks either side. Not a substitute for ultrasound dating or a healthcare provider's guidance.</div>
     `;
   } catch (err) {
