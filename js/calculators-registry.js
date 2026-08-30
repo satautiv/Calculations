@@ -626,6 +626,13 @@ const CALCULATOR_REGISTRY = [
     description: "Convert a dog's or cat's age into human-equivalent years using modern, research-based formulas.",
     keywords: ['pet age', 'dog years', 'cat years', 'human years', 'unusual'],
   },
+  {
+    id: 'pregnancy-due-date-calculator',
+    name: 'Pregnancy Due Date Calculator',
+    category: 'Unusual',
+    description: 'Estimate a due date from the last menstrual period or a known conception date, plus current gestational age.',
+    keywords: ['pregnancy', 'due date', 'naegele', 'gestational age', 'lmp', 'conception', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

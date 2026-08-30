@@ -4670,3 +4670,51 @@ document.getElementById('pet-calc').addEventListener('click', () => {
     showError('pet-result', err.message);
   }
 });
+
+// --- Pregnancy due date calculator ---
+document.getElementById('pregnancy-mode').addEventListener('change', (e) => {
+  const isConception = e.target.value === 'conception';
+  document.getElementById('pregnancy-lmp-fields').hidden = isConception;
+  document.getElementById('pregnancy-conception-fields').hidden = !isConception;
+});
+
+document.getElementById('pregnancy-calc').addEventListener('click', () => {
+  const mode = document.getElementById('pregnancy-mode').value;
+  const dateRaw = mode === 'conception'
+    ? document.getElementById('pregnancy-conception-date').value
+    : document.getElementById('pregnancy-lmp-date').value;
+
+  const referenceDate = parseAgeDateInput(dateRaw);
+  if (!referenceDate) {
+    showError('pregnancy-result', mode === 'conception' ? 'Enter a valid conception date.' : 'Enter a valid last menstrual period date.');
+    return;
+  }
+
+  const today = todayAsUtcMidnight();
+  if (referenceDate > today) {
+    showError('pregnancy-result', 'The date must not be in the future.');
+    return;
+  }
+
+  const cycleLengthRaw = document.getElementById('pregnancy-cycle-length').value;
+  const cycleLength = cycleLengthRaw ? parseFloat(cycleLengthRaw) : PREGNANCY_DEFAULT_CYCLE_DAYS;
+
+  try {
+    const dueDate = mode === 'conception'
+      ? dueDateFromConception(referenceDate)
+      : dueDateFromLmp(referenceDate, cycleLength);
+
+    const gestDays = gestationalAgeDays(mode, referenceDate, today);
+    const gestWeeks = Math.floor(gestDays / 7);
+    const gestRemainderDays = gestDays % 7;
+    const dueDateStr = dueDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
+
+    document.getElementById('pregnancy-result').innerHTML = `
+      <div class="headline">Estimated due date: ${dueDateStr}</div>
+      <div>Current gestational age: ${gestWeeks} week${gestWeeks === 1 ? '' : 's'}, ${gestRemainderDays} day${gestRemainderDays === 1 ? '' : 's'}</div>
+      <div class="hint">A statistical estimate based on average cycle timing - only about 5% of babies arrive exactly on their estimated due date, and actual delivery dates commonly vary by 1-2 weeks either side. Not a substitute for ultrasound dating or a healthcare provider's guidance.</div>
+    `;
+  } catch (err) {
+    showError('pregnancy-result', err.message);
+  }
+});
