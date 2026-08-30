@@ -1713,6 +1713,13 @@ function secondsToHMS(totalSeconds) {
   return { hours, minutes, seconds };
 }
 
+// Converts total seconds to decimal hours, rounded to 2 decimal places
+// (e.g. for payroll use: 29700 seconds -> 8.25). Works for negative
+// durations too, rounding towards the nearer hundredth.
+function secondsToDecimalHours(totalSeconds) {
+  return Math.round((totalSeconds / 3600) * 100) / 100;
+}
+
 // Adds or subtracts two durations (in seconds). Throws if a subtraction
 // would produce a negative duration, since durations can't be negative.
 function addSubtractDurations(secondsA, secondsB, operation) {
@@ -4991,6 +4998,7 @@ if (typeof module !== 'undefined' && module.exports) {
     workingDaysBetween,
     timeToSeconds,
     secondsToHMS,
+    secondsToDecimalHours,
     addSubtractDurations,
     timeOfDayDuration,
     GL_COEFFICIENTS,

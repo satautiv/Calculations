@@ -107,6 +107,7 @@ const {
   workingDaysBetween,
   timeToSeconds,
   secondsToHMS,
+  secondsToDecimalHours,
   addSubtractDurations,
   timeOfDayDuration,
   glCoefficient,
@@ -2264,6 +2265,25 @@ describe('secondsToHMS', () => {
 
   test('does not cap hours at 24, since durations can exceed a day', () => {
     expect(secondsToHMS(90000)).toEqual({ hours: 25, minutes: 0, seconds: 0 });
+  });
+});
+
+describe('secondsToDecimalHours', () => {
+  test('worked example: 8:25:00 (payroll clock-in/out) is 8.42 decimal hours', () => {
+    expect(secondsToDecimalHours(timeToSeconds(8, 25, 0))).toBeCloseTo(8.42, 2);
+  });
+
+  test('worked example: 8:15:00 is 8.25 decimal hours', () => {
+    expect(secondsToDecimalHours(timeToSeconds(8, 15, 0))).toBe(8.25);
+  });
+
+  test('rounds to 2 decimal places', () => {
+    expect(secondsToDecimalHours(1)).toBe(0);
+    expect(secondsToDecimalHours(30)).toBe(0.01);
+  });
+
+  test('handles negative durations, rounding towards the nearer hundredth', () => {
+    expect(secondsToDecimalHours(-timeToSeconds(8, 15, 0))).toBe(-8.25);
   });
 });
 
