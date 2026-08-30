@@ -4794,3 +4794,68 @@ document.getElementById('decking-calc').addEventListener('click', () => {
     showError('decking-result', err.message);
   }
 });
+
+// --- Staircase calculator ---
+document.getElementById('staircase-calc').addEventListener('click', () => {
+  const totalHeight = parseFloat(document.getElementById('staircase-height').value);
+  const availableRun = parseFloat(document.getElementById('staircase-run').value);
+  const targetRiserRaw = document.getElementById('staircase-target-riser').value;
+  const targetRiser = targetRiserRaw === '' ? undefined : parseFloat(targetRiserRaw);
+
+  if (isNaN(totalHeight) || totalHeight <= 0) {
+    showError('staircase-result', 'Enter a total height greater than zero.');
+    return;
+  }
+  if (isNaN(availableRun) || availableRun <= 0) {
+    showError('staircase-result', 'Enter an available run greater than zero.');
+    return;
+  }
+  if (targetRiserRaw !== '' && (isNaN(targetRiser) || targetRiser <= 0)) {
+    showError('staircase-result', 'Enter a valid target riser height greater than zero.');
+    return;
+  }
+
+  try {
+    const {
+      numberOfSteps, numberOfTreads, riserHeightMm, treadDepthMm,
+      riserWithinComfort, riserExceedsCodeMax, treadWithinComfort, treadBelowCodeMin,
+      twoRPlusTMm, twoRPlusTWithinComfort,
+    } = staircasePlan(totalHeight, availableRun, targetRiser);
+
+    const riserNote = riserExceedsCodeMax
+      ? '<div><strong>Warning:</strong> riser height exceeds the commonly cited code maximum of 196 mm (7&frac34; in).</div>'
+      : riserWithinComfort
+        ? '<div>Riser height is within the comfortable 170&ndash;200 mm range.</div>'
+        : '<div>Riser height is under the 196 mm code maximum, but outside the 170&ndash;200 mm comfort range.</div>';
+
+    let treadLine;
+    let treadNote;
+    if (numberOfTreads === 0) {
+      treadLine = '<div>Treads: 0 (single step/threshold up to the top floor)</div>';
+      treadNote = '<div class="hint">Too small a rise for a full flight &mdash; this is effectively a single step, not a staircase with intermediate treads.</div>';
+    } else {
+      treadLine = `<div>Tread depth: ${treadDepthMm.toFixed(1)} mm</div>`;
+      treadNote = treadBelowCodeMin
+        ? '<div><strong>Warning:</strong> tread depth is below the commonly cited code minimum of 254 mm (10 in) &mdash; the available run is too short for this many steps. Consider a longer run, a winder/landing, or fewer, taller risers.</div>'
+        : treadWithinComfort
+          ? '<div>Tread depth is within the comfortable 250&ndash;355 mm range.</div>'
+          : '<div>Tread depth is above the 254 mm code minimum, but outside the 250&ndash;355 mm comfort range.</div>';
+    }
+
+    const twoRTLine = twoRPlusTMm !== null
+      ? `<div>2&times;riser + tread = ${twoRPlusTMm.toFixed(1)} mm ${twoRPlusTWithinComfort ? '(within the ~600&ndash;650 mm comfort band)' : '(outside the ~600&ndash;650 mm comfort band)'}</div>`
+      : '';
+
+    document.getElementById('staircase-result').innerHTML = `
+      <div class="headline">${numberOfSteps} step${numberOfSteps === 1 ? '' : 's'} &middot; ${numberOfTreads} tread${numberOfTreads === 1 ? '' : 's'}</div>
+      <div>Riser height: ${riserHeightMm.toFixed(1)} mm</div>
+      ${riserNote}
+      ${treadLine}
+      ${treadNote}
+      ${twoRTLine}
+      <div class="hint">Based on widely used residential figures (e.g. IRC) &mdash; local building codes vary, so always check the code that applies to your project.</div>
+    `;
+  } catch (err) {
+    showError('staircase-result', err.message);
+  }
+});

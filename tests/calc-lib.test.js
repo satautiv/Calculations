@@ -159,6 +159,7 @@ const {
   earthRotationSpeedKmh,
   earthTravelDistance,
   deckingMaterialsNeeded,
+  staircasePlan,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3300,5 +3301,73 @@ describe('deckingMaterialsNeeded', () => {
   test('rejects non-positive joist spacing or screws per joist crossing', () => {
     expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 10, 0, 2)).toThrow();
     expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 10, 0.4, 0)).toThrow();
+  });
+});
+
+// --- Staircase calculator ---
+
+describe('staircasePlan', () => {
+  test('worked example: 2700mm height, 3600mm run, 200mm target riser', () => {
+    const plan = staircasePlan(2700, 3600, 200);
+    expect(plan.numberOfSteps).toBe(14);
+    expect(plan.numberOfTreads).toBe(13);
+    expect(plan.riserHeightMm).toBeCloseTo(192.9, 1);
+    expect(plan.treadDepthMm).toBeCloseTo(276.9, 1);
+    expect(plan.twoRPlusTMm).toBeCloseTo(662.6, 1);
+    expect(plan.riserWithinComfort).toBe(true);
+    expect(plan.riserExceedsCodeMax).toBe(false);
+    expect(plan.treadWithinComfort).toBe(true);
+    expect(plan.treadBelowCodeMin).toBe(false);
+    expect(plan.twoRPlusTWithinComfort).toBe(false);
+  });
+
+  test('uses the default target riser height (190mm) when omitted', () => {
+    const plan = staircasePlan(2700, 3600);
+    expect(plan.numberOfSteps).toBe(15);
+    expect(plan.numberOfTreads).toBe(14);
+    expect(plan.riserHeightMm).toBeCloseTo(180, 5);
+    expect(plan.treadDepthMm).toBeCloseTo(257.1, 1);
+    expect(plan.riserWithinComfort).toBe(true);
+    expect(plan.treadWithinComfort).toBe(true);
+    expect(plan.twoRPlusTWithinComfort).toBe(true);
+  });
+
+  test('single-step case has zero treads and a null tread depth', () => {
+    const plan = staircasePlan(50, 1000);
+    expect(plan.numberOfSteps).toBe(1);
+    expect(plan.numberOfTreads).toBe(0);
+    expect(plan.riserHeightMm).toBe(50);
+    expect(plan.treadDepthMm).toBeNull();
+    expect(plan.twoRPlusTMm).toBeNull();
+    expect(plan.twoRPlusTWithinComfort).toBe(false);
+  });
+
+  test('flags a riser that exceeds the code maximum', () => {
+    const plan = staircasePlan(250, 1000, 250);
+    expect(plan.riserHeightMm).toBe(250);
+    expect(plan.riserExceedsCodeMax).toBe(true);
+    expect(plan.riserWithinComfort).toBe(false);
+  });
+
+  test('flags a tread depth below the code minimum when the run is too short', () => {
+    const plan = staircasePlan(2700, 1000, 190);
+    expect(plan.treadDepthMm).toBeCloseTo(71.4, 1);
+    expect(plan.treadBelowCodeMin).toBe(true);
+    expect(plan.treadWithinComfort).toBe(false);
+  });
+
+  test('rejects a non-positive total height', () => {
+    expect(() => staircasePlan(0, 3600)).toThrow();
+    expect(() => staircasePlan(-100, 3600)).toThrow();
+  });
+
+  test('rejects a non-positive available run', () => {
+    expect(() => staircasePlan(2700, 0)).toThrow();
+    expect(() => staircasePlan(2700, -50)).toThrow();
+  });
+
+  test('rejects a non-positive target riser height', () => {
+    expect(() => staircasePlan(2700, 3600, 0)).toThrow();
+    expect(() => staircasePlan(2700, 3600, -10)).toThrow();
   });
 });

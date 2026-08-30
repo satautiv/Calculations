@@ -2963,6 +2963,25 @@
     <button class="calc-btn" id="decking-calc">Calculate</button>
     <div class="result" id="decking-result"></div>
   </section>
+
+  <section id="staircase-calculator" class="view tab-panel">
+    <h2>Staircase Calculator</h2>
+    <p class="hint">Works out how many steps a staircase needs for a given floor-to-floor height and available run, then checks the resulting rise and run against common comfort/code-recommended ranges. Local building codes vary &mdash; use this as general guidance, not a substitute for checking the code that applies to your project.</p>
+    <div class="field">
+      <label for="staircase-height">Total vertical height to climb (mm)</label>
+      <input type="number" id="staircase-height" min="0" step="1" placeholder="e.g. 2700">
+    </div>
+    <div class="field">
+      <label for="staircase-run">Available horizontal run (mm)</label>
+      <input type="number" id="staircase-run" min="0" step="1" placeholder="e.g. 3600">
+    </div>
+    <div class="field">
+      <label for="staircase-target-riser">Target riser height (mm, optional)</label>
+      <input type="number" id="staircase-target-riser" min="0" step="1" placeholder="e.g. 190 (default)">
+    </div>
+    <button class="calc-btn" id="staircase-calc">Calculate</button>
+    <div class="result" id="staircase-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
