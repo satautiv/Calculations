@@ -5243,3 +5243,28 @@ document.getElementById('projectile-calc').addEventListener('click', () => {
     showError('projectile-result', err.message);
   }
 });
+// --- URL Encoder/Decoder ---
+document.getElementById('url-calc').addEventListener('click', () => {
+  const mode = document.getElementById('url-mode').value;
+  const fn = document.getElementById('url-function').value;
+  const text = document.getElementById('url-text').value;
+
+  if (!text) {
+    showError('url-result', `Enter some text to ${mode}.`);
+    return;
+  }
+
+  try {
+    const output = mode === 'decode' ? urlDecode(text, fn) : urlEncode(text, fn);
+    const hint = fn === 'full'
+      ? 'Full-URI mode preserves reserved characters like : / ? & = # - use Component mode if this text is a single value that might itself contain those characters as literal data.'
+      : "Component mode escapes reserved delimiters (including & and =), so it's safe for a single query parameter or path segment, but not for text that's already a full URL.";
+
+    document.getElementById('url-result').innerHTML = `
+      <div class="headline">${escapeHtml(output)}</div>
+      <div class="hint">${hint}</div>
+    `;
+  } catch (err) {
+    showError('url-result', err.message);
+  }
+});
