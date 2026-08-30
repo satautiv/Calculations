@@ -1161,6 +1161,15 @@ function percentageChange(oldValue, newValue) {
   return ((newValue - oldValue) / oldValue) * 100;
 }
 
+// Reverse percentage: given a final value and the signed percent change that
+// produced it (positive for an increase, negative for a decrease), solves
+// back for the original value. Original = finalValue / (1 + percentChange/100).
+// Assumes caller has already validated percentChange !== -100 (a -100% change
+// means the original value was reduced to 0, which can't be divided back out).
+function originalValueFromPercentChange(finalValue, percentChange) {
+  return finalValue / (1 + percentChange / 100);
+}
+
 // --- Fraction calculator ---
 
 // Euclidean algorithm. Works with any sign/order of inputs and treats
@@ -4872,6 +4881,7 @@ if (typeof module !== 'undefined' && module.exports) {
     percentOf,
     whatPercentOf,
     percentageChange,
+    originalValueFromPercentChange,
     gcd,
     simplifyFraction,
     fractionArithmetic,

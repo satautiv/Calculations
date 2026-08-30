@@ -84,6 +84,7 @@ const {
   percentOf,
   whatPercentOf,
   percentageChange,
+  originalValueFromPercentChange,
   gcd,
   simplifyFraction,
   fractionArithmetic,
@@ -1588,6 +1589,21 @@ describe('Percentage calculator', () => {
     // (25 / -50) * 100 = -50. Dividing by a negative base flips the sign versus
     // the plain-magnitude case, which is expected behavior for this formula.
     expect(percentageChange(-50, -25)).toBeCloseTo(-50, 10);
+  });
+
+  test('originalValueFromPercentChange matches the worked example: $80 after a 20% discount had an $100 original price', () => {
+    expect(originalValueFromPercentChange(80, -20)).toBeCloseTo(100, 10);
+  });
+
+  test('originalValueFromPercentChange handles an increase: $120 after a 20% raise came from $100', () => {
+    expect(originalValueFromPercentChange(120, 20)).toBeCloseTo(100, 10);
+  });
+
+  test('originalValueFromPercentChange is non-finite at percentChange = -100, which callers must guard against', () => {
+    // finalValue / (1 + percentChange/100) divides by zero when percentChange
+    // is -100 (i.e. the original value was reduced to $0), so the DOM layer
+    // must reject this case with showError before calling in.
+    expect(originalValueFromPercentChange(80, -100)).toBe(Infinity);
   });
 });
 

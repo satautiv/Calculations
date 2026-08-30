@@ -2870,6 +2870,7 @@ document.getElementById('pct-mode').addEventListener('change', (e) => {
   document.getElementById('pct-of-fields').hidden = mode !== 'percent-of';
   document.getElementById('pct-what-fields').hidden = mode !== 'what-percent';
   document.getElementById('pct-change-fields').hidden = mode !== 'percent-change';
+  document.getElementById('pct-orig-fields').hidden = mode !== 'find-original';
 });
 
 document.getElementById('pct-calc').addEventListener('click', () => {
@@ -2910,7 +2911,7 @@ document.getElementById('pct-calc').addEventListener('click', () => {
       <div class="headline">${result.toFixed(2)}%</div>
       <div>${part} is ${result.toFixed(2)}% of ${whole}</div>
     `;
-  } else {
+  } else if (mode === 'percent-change') {
     const oldValue = parseFloat(document.getElementById('pct-old').value);
     const newValue = parseFloat(document.getElementById('pct-new').value);
 
@@ -2930,6 +2931,30 @@ document.getElementById('pct-calc').addEventListener('click', () => {
     document.getElementById('pct-result').innerHTML = `
       <div class="headline">${Math.abs(result).toFixed(2)}% ${direction}</div>
       <div>From ${oldValue} to ${newValue} is a ${Math.abs(result).toFixed(2)}% ${direction}</div>
+    `;
+  } else {
+    const finalValue = parseFloat(document.getElementById('pct-orig-final').value);
+    const percent = parseFloat(document.getElementById('pct-orig-percent').value);
+    const direction = document.getElementById('pct-orig-direction').value;
+
+    if (isNaN(finalValue) || isNaN(percent)) {
+      showError('pct-result', 'Enter valid numbers for both fields.');
+      return;
+    }
+
+    const percentChange = direction === 'decrease' ? -percent : percent;
+
+    if (percentChange === -100) {
+      showError('pct-result', 'A 100% decrease means the original value was reduced to 0 and can’t be recovered.');
+      return;
+    }
+
+    const result = originalValueFromPercentChange(finalValue, percentChange);
+    const verb = direction === 'decrease' ? 'decrease' : 'increase';
+
+    document.getElementById('pct-result').innerHTML = `
+      <div class="headline">${result.toFixed(2)}</div>
+      <div>A ${percent}% ${verb} from ${result.toFixed(2)} gives ${finalValue}</div>
     `;
   }
 });
