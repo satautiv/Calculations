@@ -159,6 +159,8 @@ const {
   dueDateFromLmp,
   dueDateFromConception,
   gestationalAgeDays,
+  pregnancyMilestones,
+  pregnancyTrimester,
   earthRotationSpeedKmh,
   earthTravelDistance,
   deckingMaterialsNeeded,
@@ -3345,6 +3347,37 @@ describe('gestationalAgeDays', () => {
     const conception = new Date('2026-01-01T00:00:00Z');
     const asOf = new Date('2026-02-01T00:00:00Z');
     expect(gestationalAgeDays('conception', conception, asOf)).toBe(45);
+  });
+});
+
+describe('pregnancyMilestones', () => {
+  test('worked example: each milestone is exactly N weeks after the reference date', () => {
+    const reference = new Date('2026-01-01T00:00:00Z');
+    const milestones = pregnancyMilestones(reference);
+    expect(milestones.endOfFirstTrimester.toISOString()).toBe('2026-04-02T00:00:00.000Z');
+    expect(milestones.anatomyScanStart.toISOString()).toBe('2026-05-07T00:00:00.000Z');
+    expect(milestones.anatomyScanEnd.toISOString()).toBe('2026-06-04T00:00:00.000Z');
+    expect(milestones.viability.toISOString()).toBe('2026-06-18T00:00:00.000Z');
+    expect(milestones.fullTermStart.toISOString()).toBe('2026-09-17T00:00:00.000Z');
+    expect(milestones.dueDate.toISOString()).toBe('2026-10-08T00:00:00.000Z');
+  });
+});
+
+describe('pregnancyTrimester', () => {
+  test('12 weeks 6 days is still the 1st trimester', () => {
+    expect(pregnancyTrimester(12 * 7 + 6)).toBe(1);
+  });
+
+  test('13 weeks 0 days is the 2nd trimester', () => {
+    expect(pregnancyTrimester(13 * 7)).toBe(2);
+  });
+
+  test('27 weeks 6 days is still the 2nd trimester', () => {
+    expect(pregnancyTrimester(27 * 7 + 6)).toBe(2);
+  });
+
+  test('28 weeks 0 days is the 3rd trimester', () => {
+    expect(pregnancyTrimester(28 * 7)).toBe(3);
   });
 });
 
