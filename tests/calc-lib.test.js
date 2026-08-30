@@ -203,6 +203,11 @@ const {
   ipv6ToIpv4,
   windChillFahrenheit,
   heatIndexFahrenheit,
+  bytesToHex,
+  md5Hex,
+  sha1Hex,
+  sha256Hex,
+  sha512Hex,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4891,5 +4896,80 @@ describe('heatIndexFahrenheit', () => {
 
   test('rejects relative humidity above 100%', () => {
     expect(() => heatIndexFahrenheit(90, 101)).toThrow();
+  });
+});
+describe('bytesToHex', () => {
+  test('converts bytes to lowercase hex, zero-padding single-digit bytes', () => {
+    expect(bytesToHex(new Uint8Array([0, 1, 15, 16, 255]))).toBe('00010f10ff');
+  });
+
+  test('returns an empty string for an empty array', () => {
+    expect(bytesToHex(new Uint8Array([]))).toBe('');
+  });
+});
+
+describe('md5Hex', () => {
+  test('matches the known digest for "hello"', () => {
+    expect(md5Hex('hello')).toBe('5d41402abc4b2a76b9719d911017c592');
+  });
+
+  test('matches the known digest for the empty string', () => {
+    expect(md5Hex('')).toBe('d41d8cd98f00b204e9800998ecf8427e');
+  });
+
+  test('hashes multi-byte UTF-8 text consistently, not raw UTF-16 code units', () => {
+    expect(md5Hex('héllo 世界')).toBe('43bc99102ce99a607b562e210927ab2c');
+  });
+
+  test('produces a 32-character lowercase hex digest for large input', () => {
+    const digest = md5Hex('a'.repeat(1000000));
+    expect(digest).toMatch(/^[0-9a-f]{32}$/);
+  });
+
+  test('is sensitive to a single-character change', () => {
+    expect(md5Hex('hello')).not.toBe(md5Hex('hellp'));
+  });
+});
+
+describe('sha1Hex', () => {
+  test('matches the known digest for "hello"', async () => {
+    expect(await sha1Hex('hello')).toBe('aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
+  });
+
+  test('matches the known digest for the empty string', async () => {
+    expect(await sha1Hex('')).toBe('da39a3ee5e6b4b0d3255bfef95601890afd80709');
+  });
+
+  test('produces a 40-character lowercase hex digest', async () => {
+    expect(await sha1Hex('hello')).toMatch(/^[0-9a-f]{40}$/);
+  });
+});
+
+describe('sha256Hex', () => {
+  test('matches the known digest for "hello"', async () => {
+    expect(await sha256Hex('hello')).toBe('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+  });
+
+  test('matches the known digest for the empty string', async () => {
+    expect(await sha256Hex('')).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+  });
+
+  test('produces a 64-character lowercase hex digest', async () => {
+    expect(await sha256Hex('hello')).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  test('hashes multi-byte UTF-8 text consistently', async () => {
+    expect(await sha256Hex('héllo 世界')).toMatch(/^[0-9a-f]{64}$/);
+    expect(await sha256Hex('héllo 世界')).not.toBe(await sha256Hex('hello'));
+  });
+});
+
+describe('sha512Hex', () => {
+  test('matches the known digest for "hello"', async () => {
+    expect(await sha512Hex('hello')).toBe('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
+  });
+
+  test('produces a 128-character lowercase hex digest for the empty string', async () => {
+    expect(await sha512Hex('')).toMatch(/^[0-9a-f]{128}$/);
   });
 });

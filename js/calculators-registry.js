@@ -766,6 +766,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate the "feels like" temperature for cold, windy conditions or hot, humid conditions using the official NWS/NOAA formulas.',
     keywords: ['wind chill', 'heat index', 'feels like temperature', 'weather', 'nws', 'noaa', 'unusual'],
   },
+  {
+    id: 'hash-generator',
+    name: 'Hash Generator',
+    category: 'Developer',
+    description: 'Compute an MD5, SHA-1, SHA-256, or SHA-512 hex digest of text for checksums or comparing values.',
+    keywords: ['hash', 'md5', 'sha1', 'sha-1', 'sha256', 'sha-256', 'sha512', 'sha-512', 'checksum', 'digest', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
