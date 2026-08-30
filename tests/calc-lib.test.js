@@ -105,6 +105,7 @@ const {
   weekdayName,
   checkPlugAdapterNeeds,
   workingDaysBetween,
+  addWorkingDays,
   timeToSeconds,
   secondsToHMS,
   addSubtractDurations,
@@ -2227,6 +2228,42 @@ describe('workingDaysBetween', () => {
   test('works with no holidays argument at all', () => {
     const result = workingDaysBetween(utc('2026-08-24'), utc('2026-08-24'));
     expect(result.workingDays).toBe(1);
+  });
+});
+
+describe('addWorkingDays', () => {
+  function utc(dateString) {
+    return new Date(`${dateString}T00:00:00Z`);
+  }
+
+  test('worked example: Mon 2026-08-24 plus 5 business days lands on Mon 2026-08-31', () => {
+    const result = addWorkingDays(utc('2026-08-24'), 5);
+    expect(result.resultDate.toISOString().slice(0, 10)).toBe('2026-08-31');
+    expect(result.weekdayName).toBe('Monday');
+  });
+
+  test('worked example: Mon 2026-08-24 minus 3 business days lands on Wed 2026-08-19', () => {
+    const result = addWorkingDays(utc('2026-08-24'), -3);
+    expect(result.resultDate.toISOString().slice(0, 10)).toBe('2026-08-19');
+    expect(result.weekdayName).toBe('Wednesday');
+  });
+
+  test('skips a weekend when stepping forward', () => {
+    const result = addWorkingDays(utc('2026-08-28'), 1); // Friday + 1 business day
+    expect(result.resultDate.toISOString().slice(0, 10)).toBe('2026-08-31'); // Monday, skipping Sat/Sun
+    expect(result.weekdayName).toBe('Monday');
+  });
+
+  test('skips a holiday that falls on a weekday', () => {
+    const result = addWorkingDays(utc('2026-08-24'), 3, [utc('2026-08-27')]); // Thursday holiday
+    expect(result.resultDate.toISOString().slice(0, 10)).toBe('2026-08-28');
+    expect(result.weekdayName).toBe('Friday');
+  });
+
+  test('numberOfDays = 0 returns startDate unchanged, even on a weekend', () => {
+    const result = addWorkingDays(utc('2026-08-29'), 0); // Saturday
+    expect(result.resultDate.toISOString().slice(0, 10)).toBe('2026-08-29');
+    expect(result.weekdayName).toBe('Saturday');
   });
 });
 

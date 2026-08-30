@@ -1862,15 +1862,37 @@
 
   <section id="working-days-calculator" class="view tab-panel">
     <h2>Working Days Calculator</h2>
-    <p class="hint">Counts business days (Monday-Friday) between two dates, inclusive of both endpoints, optionally excluding a list of holiday dates.</p>
+    <p class="hint">Counts business days (Monday-Friday) between two dates, inclusive of both endpoints, or adds/subtracts a number of business days to a single date &mdash; optionally excluding a list of holiday dates.</p>
     <div class="field">
-      <label for="workdays-start">Start date</label>
-      <input type="date" id="workdays-start">
+      <label for="workdays-mode">Mode</label>
+      <select id="workdays-mode">
+        <option value="between">Count business days between two dates</option>
+        <option value="addsubtract">Add/subtract N business days to a date</option>
+      </select>
     </div>
-    <div class="field">
-      <label for="workdays-end">End date</label>
-      <input type="date" id="workdays-end">
+
+    <div id="workdays-between-fields">
+      <div class="field">
+        <label for="workdays-start">Start date</label>
+        <input type="date" id="workdays-start">
+      </div>
+      <div class="field">
+        <label for="workdays-end">End date</label>
+        <input type="date" id="workdays-end">
+      </div>
     </div>
+
+    <div id="workdays-addsubtract-fields" hidden>
+      <div class="field">
+        <label for="workdays-as-start">Start date</label>
+        <input type="date" id="workdays-as-start">
+      </div>
+      <div class="field">
+        <label for="workdays-as-days">Business days to add (negative to subtract)</label>
+        <input type="number" id="workdays-as-days" step="1" placeholder="e.g. 10 or -5">
+      </div>
+    </div>
+
     <div class="field">
       <label for="workdays-holidays">Holiday dates (optional, one per line, YYYY-MM-DD)</label>
       <textarea id="workdays-holidays" rows="4" placeholder="e.g.&#10;2026-08-27&#10;2026-12-25"></textarea>
