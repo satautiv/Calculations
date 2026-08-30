@@ -168,6 +168,8 @@ const {
   timestampToDate,
   formatDateInTimeZone,
   dateFieldsToEpoch,
+  base64Encode,
+  base64Decode,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3619,5 +3621,53 @@ describe('dateFieldsToEpoch', () => {
   test('accepts a date before 1970 (negative epoch)', () => {
     const { epochSeconds } = dateFieldsToEpoch({ year: 1969, month: 12, day: 31, hour: 0, minute: 0, second: 0 }, 'UTC');
     expect(epochSeconds).toBe(-86400);
+  });
+});
+// --- Base64 encoder/decoder ---
+
+describe('base64Encode', () => {
+  test('worked example: "Hello, world!"', () => {
+    expect(base64Encode('Hello, world!')).toBe('SGVsbG8sIHdvcmxkIQ==');
+  });
+
+  test('empty input encodes to empty string', () => {
+    expect(base64Encode('')).toBe('');
+  });
+
+  test('round-trips non-ASCII/multi-byte UTF-8 text', () => {
+    const text = 'héllo 🌍';
+    const encoded = base64Encode(text);
+    expect(base64Decode(encoded)).toBe(text);
+  });
+});
+
+describe('base64Decode', () => {
+  test('worked example: "SGVsbG8sIHdvcmxkIQ=="', () => {
+    expect(base64Decode('SGVsbG8sIHdvcmxkIQ==')).toBe('Hello, world!');
+  });
+
+  test('empty input decodes to empty string', () => {
+    expect(base64Decode('')).toBe('');
+  });
+
+  test('strips embedded whitespace and newlines before decoding', () => {
+    expect(base64Decode('SGVsbG8s\n IHdv cmxk\tIQ==')).toBe('Hello, world!');
+  });
+
+  test('accepts URL-safe alphabet (- and _) and normalizes it', () => {
+    const encoded = base64Encode('subjects?_id=1&x>>y').replace(/\+/g, '-').replace(/\//g, '_');
+    expect(base64Decode(encoded)).toBe('subjects?_id=1&x>>y');
+  });
+
+  test('rejects characters outside the Base64 alphabet', () => {
+    expect(() => base64Decode('SGVsbG8s!IHdvcmxkIQ==')).toThrow();
+  });
+
+  test('rejects input whose length is not a multiple of 4', () => {
+    expect(() => base64Decode('SGVsbG8')).toThrow();
+  });
+
+  test('rejects invalid padding placement', () => {
+    expect(() => base64Decode('SGVs=G8=')).toThrow();
   });
 });

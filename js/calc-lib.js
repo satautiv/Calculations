@@ -2694,6 +2694,53 @@ function dateFieldsToEpoch(fields, zone = 'UTC') {
 
   return { epochMs, epochSeconds: Math.floor(epochMs / 1000) };
 }
+// --- Base64 encoder/decoder ---
+
+// Accepts both standard (+ /) and URL-safe (- _) alphabets on decode, since
+// URL-safe Base64 is commonly pasted in by mistake; '=' padding is optional
+// on input but always emitted as standard, padded Base64 on encode.
+const BASE64_ALPHABET_REGEX = /^[A-Za-z0-9+/]*={0,2}$/;
+
+// Uses Buffer (Node/Jest) when available, falling back to TextEncoder +
+// btoa (browser) - btoa alone only handles one-byte-per-char binary strings
+// and mangles/throws on multi-byte UTF-8 text, so bytes must be encoded first.
+function base64Encode(text) {
+  if (text === '') return '';
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(text, 'utf8').toString('base64');
+  }
+  const bytes = new TextEncoder().encode(text);
+  let binary = '';
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function base64Decode(base64Str) {
+  // Wrapped/pasted Base64 commonly has embedded newlines (e.g. 76-column MIME wrap).
+  const cleaned = base64Str.replace(/\s+/g, '');
+  if (cleaned === '') return '';
+
+  const normalized = cleaned.replace(/-/g, '+').replace(/_/g, '/');
+
+  if (!BASE64_ALPHABET_REGEX.test(normalized)) {
+    throw new Error('Input contains characters outside the Base64 alphabet.');
+  }
+  if (normalized.length % 4 !== 0) {
+    throw new Error('Base64 input length must be a multiple of 4 - check for missing characters or padding.');
+  }
+
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(normalized, 'base64').toString('utf8');
+  }
+  const binary = atob(normalized);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return new TextDecoder().decode(bytes);
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -2929,5 +2976,7 @@ if (typeof module !== 'undefined' && module.exports) {
     timestampToDate,
     formatDateInTimeZone,
     dateFieldsToEpoch,
+    base64Encode,
+    base64Decode,
   };
 }
