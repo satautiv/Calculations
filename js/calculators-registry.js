@@ -678,6 +678,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Test a regular expression against sample text, with match highlighting, capture groups, and flag toggles.',
     keywords: ['regex', 'regular expression', 'pattern matching', 'capture groups', 'regexp', 'developer'],
+    id: 'horizon-distance-calculator',
+    name: 'Horizon Distance Calculator',
+    category: 'Unusual',
+    description: "Calculate how far away the visible horizon is based on your height above the surface, accounting for Earth's curvature and atmospheric refraction.",
+    keywords: ['horizon', 'distance', 'curvature', 'refraction', 'eye height', 'line of sight', 'unusual'],
   },
 ];
 
