@@ -2595,6 +2595,30 @@ function railFenceCalculation(fenceLength, maxPostSpacing, railLines) {
   const numRails = railLines * (numPosts - 1);
   return { numPosts, actualSpacing, numRails };
 }
+// --- Heating cost calculator ---
+
+// Simplified stand-ins for a building's overall heat-loss coefficient (W/m^2*K).
+const INSULATION_FACTOR_PRESETS = {
+  poor: 2.0,
+  average: 1.0,
+  'well-insulated': 0.5,
+  'passive-house': 0.15,
+};
+
+function heatingCost(floorArea, insulationFactor, hdd, systemEfficiency, pricePerKwh) {
+  if (!floorArea || floorArea <= 0) throw new Error('Floor area must be greater than zero.');
+  if (!insulationFactor || insulationFactor <= 0) throw new Error('Insulation factor must be greater than zero.');
+  if (hdd < 0) throw new Error('Heating degree-days cannot be negative.');
+  if (!systemEfficiency || systemEfficiency <= 0) throw new Error('System efficiency must be greater than zero.');
+  if (!pricePerKwh || pricePerKwh <= 0) throw new Error('Energy price must be greater than zero.');
+
+  const dailyHeatLossFactor = floorArea * insulationFactor * 24 / 1000;
+  const totalHeatingEnergyKwh = dailyHeatLossFactor * hdd;
+  const energyAfterEfficiencyKwh = totalHeatingEnergyKwh / systemEfficiency;
+  const cost = energyAfterEfficiencyKwh * pricePerKwh;
+
+  return { dailyHeatLossFactor, totalHeatingEnergyKwh, energyAfterEfficiencyKwh, cost };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -2823,5 +2847,7 @@ if (typeof module !== 'undefined' && module.exports) {
     staircasePlan,
     panelFenceCalculation,
     railFenceCalculation,
+    INSULATION_FACTOR_PRESETS,
+    heatingCost,
   };
 }

@@ -658,6 +658,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Home & DIY',
     description: 'Calculate how many fence posts, panels, or rails you need for a straight run, and how they space out.',
     keywords: ['fence', 'fencing', 'posts', 'panels', 'rails', 'pickets', 'post spacing', 'home', 'diy'],
+    id: 'heating-cost-calculator',
+    name: 'Heating Cost Calculator',
+    category: 'Home & DIY',
+    description: 'Estimate seasonal or monthly heating cost from home size, insulation, heating degree-days, and energy price.',
+    keywords: ['heating cost', 'heating degree days', 'hdd', 'insulation', 'energy bill', 'home', 'diy'],
   },
 ];
 

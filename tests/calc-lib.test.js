@@ -162,6 +162,8 @@ const {
   staircasePlan,
   panelFenceCalculation,
   railFenceCalculation,
+  INSULATION_FACTOR_PRESETS,
+  heatingCost,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3444,5 +3446,53 @@ describe('railFenceCalculation', () => {
     expect(() => railFenceCalculation(NaN, 2.4, 2)).toThrow();
     expect(() => railFenceCalculation(20, NaN, 2)).toThrow();
     expect(() => railFenceCalculation(20, 2.4, NaN)).toThrow();
+  });
+});
+// --- Heating cost calculator ---
+
+describe('heatingCost', () => {
+  test('worked example: 100 m2 average-insulation home, 2200 HDD, 0.9 efficiency', () => {
+    const { dailyHeatLossFactor, totalHeatingEnergyKwh, energyAfterEfficiencyKwh, cost } =
+      heatingCost(100, INSULATION_FACTOR_PRESETS.average, 2200, 0.9, 0.30);
+    expect(dailyHeatLossFactor).toBeCloseTo(2.4, 5);
+    expect(totalHeatingEnergyKwh).toBeCloseTo(5280, 5);
+    expect(energyAfterEfficiencyKwh).toBeCloseTo(5866.7, 1);
+    expect(cost).toBeCloseTo(1760, 0);
+  });
+
+  test('a heat pump COP above 1 divides down the raw heating energy', () => {
+    const { energyAfterEfficiencyKwh, cost } = heatingCost(50, INSULATION_FACTOR_PRESETS['passive-house'], 1500, 3.0, 0.25);
+    expect(energyAfterEfficiencyKwh).toBeCloseTo(90, 5);
+    expect(cost).toBeCloseTo(22.5, 5);
+  });
+
+  test('zero HDD yields zero heating energy and cost', () => {
+    const { totalHeatingEnergyKwh, cost } = heatingCost(100, 1.0, 0, 0.9, 0.30);
+    expect(totalHeatingEnergyKwh).toBe(0);
+    expect(cost).toBe(0);
+  });
+
+  test('rejects a non-positive floor area', () => {
+    expect(() => heatingCost(0, 1.0, 2200, 0.9, 0.30)).toThrow();
+    expect(() => heatingCost(-10, 1.0, 2200, 0.9, 0.30)).toThrow();
+  });
+
+  test('rejects a non-positive insulation factor', () => {
+    expect(() => heatingCost(100, 0, 2200, 0.9, 0.30)).toThrow();
+    expect(() => heatingCost(100, -1, 2200, 0.9, 0.30)).toThrow();
+  });
+
+  test('rejects negative HDD', () => {
+    expect(() => heatingCost(100, 1.0, -1, 0.9, 0.30)).toThrow();
+  });
+
+  test('rejects a non-positive system efficiency (avoids division by zero)', () => {
+    expect(() => heatingCost(100, 1.0, 2200, 0, 0.30)).toThrow();
+    expect(() => heatingCost(100, 1.0, 2200, -0.5, 0.30)).toThrow();
+  });
+
+  test('rejects a non-positive energy price', () => {
+    expect(() => heatingCost(100, 1.0, 2200, 0.9, 0)).toThrow();
+    expect(() => heatingCost(100, 1.0, 2200, 0.9, -0.1)).toThrow();
   });
 });

@@ -4897,3 +4897,32 @@ document.getElementById('fence-calc').addEventListener('click', () => {
     showError('fence-result', err.message);
   }
 });
+// --- Heating cost calculator ---
+document.getElementById('heating-insulation-preset').addEventListener('change', (e) => {
+  document.getElementById('heating-insulation-custom-field').hidden = e.target.value !== 'custom';
+});
+
+document.getElementById('heating-calc').addEventListener('click', () => {
+  const floorArea = parseFloat(document.getElementById('heating-floor-area').value);
+  const insulationPreset = document.getElementById('heating-insulation-preset').value;
+  const insulationFactor = insulationPreset === 'custom'
+    ? parseFloat(document.getElementById('heating-insulation-custom').value)
+    : INSULATION_FACTOR_PRESETS[insulationPreset];
+  const hdd = parseFloat(document.getElementById('heating-hdd').value);
+  const efficiency = parseFloat(document.getElementById('heating-efficiency').value);
+  const price = parseFloat(document.getElementById('heating-price').value);
+
+  try {
+    const { dailyHeatLossFactor, totalHeatingEnergyKwh, energyAfterEfficiencyKwh, cost } =
+      heatingCost(floorArea, insulationFactor, hdd, efficiency, price);
+
+    document.getElementById('heating-result').innerHTML = `
+      <div class="headline">Estimated heating cost: ${cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+      <div>Heating energy needed: ${totalHeatingEnergyKwh.toLocaleString(undefined, { maximumFractionDigits: 0 })} kWh</div>
+      <div>Energy drawn after system efficiency: ${energyAfterEfficiencyKwh.toLocaleString(undefined, { maximumFractionDigits: 0 })} kWh</div>
+      <div class="hint">Daily heat loss factor: ${dailyHeatLossFactor.toLocaleString(undefined, { maximumFractionDigits: 2 })} kWh per degree-day. This is a simplified degree-day estimate, not a substitute for a full home energy audit.</div>
+    `;
+  } catch (err) {
+    showError('heating-result', err.message);
+  }
+});
