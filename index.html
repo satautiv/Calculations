@@ -2886,6 +2886,44 @@
     <button class="calc-btn" id="pregnancy-calc">Calculate</button>
     <div class="result" id="pregnancy-result"></div>
   </section>
+
+  <section id="earth-motion-calculator" class="view tab-panel">
+    <h2>Earth Rotation &amp; Orbit Distance Calculator</h2>
+    <p class="hint">See how far you've actually traveled through space just by standing still, from Earth's rotation on its axis and its orbit around the Sun. A simplified educational model, not a precision astronomical calculation.</p>
+    <div class="field">
+      <label for="earth-latitude">Latitude (degrees, -90 to 90)</label>
+      <input type="number" id="earth-latitude" min="-90" max="90" step="0.1" placeholder="e.g. 45">
+    </div>
+    <div class="field">
+      <label for="earth-duration">Duration</label>
+      <input type="number" id="earth-duration" min="0" step="0.1" placeholder="e.g. 24">
+    </div>
+    <div class="field">
+      <label for="earth-duration-unit">Duration unit</label>
+      <select id="earth-duration-unit">
+        <option value="hours">Hours</option>
+        <option value="days">Days</option>
+        <option value="years">Years</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="earth-motion">Motion to include</label>
+      <select id="earth-motion">
+        <option value="both">Rotation + orbit</option>
+        <option value="rotation">Rotation only</option>
+        <option value="orbit">Orbit only</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="earth-unit">Distance unit</label>
+      <select id="earth-unit">
+        <option value="km">Kilometers</option>
+        <option value="mi">Miles</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="earth-calc">Calculate</button>
+    <div class="result" id="earth-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

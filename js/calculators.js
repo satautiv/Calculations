@@ -4718,3 +4718,50 @@ document.getElementById('pregnancy-calc').addEventListener('click', () => {
     showError('pregnancy-result', err.message);
   }
 });
+
+// --- Earth rotation and orbit distance calculator ---
+document.getElementById('earth-calc').addEventListener('click', () => {
+  const latitude = parseFloat(document.getElementById('earth-latitude').value);
+  const duration = parseFloat(document.getElementById('earth-duration').value);
+  const durationUnit = document.getElementById('earth-duration-unit').value;
+  const motion = document.getElementById('earth-motion').value;
+  const unit = document.getElementById('earth-unit').value;
+
+  if (isNaN(latitude)) {
+    showError('earth-result', 'Enter a valid latitude.');
+    return;
+  }
+
+  if (!duration) {
+    showError('earth-result', 'Enter a valid duration greater than zero.');
+    return;
+  }
+
+  const hoursPerUnit = { hours: 1, days: 24, years: 365.25 * 24 };
+  const hours = duration * hoursPerUnit[durationUnit];
+
+  try {
+    const { rotationKm, orbitKm, totalKm } = earthTravelDistance(
+      latitude,
+      hours,
+      motion !== 'orbit',
+      motion !== 'rotation',
+    );
+
+    const toDisplayUnit = (km) => unit === 'mi' ? km / KM_PER_MILE : km;
+    const format = (km) => toDisplayUnit(km).toLocaleString(undefined, { maximumFractionDigits: 0 });
+    const unitLabel = unit === 'mi' ? 'miles' : 'km';
+
+    const lines = [];
+    if (motion !== 'orbit') lines.push(`<div>Rotation: ${format(rotationKm)} ${unitLabel}</div>`);
+    if (motion !== 'rotation') lines.push(`<div>Orbit: ${format(orbitKm)} ${unitLabel}</div>`);
+
+    document.getElementById('earth-result').innerHTML = `
+      <div class="headline">${format(totalKm)} ${unitLabel} traveled</div>
+      ${lines.join('')}
+      <div class="hint">Combined total is a simple additive approximation (the two motions aren't generally in the same direction), and orbital speed is treated as constant even though Earth's orbit is a slight ellipse - a simplified educational model, not a precision astronomical calculation.</div>
+    `;
+  } catch (err) {
+    showError('earth-result', err.message);
+  }
+});
