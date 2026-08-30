@@ -2856,6 +2856,36 @@
     <button class="calc-btn" id="pet-calc">Calculate</button>
     <div class="result" id="pet-result"></div>
   </section>
+
+  <section id="pregnancy-due-date-calculator" class="view tab-panel">
+    <h2>Pregnancy Due Date Calculator</h2>
+    <p class="hint">Estimates a due date from the last menstrual period (Naegele's rule) or a known conception date. A statistical estimate - only about 5% of babies arrive exactly on their due date - not a substitute for ultrasound dating or a healthcare provider's guidance.</p>
+    <div class="field">
+      <label for="pregnancy-mode">Calculate from</label>
+      <select id="pregnancy-mode">
+        <option value="lmp">Last menstrual period</option>
+        <option value="conception">Conception date</option>
+      </select>
+    </div>
+    <div id="pregnancy-lmp-fields">
+      <div class="field">
+        <label for="pregnancy-lmp-date">First day of last menstrual period</label>
+        <input type="date" id="pregnancy-lmp-date">
+      </div>
+      <div class="field">
+        <label for="pregnancy-cycle-length">Average cycle length (days, optional)</label>
+        <input type="number" id="pregnancy-cycle-length" min="20" max="45" step="1" placeholder="e.g. 28">
+      </div>
+    </div>
+    <div id="pregnancy-conception-fields" hidden>
+      <div class="field">
+        <label for="pregnancy-conception-date">Conception date</label>
+        <input type="date" id="pregnancy-conception-date">
+      </div>
+    </div>
+    <button class="calc-btn" id="pregnancy-calc">Calculate</button>
+    <div class="result" id="pregnancy-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

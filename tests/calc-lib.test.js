@@ -153,6 +153,9 @@ const {
   timeToBurnMinutes,
   dogHumanAge,
   catHumanAge,
+  dueDateFromLmp,
+  dueDateFromConception,
+  gestationalAgeDays,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3142,5 +3145,51 @@ describe('catHumanAge', () => {
     expect(() => catHumanAge(0)).toThrow();
     expect(() => catHumanAge(-1)).toThrow();
     expect(() => catHumanAge(31)).toThrow();
+  });
+});
+
+// --- Pregnancy due date calculator ---
+
+describe('dueDateFromLmp', () => {
+  test('worked example: LMP of 2026-01-01 with a default 28-day cycle', () => {
+    const lmp = new Date('2026-01-01T00:00:00Z');
+    expect(dueDateFromLmp(lmp).toISOString()).toBe('2026-10-08T00:00:00.000Z');
+  });
+
+  test('adjusts for a longer-than-average cycle', () => {
+    const lmp = new Date('2026-01-01T00:00:00Z');
+    expect(dueDateFromLmp(lmp, 35).toISOString()).toBe('2026-10-15T00:00:00.000Z');
+  });
+
+  test('adjusts for a shorter-than-average cycle', () => {
+    const lmp = new Date('2026-01-01T00:00:00Z');
+    expect(dueDateFromLmp(lmp, 21).toISOString()).toBe('2026-10-01T00:00:00.000Z');
+  });
+
+  test('rejects an implausible cycle length', () => {
+    const lmp = new Date('2026-01-01T00:00:00Z');
+    expect(() => dueDateFromLmp(lmp, 10)).toThrow();
+    expect(() => dueDateFromLmp(lmp, 50)).toThrow();
+  });
+});
+
+describe('dueDateFromConception', () => {
+  test('adds 266 days to the conception date', () => {
+    const conception = new Date('2026-01-01T00:00:00Z');
+    expect(dueDateFromConception(conception).toISOString()).toBe('2026-09-24T00:00:00.000Z');
+  });
+});
+
+describe('gestationalAgeDays', () => {
+  test('LMP mode counts days directly from the reference date', () => {
+    const lmp = new Date('2026-01-01T00:00:00Z');
+    const asOf = new Date('2026-02-01T00:00:00Z');
+    expect(gestationalAgeDays('lmp', lmp, asOf)).toBe(31);
+  });
+
+  test('conception mode is offset 14 days ahead of days since conception', () => {
+    const conception = new Date('2026-01-01T00:00:00Z');
+    const asOf = new Date('2026-02-01T00:00:00Z');
+    expect(gestationalAgeDays('conception', conception, asOf)).toBe(45);
   });
 });

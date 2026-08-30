@@ -2407,6 +2407,38 @@ function catHumanAge(catAgeYears) {
   return 24 + 4 * (catAgeYears - 2);
 }
 
+// --- Pregnancy due date calculator ---
+
+const PREGNANCY_DEFAULT_CYCLE_DAYS = 28;
+const PREGNANCY_MIN_CYCLE_DAYS = 20;
+const PREGNANCY_MAX_CYCLE_DAYS = 45;
+
+// Naegele's rule: LMP + 280 days (40 weeks), assuming ovulation on day 14 of
+// a 28-day cycle. Adjusted by the gap between the person's actual average
+// cycle length and that 28-day assumption.
+function dueDateFromLmp(lmpDate, cycleLengthDays = PREGNANCY_DEFAULT_CYCLE_DAYS) {
+  if (cycleLengthDays < PREGNANCY_MIN_CYCLE_DAYS || cycleLengthDays > PREGNANCY_MAX_CYCLE_DAYS) {
+    throw new Error(`Cycle length must be between ${PREGNANCY_MIN_CYCLE_DAYS} and ${PREGNANCY_MAX_CYCLE_DAYS} days.`);
+  }
+  return addDaysToDate(lmpDate, 280 + (cycleLengthDays - PREGNANCY_DEFAULT_CYCLE_DAYS));
+}
+
+// Gestation counted from actual conception is ~266 days (280 days minus the
+// ~14-day average follicular/pre-ovulation phase from LMP to ovulation).
+function dueDateFromConception(conceptionDate) {
+  return addDaysToDate(conceptionDate, 266);
+}
+
+// Days of gestation as of `asOfDate`, counted the conventional obstetric way
+// (from LMP) regardless of which reference date the user supplied - when the
+// input was a conception date, gestational age runs ~14 days ahead of days
+// since conception.
+function gestationalAgeDays(mode, referenceDate, asOfDate) {
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysSinceReference = Math.round((asOfDate.getTime() - referenceDate.getTime()) / msPerDay);
+  return mode === 'conception' ? daysSinceReference + 14 : daysSinceReference;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2610,5 +2642,11 @@ if (typeof module !== 'undefined' && module.exports) {
     DOG_MIN_AGE_YEARS,
     dogHumanAge,
     catHumanAge,
+    PREGNANCY_DEFAULT_CYCLE_DAYS,
+    PREGNANCY_MIN_CYCLE_DAYS,
+    PREGNANCY_MAX_CYCLE_DAYS,
+    dueDateFromLmp,
+    dueDateFromConception,
+    gestationalAgeDays,
   };
 }
