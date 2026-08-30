@@ -3602,10 +3602,65 @@ document.getElementById('voltage-calc').addEventListener('click', () => {
 });
 
 // --- Working Days calculator ---
+document.getElementById('workdays-mode').addEventListener('change', (e) => {
+  const isAddSubtract = e.target.value === 'addsubtract';
+  document.getElementById('workdays-between-fields').hidden = isAddSubtract;
+  document.getElementById('workdays-addsubtract-fields').hidden = !isAddSubtract;
+});
+
+// Parses the shared holiday-list textarea into { holidayDates, skippedCount },
+// used by both working-days modes.
+function parseWorkdaysHolidays(holidaysRaw) {
+  const holidayEntries = holidaysRaw.split(/[\n,]+/).map(entry => entry.trim()).filter(Boolean);
+  const holidayDates = [];
+  let skippedCount = 0;
+  holidayEntries.forEach(entry => {
+    const parsed = parseAgeDateInput(entry);
+    if (parsed) {
+      holidayDates.push(parsed);
+    } else {
+      skippedCount++;
+    }
+  });
+  return { holidayDates, skippedCount };
+}
+
 document.getElementById('workdays-calc').addEventListener('click', () => {
+  const mode = document.getElementById('workdays-mode').value;
+  const holidaysRaw = document.getElementById('workdays-holidays').value;
+  const { holidayDates, skippedCount } = parseWorkdaysHolidays(holidaysRaw);
+  const skippedNote = skippedCount > 0
+    ? `<div class="hint">Skipped ${skippedCount} unrecognized holiday date${skippedCount === 1 ? '' : 's'}.</div>`
+    : '';
+
+  if (mode === 'addsubtract') {
+    const startRaw = document.getElementById('workdays-as-start').value;
+    const daysRaw = document.getElementById('workdays-as-days').value;
+
+    const startDate = parseAgeDateInput(startRaw);
+    if (!startDate) {
+      showError('workdays-result', 'Enter a valid start date.');
+      return;
+    }
+
+    const numberOfDays = parseInt(daysRaw, 10);
+    if (!Number.isFinite(numberOfDays) || daysRaw === '') {
+      showError('workdays-result', 'Enter a number of business days (negative to subtract).');
+      return;
+    }
+
+    const { resultDate, weekdayName: resultWeekday } = addWorkingDays(startDate, numberOfDays, holidayDates);
+
+    document.getElementById('workdays-result').innerHTML = `
+      <div class="headline">${resultDate.toISOString().slice(0, 10)} (${resultWeekday})</div>
+      <div>${numberOfDays >= 0 ? 'Adding' : 'Subtracting'} ${Math.abs(numberOfDays).toLocaleString()} business day${Math.abs(numberOfDays) === 1 ? '' : 's'} ${numberOfDays >= 0 ? 'to' : 'from'} ${startRaw}</div>
+      ${skippedNote}
+    `;
+    return;
+  }
+
   const startRaw = document.getElementById('workdays-start').value;
   const endRaw = document.getElementById('workdays-end').value;
-  const holidaysRaw = document.getElementById('workdays-holidays').value;
 
   const startDate = parseAgeDateInput(startRaw);
   if (!startDate) {
@@ -3619,23 +3674,7 @@ document.getElementById('workdays-calc').addEventListener('click', () => {
     return;
   }
 
-  const holidayEntries = holidaysRaw.split(/[\n,]+/).map(entry => entry.trim()).filter(Boolean);
-  const holidayDates = [];
-  let skippedCount = 0;
-  holidayEntries.forEach(entry => {
-    const parsed = parseAgeDateInput(entry);
-    if (parsed) {
-      holidayDates.push(parsed);
-    } else {
-      skippedCount++;
-    }
-  });
-
   const { workingDays, totalDays, weekendDays, holidayWeekdays } = workingDaysBetween(startDate, endDate, holidayDates);
-
-  const skippedNote = skippedCount > 0
-    ? `<div class="hint">Skipped ${skippedCount} unrecognized holiday date${skippedCount === 1 ? '' : 's'}.</div>`
-    : '';
 
   document.getElementById('workdays-result').innerHTML = `
     <div class="headline">${workingDays.toLocaleString()} working day${workingDays === 1 ? '' : 's'}</div>

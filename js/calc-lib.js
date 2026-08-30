@@ -1693,6 +1693,31 @@ function workingDaysBetween(startDate, endDate, holidayDates = []) {
   return { workingDays, totalDays, weekendDays, holidayWeekdays, reversed };
 }
 
+// Steps forward (positive numberOfDays) or backward (negative) one calendar
+// day at a time from a UTC-midnight startDate, skipping weekends and any
+// date in holidayDates, until numberOfDays business days have been counted.
+// Mirrors workingDaysBetween's boundary handling: startDate itself is never
+// adjusted, just walked from, so numberOfDays = 0 returns startDate
+// unchanged even if it falls on a weekend or holiday.
+function addWorkingDays(startDate, numberOfDays, holidayDates = []) {
+  const holidaySet = new Set(holidayDates.map(d => d.getTime()));
+  const direction = numberOfDays < 0 ? -1 : 1;
+  const stepsNeeded = Math.abs(numberOfDays);
+
+  const current = new Date(startDate.getTime());
+  let counted = 0;
+  while (counted < stepsNeeded) {
+    current.setUTCDate(current.getUTCDate() + direction);
+    const dayOfWeek = current.getUTCDay();
+    const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+    if (!isWeekend && !holidaySet.has(current.getTime())) {
+      counted++;
+    }
+  }
+
+  return { resultDate: current, weekdayName: weekdayName(current) };
+}
+
 // --- Time Duration calculator ---
 
 // Converts an H:M:S triple to total seconds. Hours must be non-negative;
@@ -5035,6 +5060,7 @@ if (typeof module !== 'undefined' && module.exports) {
     VOLTAGE_TOLERANCE_FRACTION,
     checkPlugAdapterNeeds,
     workingDaysBetween,
+    addWorkingDays,
     timeToSeconds,
     secondsToHMS,
     addSubtractDurations,
