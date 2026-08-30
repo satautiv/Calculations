@@ -3479,6 +3479,26 @@
     <button class="calc-btn" id="wchi-calc">Calculate</button>
     <div class="result" id="wchi-result"></div>
   </section>
+
+  <section id="hash-generator" class="view tab-panel">
+    <h2>Hash Generator</h2>
+    <p class="hint">Computes a hex digest of text for checksums, integrity checks, or comparing values without exposing the original content. Everything runs locally in your browser - nothing is sent anywhere. <strong>MD5 and SHA-1 are cryptographically broken and deprecated for security purposes</strong> (e.g. password storage, digital signatures) - use them here only for checksums or legacy compatibility, and prefer SHA-256 or SHA-512 otherwise.</p>
+    <div class="field">
+      <label for="hash-algorithm">Algorithm</label>
+      <select id="hash-algorithm">
+        <option value="MD5">MD5 (128-bit, broken/deprecated)</option>
+        <option value="SHA-1">SHA-1 (160-bit, broken/deprecated)</option>
+        <option value="SHA-256" selected>SHA-256 (256-bit)</option>
+        <option value="SHA-512">SHA-512 (512-bit)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="hash-text">Text</label>
+      <textarea id="hash-text" rows="6" placeholder="Enter text to hash"></textarea>
+    </div>
+    <button class="calc-btn" id="hash-calc">Calculate</button>
+    <div class="result" id="hash-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

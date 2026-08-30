@@ -5616,3 +5616,28 @@ document.getElementById('wchi-calc').addEventListener('click', () => {
     showError('wchi-result', err.message);
   }
 });
+// --- Hash generator ---
+document.getElementById('hash-calc').addEventListener('click', async () => {
+  const algorithm = document.getElementById('hash-algorithm').value;
+  const text = document.getElementById('hash-text').value;
+
+  try {
+    const digest = algorithm === 'MD5' ? md5Hex(text) : await ({
+      'SHA-1': sha1Hex,
+      'SHA-256': sha256Hex,
+      'SHA-512': sha512Hex,
+    }[algorithm](text));
+
+    const warning = (algorithm === 'MD5' || algorithm === 'SHA-1')
+      ? '<div class="hint">This algorithm is cryptographically broken - only use it for checksums or legacy compatibility, never for passwords or security-sensitive verification.</div>'
+      : '';
+
+    document.getElementById('hash-result').innerHTML = `
+      <div class="headline">${algorithm} digest</div>
+      <div><textarea rows="3" readonly>${escapeHtml(digest)}</textarea></div>
+      ${warning}
+    `;
+  } catch (err) {
+    showError('hash-result', err.message);
+  }
+});
