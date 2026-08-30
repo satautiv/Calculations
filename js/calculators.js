@@ -3722,6 +3722,7 @@ document.getElementById('duration-calc').addEventListener('click', () => {
 
       document.getElementById('duration-result').innerHTML = `
         <div class="headline">${formatHMS(secondsToHMS(resultSeconds))}</div>
+        <div>= ${secondsToDecimalHours(resultSeconds).toFixed(2)} decimal hours</div>
         <div>${formatHMS(secondsToHMS(secondsA))} ${operation === 'subtract' ? '-' : '+'} ${formatHMS(secondsToHMS(secondsB))}</div>
       `;
     } else {
@@ -3735,6 +3736,7 @@ document.getElementById('duration-calc').addEventListener('click', () => {
 
       document.getElementById('duration-result').innerHTML = `
         <div class="headline">${formatHMS(secondsToHMS(diffSeconds))}</div>
+        <div>= ${secondsToDecimalHours(diffSeconds).toFixed(2)} decimal hours</div>
         <div>${formatHMS(start)} to ${formatHMS(end)}</div>
         ${wrapped ? '<div class="hint">Crossed midnight into the next day.</div>' : ''}
       `;
