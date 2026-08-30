@@ -2844,6 +2844,34 @@ function dateFieldsToEpoch(fields, zone = 'UTC') {
 
   return { epochMs, epochSeconds: Math.floor(epochMs / 1000) };
 }
+
+// Formats how far `date` is from `now` as a human-readable string, e.g.
+// "3 hours ago" or "in 12 minutes". `now` is an explicit parameter (rather
+// than reading Date.now() internally) so this stays a pure function of its
+// arguments and is unit-testable without mocking global time.
+function relativeTimeFromNow(date, now = new Date()) {
+  const deltaSeconds = (date.getTime() - now.getTime()) / 1000;
+  const absSeconds = Math.abs(deltaSeconds);
+
+  if (absSeconds < 30) {
+    return 'just now';
+  }
+
+  const UNITS = [
+    { unit: 'year', seconds: 365.25 * 24 * 60 * 60 },
+    { unit: 'month', seconds: 30.44 * 24 * 60 * 60 },
+    { unit: 'day', seconds: 24 * 60 * 60 },
+    { unit: 'hour', seconds: 60 * 60 },
+    { unit: 'minute', seconds: 60 },
+    { unit: 'second', seconds: 1 },
+  ];
+
+  const { unit, seconds } = UNITS.find((u) => absSeconds >= u.seconds) || UNITS[UNITS.length - 1];
+  const value = Math.round(absSeconds / seconds);
+  const label = `${value} ${unit}${value === 1 ? '' : 's'}`;
+
+  return deltaSeconds < 0 ? `${label} ago` : `in ${label}`;
+}
 // --- Base64 encoder/decoder ---
 
 // Accepts both standard (+ /) and URL-safe (- _) alphabets on decode, since
@@ -5100,6 +5128,7 @@ if (typeof module !== 'undefined' && module.exports) {
     timestampToDate,
     formatDateInTimeZone,
     dateFieldsToEpoch,
+    relativeTimeFromNow,
     base64Encode,
     base64Decode,
     REGEX_MATCH_DISPLAY_CAP,

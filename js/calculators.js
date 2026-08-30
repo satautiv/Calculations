@@ -5010,11 +5010,13 @@ document.getElementById('unix-calc').addEventListener('click', () => {
       const utcIso = date.toISOString();
       const utcFormatted = formatDateInTimeZone(date, 'UTC');
       const zoneFormatted = formatDateInTimeZone(date, displayZone);
+      const relative = relativeTimeFromNow(date, new Date());
 
       document.getElementById('unix-result').innerHTML = `
         <div class="headline">${utcIso}</div>
         <div>UTC: ${utcFormatted}</div>
         <div>${displayZone}: ${zoneFormatted}</div>
+        <div>${relative}</div>
         <div class="hint">Interpreted as ${unit}${unitChoice === 'auto' ? ' (auto-detected - override the unit above if that is wrong)' : ''}.</div>
       `;
     } catch (err) {
