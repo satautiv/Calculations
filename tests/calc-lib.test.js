@@ -177,6 +177,8 @@ const {
   projectileMotion,
   urlEncode,
   urlDecode,
+  base64UrlDecode,
+  decodeJwt,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3963,5 +3965,115 @@ describe('urlDecode', () => {
 
   test('throws a clear error on percent-decoded bytes that are not valid UTF-8', () => {
     expect(() => urlDecode('%E0%A4%A')).toThrow(/malformed/i);
+  });
+});
+// --- JWT decoder ---
+
+function base64UrlEncode(value) {
+  const json = typeof value === 'string' ? value : JSON.stringify(value);
+  return Buffer.from(json, 'utf8')
+    .toString('base64')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
+}
+
+// Builds a JWT from a header/payload object, base64url-encoding each
+// segment ourselves so tests control the exact claims (rather than relying
+// on a copied real-world token).
+function makeJwt(header, payload, signature = 'sig123') {
+  const segments = [base64UrlEncode(header), base64UrlEncode(payload)];
+  if (signature !== null) segments.push(signature);
+  return segments.join('.');
+}
+
+describe('base64UrlDecode', () => {
+  test('round-trips a Base64URL-encoded string', () => {
+    expect(base64UrlDecode(base64UrlEncode('hello world'))).toBe('hello world');
+  });
+
+  test('decodes a string requiring re-added padding', () => {
+    expect(base64UrlDecode('aGVsbG8')).toBe('hello');
+  });
+
+  test('rejects characters outside the Base64URL alphabet', () => {
+    expect(() => base64UrlDecode('not valid base64!')).toThrow();
+  });
+});
+
+describe('decodeJwt', () => {
+  const now = Math.floor(Date.now() / 1000);
+
+  test('decodes a well-formed 3-segment token', () => {
+    const header = { alg: 'HS256', typ: 'JWT' };
+    const payload = { sub: '1234567890', name: 'Ada Lovelace', iat: now - 3600, exp: now + 3600 };
+    const token = makeJwt(header, payload, 'sig123');
+
+    const result = decodeJwt(token);
+    expect(result.header).toEqual(header);
+    expect(result.payload).toEqual(payload);
+    expect(result.signature).toBe('sig123');
+    expect(result.claims.isExpired).toBe(false);
+    expect(result.claims.isNotYetValid).toBe(false);
+    expect(result.claims.iatDate).toBe(new Date((now - 3600) * 1000).toISOString());
+    expect(result.claims.expDate).toBe(new Date((now + 3600) * 1000).toISOString());
+  });
+
+  test('flags an expired token', () => {
+    const token = makeJwt({ alg: 'HS256' }, { exp: now - 100 });
+    expect(decodeJwt(token).claims.isExpired).toBe(true);
+  });
+
+  test('flags a not-yet-valid token', () => {
+    const token = makeJwt({ alg: 'HS256' }, { nbf: now + 100 });
+    expect(decodeJwt(token).claims.isNotYetValid).toBe(true);
+  });
+
+  test('accepts a 2-segment unsecured token (alg: none)', () => {
+    const header = { alg: 'none', typ: 'JWT' };
+    const payload = { sub: 'abc' };
+    const token = makeJwt(header, payload, null);
+
+    const result = decodeJwt(token);
+    expect(result.signature).toBeNull();
+    expect(result.header).toEqual(header);
+    expect(result.payload).toEqual(payload);
+  });
+
+  test('strips a Bearer prefix and surrounding whitespace', () => {
+    const token = makeJwt({ alg: 'HS256' }, { sub: 'abc' });
+    const result = decodeJwt(`  Bearer ${token}  `);
+    expect(result.payload).toEqual({ sub: 'abc' });
+  });
+
+  test('omits date claims that are absent rather than erroring', () => {
+    const token = makeJwt({ alg: 'HS256' }, { sub: 'abc' });
+    const result = decodeJwt(token);
+    expect(result.claims.iatDate).toBeUndefined();
+    expect(result.claims.expDate).toBeUndefined();
+    expect(result.claims.nbfDate).toBeUndefined();
+    expect(result.claims.isExpired).toBe(false);
+    expect(result.claims.isNotYetValid).toBe(false);
+  });
+
+  test('surfaces a warning instead of crashing for a non-numeric exp', () => {
+    const token = makeJwt({ alg: 'HS256' }, { exp: 'not-a-number' });
+    const result = decodeJwt(token);
+    expect(result.claims.expWarning).toMatch(/exp/);
+    expect(result.claims.isExpired).toBe(false);
+  });
+
+  test('rejects a token with the wrong number of segments', () => {
+    expect(() => decodeJwt('onlyonesegment')).toThrow();
+    expect(() => decodeJwt('a.b.c.d')).toThrow();
+  });
+
+  test('names the header segment when it fails to decode', () => {
+    expect(() => decodeJwt('not!valid.eyJhIjoxfQ.sig')).toThrow(/header/);
+  });
+
+  test('names the payload segment when it is not valid JSON', () => {
+    const badPayload = base64UrlEncode('not json');
+    expect(() => decodeJwt(`${base64UrlEncode({ alg: 'HS256' })}.${badPayload}.sig`)).toThrow(/payload/);
   });
 });

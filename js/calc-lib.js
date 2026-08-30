@@ -2884,6 +2884,72 @@ function urlDecode(text, mode = 'component') {
   }
 }
 
+// --- JWT decoder ---
+
+// Base64URL (RFC 4648 sec.5): standard Base64 with '+'/'/' swapped for
+// '-'/'_' and padding stripped; re-pad to a multiple of 4 before decoding.
+function base64UrlDecode(str) {
+  if (!/^[A-Za-z0-9_-]*$/.test(str)) {
+    throw new Error('contains characters outside the Base64URL alphabet');
+  }
+  const base64 = str.replace(/-/g, '+').replace(/_/g, '/');
+  const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4);
+
+  if (typeof Buffer !== 'undefined') {
+    return Buffer.from(padded, 'base64').toString('utf8');
+  }
+  const binary = atob(padded);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new TextDecoder('utf-8').decode(bytes);
+}
+
+function decodeJwtSegment(rawSegment, label) {
+  let decoded;
+  try {
+    decoded = base64UrlDecode(rawSegment);
+  } catch (err) {
+    throw new Error(`Could not decode the ${label} segment: ${err.message}.`);
+  }
+  try {
+    return JSON.parse(decoded);
+  } catch {
+    throw new Error(`The ${label} segment did not decode to valid JSON.`);
+  }
+}
+
+// Decodes (does not verify) a JWT's header/payload and evaluates exp/nbf
+// against the current time. A 2-segment token (no signature, e.g. "alg":
+// "none") is treated as a valid, if insecure, edge case per RFC 7519.
+function decodeJwt(token) {
+  const trimmed = token.trim().replace(/^Bearer\s+/i, '');
+  const segments = trimmed.split('.');
+
+  if (segments.length !== 2 && segments.length !== 3) {
+    throw new Error('A JWT must have 2 or 3 period-separated segments (header.payload[.signature]).');
+  }
+
+  const header = decodeJwtSegment(segments[0], 'header');
+  const payload = decodeJwtSegment(segments[1], 'payload');
+  const signature = segments.length === 3 ? segments[2] : null;
+
+  const now = Date.now() / 1000;
+  const claims = {};
+
+  for (const name of ['iat', 'exp', 'nbf']) {
+    if (payload[name] === undefined) continue;
+    if (typeof payload[name] !== 'number' || Number.isNaN(payload[name])) {
+      claims[`${name}Warning`] = `${name} is present but not a valid number.`;
+      continue;
+    }
+    claims[`${name}Date`] = new Date(payload[name] * 1000).toISOString();
+  }
+
+  claims.isExpired = typeof payload.exp === 'number' && !Number.isNaN(payload.exp) && payload.exp < now;
+  claims.isNotYetValid = typeof payload.nbf === 'number' && !Number.isNaN(payload.nbf) && payload.nbf > now;
+
+  return { header, payload, signature, claims };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -3129,5 +3195,7 @@ if (typeof module !== 'undefined' && module.exports) {
     projectileMotion,
     urlEncode,
     urlDecode,
+    base64UrlDecode,
+    decodeJwt,
   };
 }

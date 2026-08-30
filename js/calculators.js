@@ -5268,3 +5268,54 @@ document.getElementById('url-calc').addEventListener('click', () => {
     showError('url-result', err.message);
   }
 });
+
+// --- JWT decoder ---
+document.getElementById('jwt-calc').addEventListener('click', () => {
+  const token = document.getElementById('jwt-token').value;
+
+  if (!token || !token.trim()) {
+    showError('jwt-result', 'Paste a JWT to decode.');
+    return;
+  }
+
+  try {
+    const { header, payload, signature, claims } = decodeJwt(token);
+
+    const summaryParts = [];
+    if (claims.iatDate) summaryParts.push(`Issued: ${claims.iatDate}`);
+    if (claims.nbfDate) {
+      summaryParts.push(`Not before: ${claims.nbfDate}${claims.isNotYetValid ? ' (not yet valid)' : ''}`);
+    }
+    if (claims.expDate) {
+      summaryParts.push(`Expires: ${claims.expDate}${claims.isExpired ? ' (expired)' : ''}`);
+    }
+
+    const warnings = ['iatWarning', 'expWarning', 'nbfWarning']
+      .filter((key) => claims[key])
+      .map((key) => `<div class="hint">${escapeHtml(claims[key])}</div>`)
+      .join('');
+
+    const summaryHtml = summaryParts.length ? `<div>${summaryParts.join(' &middot; ')}</div>` : '';
+
+    const statusFlags = [];
+    if (claims.isExpired) statusFlags.push('<span class="error">Expired</span>');
+    if (claims.isNotYetValid) statusFlags.push('<span class="error">Not yet valid</span>');
+    const statusHtml = statusFlags.length ? `<div>${statusFlags.join(' ')}</div>` : '';
+
+    document.getElementById('jwt-result').innerHTML = `
+      <div class="headline">JWT decoded</div>
+      ${summaryHtml}
+      ${statusHtml}
+      ${warnings}
+      <div><strong>Header</strong></div>
+      <pre>${escapeHtml(JSON.stringify(header, null, 2))}</pre>
+      <div><strong>Payload</strong></div>
+      <pre>${escapeHtml(JSON.stringify(payload, null, 2))}</pre>
+      <div><strong>Signature (not verified)</strong></div>
+      <pre>${escapeHtml(signature === null ? '(none - unsecured token)' : signature)}</pre>
+      <div class="hint">This tool only decodes the token - it does not verify the signature. Never trust claims from an unverified token for security decisions.</div>
+    `;
+  } catch (err) {
+    showError('jwt-result', err.message);
+  }
+});

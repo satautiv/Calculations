@@ -3250,6 +3250,17 @@
     <button class="calc-btn" id="url-calc">Calculate</button>
     <div class="result" id="url-result"></div>
   </section>
+
+  <section id="jwt-decoder" class="view tab-panel">
+    <h2>JWT Decoder</h2>
+    <p class="hint">Decodes a JSON Web Token's header and payload so you can inspect its claims. This tool only decodes - it does not verify the signature.</p>
+    <div class="field">
+      <label for="jwt-token">JWT</label>
+      <textarea id="jwt-token" rows="6" placeholder="xxxxx.yyyyy.zzzzz"></textarea>
+    </div>
+    <button class="calc-btn" id="jwt-calc">Calculate</button>
+    <div class="result" id="jwt-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
