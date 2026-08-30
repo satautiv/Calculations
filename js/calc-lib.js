@@ -3006,6 +3006,24 @@ function findRegexMatches(pattern, flags, text) {
   }));
 }
 
+// Runs text.replace() with the given pattern/flags/replacement, using the
+// same pattern construction and error handling as findRegexMatches so an
+// invalid pattern fails the same way in both places. Unlike findRegexMatches,
+// this does not force the 'g' flag - replacement follows the flags exactly
+// as given, matching standard String.replace() semantics.
+function applyRegexReplacement(pattern, flags, text, replacement) {
+  if (!pattern) throw new Error('Enter a regex pattern.');
+
+  let regex;
+  try {
+    regex = new RegExp(pattern, flags);
+  } catch (err) {
+    throw new Error(`Invalid regular expression: ${err.message}`);
+  }
+
+  return text.replace(regex, replacement);
+}
+
 // --- Horizon distance calculator ---
 
 // Standard atmospheric refraction coefficient: light bends slightly toward
@@ -5195,6 +5213,7 @@ if (typeof module !== 'undefined' && module.exports) {
     base64Decode,
     REGEX_MATCH_DISPLAY_CAP,
     findRegexMatches,
+    applyRegexReplacement,
     HORIZON_REFRACTION_COEFFICIENT,
     horizonDistance,
     solarPanelSizing,
