@@ -703,6 +703,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Decode a JSON Web Token\'s header and payload to inspect its claims, without verifying the signature.',
     keywords: ['jwt', 'json web token', 'decode', 'base64url', 'auth token', 'claims', 'developer'],
+    id: 'uuid-generator',
+    name: 'UUID Generator',
+    category: 'Developer',
+    description: 'Generate v1, v4, or v7 UUIDs in bulk for primary keys, request IDs, and correlation IDs.',
+    keywords: ['uuid', 'guid', 'unique identifier', 'random', 'v4', 'v1', 'v7', 'developer'],
   },
 ];
 

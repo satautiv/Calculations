@@ -3261,6 +3261,32 @@
     <button class="calc-btn" id="jwt-calc">Calculate</button>
     <div class="result" id="jwt-result"></div>
   </section>
+
+  <section id="uuid-generator" class="view tab-panel">
+    <h2>UUID Generator</h2>
+    <p class="hint">Generate RFC 9562 UUIDs for use as primary keys, request IDs, correlation IDs, etc. Everything runs locally in your browser using the Web Crypto API - nothing is sent anywhere.</p>
+    <div class="field">
+      <label for="uuid-version">Version</label>
+      <select id="uuid-version">
+        <option value="v4">v4 (random)</option>
+        <option value="v1">v1 (time-based)</option>
+        <option value="v7">v7 (time-ordered)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="uuid-quantity">Quantity</label>
+      <input type="number" id="uuid-quantity" min="1" max="10000" step="1" value="1" placeholder="e.g. 10">
+    </div>
+    <div class="field">
+      <label for="uuid-case">Output case</label>
+      <select id="uuid-case">
+        <option value="lower">Lowercase</option>
+        <option value="upper">Uppercase</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="uuid-generator-calc">Generate</button>
+    <div class="result" id="uuid-generator-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

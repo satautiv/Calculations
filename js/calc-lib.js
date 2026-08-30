@@ -2949,6 +2949,90 @@ function decodeJwt(token) {
 
   return { header, payload, signature, claims };
 }
+// --- UUID generator ---
+
+const UUID_MAX_QUANTITY = 10000;
+
+function bytesToHex(bytes) {
+  return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function generateUuidV4() {
+  return crypto.randomUUID();
+}
+
+// RFC 9562 v1: a 60-bit timestamp (100ns intervals since the Gregorian epoch,
+// 1582-10-15T00:00:00Z) plus a 14-bit clock sequence and a 48-bit node id.
+// There's no stable network node id available in this browser/no-backend
+// context, so the node id is randomly generated with its multicast bit set,
+// which RFC 9562 explicitly permits as a stand-in for a real MAC address.
+function generateUuidV1() {
+  const GREGORIAN_OFFSET_100NS = 122192928000000000n;
+  const timestamp100ns = BigInt(Date.now()) * 10000n + GREGORIAN_OFFSET_100NS;
+
+  const timeLow = timestamp100ns & 0xffffffffn;
+  const timeMid = (timestamp100ns >> 32n) & 0xffffn;
+  const timeHi = (timestamp100ns >> 48n) & 0x0fffn;
+
+  const randomBytes = new Uint8Array(8);
+  crypto.getRandomValues(randomBytes);
+  const clockSeq = ((BigInt(randomBytes[0]) << 8n) | BigInt(randomBytes[1])) & 0x3fffn;
+
+  const node = randomBytes.slice(2, 8);
+  node[0] |= 0x01; // multicast bit set - signals this isn't a real registered node id
+
+  const timeLowHex = timeLow.toString(16).padStart(8, '0');
+  const timeMidHex = timeMid.toString(16).padStart(4, '0');
+  const timeHiAndVersionHex = (0x1000n | timeHi).toString(16).padStart(4, '0');
+  const clockSeqHex = (0x8000n | clockSeq).toString(16).padStart(4, '0');
+  const nodeHex = bytesToHex(node);
+
+  return `${timeLowHex}-${timeMidHex}-${timeHiAndVersionHex}-${clockSeqHex}-${nodeHex}`;
+}
+
+// RFC 9562 v7: a 48-bit Unix millisecond timestamp, a 4-bit version, a 12-bit
+// random rand_a, a 2-bit variant, and a 62-bit random rand_b - built with
+// BigInt throughout since native bitwise operators truncate to 32 bits and
+// the timestamp alone already exceeds that.
+function generateUuidV7() {
+  const randomBytes = new Uint8Array(10);
+  crypto.getRandomValues(randomBytes);
+
+  let value = BigInt(Date.now()) & 0xffffffffffffn;
+  value = (value << 4n) | 0x7n;
+
+  const randA = ((BigInt(randomBytes[0]) << 8n) | BigInt(randomBytes[1])) & 0xfffn;
+  value = (value << 12n) | randA;
+
+  value = (value << 2n) | 0x2n; // variant bits '10'
+
+  let randB = 0n;
+  for (let i = 2; i < 10; i++) randB = (randB << 8n) | BigInt(randomBytes[i]);
+  randB &= (1n << 62n) - 1n;
+  value = (value << 62n) | randB;
+
+  const hex = value.toString(16).padStart(32, '0');
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20, 32)}`;
+}
+
+// Quantity of 0, negative, or non-integer is rejected outright, but an
+// overly large request is clamped to UUID_MAX_QUANTITY rather than rejected -
+// "generate as many as possible" is a reasonable ask that should still
+// produce output. Callers can compare the requested quantity against the
+// returned array's length to know whether clamping happened.
+function generateUuids(version, quantity, uppercase = false) {
+  if (!Number.isFinite(quantity) || !Number.isInteger(quantity) || quantity <= 0) {
+    throw new Error('Quantity must be a positive whole number.');
+  }
+
+  const generators = { v1: generateUuidV1, v4: generateUuidV4, v7: generateUuidV7 };
+  const generate = generators[version];
+  if (!generate) throw new Error('Unknown UUID version.');
+
+  const clampedQuantity = Math.min(quantity, UUID_MAX_QUANTITY);
+  const uuids = Array.from({ length: clampedQuantity }, generate);
+  return uppercase ? uuids.map(u => u.toUpperCase()) : uuids;
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -3197,5 +3281,10 @@ if (typeof module !== 'undefined' && module.exports) {
     urlDecode,
     base64UrlDecode,
     decodeJwt,
+    UUID_MAX_QUANTITY,
+    generateUuidV1,
+    generateUuidV4,
+    generateUuidV7,
+    generateUuids,
   };
 }
