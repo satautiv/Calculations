@@ -196,6 +196,7 @@ const {
   describeCronField,
   describeCron,
   buildCronExpression,
+  nextCronRunTimes,
   expandCronMacro,
   parseIpv4,
   ipv4IntToString,
@@ -4736,6 +4737,44 @@ describe('buildCronExpression', () => {
     expect(() => buildCronExpression({
       minute: '60', hour: '4', dayOfMonth: '1', month: '*', dayOfWeek: '*',
     })).toThrow();
+  });
+});
+
+describe('nextCronRunTimes', () => {
+  test('walks forward minute-by-minute for a simple "every N minutes" expression', () => {
+    const from = new Date(2024, 0, 1, 10, 5, 0);
+    const runs = nextCronRunTimes('*/15 * * * *', 3, from);
+    expect(runs.map((d) => d.getTime())).toEqual([
+      new Date(2024, 0, 1, 10, 15, 0).getTime(),
+      new Date(2024, 0, 1, 10, 30, 0).getTime(),
+      new Date(2024, 0, 1, 10, 45, 0).getTime(),
+    ]);
+  });
+
+  test('skips weekends for a weekdays-only expression', () => {
+    // 2024-01-05 is a Friday; its 09:00 run has already passed, so the next
+    // 09:00 weekday run should skip Sat/Sun and land on Monday 2024-01-08.
+    const from = new Date(2024, 0, 5, 10, 0, 0);
+    const runs = nextCronRunTimes('0 9 * * 1-5', 1, from);
+    expect(runs[0].getTime()).toBe(new Date(2024, 0, 8, 9, 0, 0).getTime());
+  });
+
+  test('applies OR semantics when both day-of-month and day-of-week are restricted', () => {
+    // "on the 1st, or on Monday" - Mondays fire independently of the 1st of
+    // the month, and the 1st fires even on a Thursday.
+    const from = new Date(2024, 0, 1, 0, 1, 0);
+    const runs = nextCronRunTimes('0 0 1 * 1', 5, from);
+    expect(runs.map((d) => d.getTime())).toEqual([
+      new Date(2024, 0, 8, 0, 0, 0).getTime(),
+      new Date(2024, 0, 15, 0, 0, 0).getTime(),
+      new Date(2024, 0, 22, 0, 0, 0).getTime(),
+      new Date(2024, 0, 29, 0, 0, 0).getTime(),
+      new Date(2024, 1, 1, 0, 0, 0).getTime(),
+    ]);
+  });
+
+  test('throws for a schedule that can never fire (Feb 30th does not exist)', () => {
+    expect(() => nextCronRunTimes('0 0 30 2 *', 1, new Date(2024, 0, 1, 0, 0, 0))).toThrow();
   });
 });
 

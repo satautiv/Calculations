@@ -5457,6 +5457,22 @@ document.getElementById('cron-preset').addEventListener('change', (e) => {
   document.getElementById(id).addEventListener('input', applyCronPreset);
 });
 
+// Renders the next 5 upcoming run times for a validated cron expression, as
+// an HTML snippet to append below the headline/description. A pathological
+// expression (e.g. one that never fires) is reported inline instead of
+// throwing, so it doesn't blank out the headline/description above it.
+function cronNextRunsHtml(expression) {
+  try {
+    const runs = nextCronRunTimes(expression, 5);
+    const items = runs
+      .map((date) => `<li>${date.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })}</li>`)
+      .join('');
+    return `<div class="hint">Next 5 run times:</div><ul>${items}</ul>`;
+  } catch (err) {
+    return `<div class="hint">Next run times unavailable: ${err.message}</div>`;
+  }
+}
+
 document.getElementById('cron-calc').addEventListener('click', () => {
   const mode = document.getElementById('cron-mode').value;
 
@@ -5469,6 +5485,7 @@ document.getElementById('cron-calc').addEventListener('click', () => {
       }
       document.getElementById('cron-result').innerHTML = `
         <div class="headline">${describeCron(input)}</div>
+        ${cronNextRunsHtml(input)}
       `;
       return;
     }
@@ -5484,6 +5501,7 @@ document.getElementById('cron-calc').addEventListener('click', () => {
     document.getElementById('cron-result').innerHTML = `
       <div class="headline">${expression}</div>
       <div>${describeCron(expression)}</div>
+      ${cronNextRunsHtml(expression)}
     `;
   } catch (err) {
     showError('cron-result', err.message);
