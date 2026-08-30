@@ -5377,3 +5377,84 @@ document.getElementById('json-yaml-calc').addEventListener('click', () => {
     showError('json-yaml-result', err.message);
   }
 });
+// --- Cron expression generator & translator ---
+document.getElementById('cron-mode').addEventListener('change', (e) => {
+  const isTranslator = e.target.value === 'translator';
+  document.getElementById('cron-builder-fields').hidden = isTranslator;
+  document.getElementById('cron-translator-fields').hidden = !isTranslator;
+});
+
+function applyCronPreset() {
+  const preset = document.getElementById('cron-preset').value;
+  const minuteEl = document.getElementById('cron-minute');
+  const hourEl = document.getElementById('cron-hour');
+  const domEl = document.getElementById('cron-dom');
+  const monthEl = document.getElementById('cron-month');
+  const dowEl = document.getElementById('cron-dow');
+
+  if (preset === 'every-n-minutes') {
+    const n = document.getElementById('cron-preset-n').value || '15';
+    minuteEl.value = `*/${n}`;
+    hourEl.value = '*';
+    domEl.value = '*';
+    monthEl.value = '*';
+    dowEl.value = '*';
+  } else if (preset === 'daily-time') {
+    domEl.value = '*';
+    monthEl.value = '*';
+    dowEl.value = '*';
+  } else if (preset === 'weekly-day') {
+    domEl.value = '*';
+    monthEl.value = '*';
+    dowEl.value = document.getElementById('cron-preset-weekday').value;
+  } else if (preset === 'monthly-day') {
+    const day = document.getElementById('cron-preset-day').value || '1';
+    domEl.value = day;
+    monthEl.value = '*';
+    dowEl.value = '*';
+  }
+}
+
+document.getElementById('cron-preset').addEventListener('change', (e) => {
+  const preset = e.target.value;
+  document.getElementById('cron-preset-n-field').hidden = preset !== 'every-n-minutes';
+  document.getElementById('cron-preset-weekday-field').hidden = preset !== 'weekly-day';
+  document.getElementById('cron-preset-day-field').hidden = preset !== 'monthly-day';
+  if (preset !== 'custom') applyCronPreset();
+});
+['cron-preset-n', 'cron-preset-weekday', 'cron-preset-day'].forEach((id) => {
+  document.getElementById(id).addEventListener('input', applyCronPreset);
+});
+
+document.getElementById('cron-calc').addEventListener('click', () => {
+  const mode = document.getElementById('cron-mode').value;
+
+  try {
+    if (mode === 'translator') {
+      const input = document.getElementById('cron-translate-input').value.trim();
+      if (!input) {
+        showError('cron-result', 'Enter a cron expression or @macro.');
+        return;
+      }
+      document.getElementById('cron-result').innerHTML = `
+        <div class="headline">${describeCron(input)}</div>
+      `;
+      return;
+    }
+
+    const minute = document.getElementById('cron-minute').value.trim();
+    const hour = document.getElementById('cron-hour').value.trim();
+    const dayOfMonth = document.getElementById('cron-dom').value.trim();
+    const month = document.getElementById('cron-month').value.trim();
+    const dayOfWeek = document.getElementById('cron-dow').value.trim();
+
+    const expression = buildCronExpression({ minute, hour, dayOfMonth, month, dayOfWeek });
+
+    document.getElementById('cron-result').innerHTML = `
+      <div class="headline">${expression}</div>
+      <div>${describeCron(expression)}</div>
+    `;
+  } catch (err) {
+    showError('cron-result', err.message);
+  }
+});

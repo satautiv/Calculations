@@ -189,6 +189,11 @@ const {
   validateJson,
   jsonToYaml,
   yamlToJson,
+  parseCronField,
+  describeCronField,
+  describeCron,
+  buildCronExpression,
+  expandCronMacro,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4364,5 +4369,228 @@ describe('yamlToJson', () => {
 
   test('rejects tags', () => {
     expect(() => yamlToJson('a: !!str 123\n')).toThrow(/tag/i);
+  });
+});
+// --- Cron expression generator & translator ---
+
+describe('parseCronField', () => {
+  test('"*" expands to the full range', () => {
+    expect(parseCronField('*', 0, 4)).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  test('a single value', () => {
+    expect(parseCronField('5', 0, 59)).toEqual([5]);
+  });
+
+  test('an inclusive range', () => {
+    expect(parseCronField('9-12', 0, 23)).toEqual([9, 10, 11, 12]);
+  });
+
+  test('a comma-separated list', () => {
+    expect(parseCronField('1,15,30', 0, 59)).toEqual([1, 15, 30]);
+  });
+
+  test('"*/S" steps from the field minimum', () => {
+    expect(parseCronField('*/15', 0, 59)).toEqual([0, 15, 30, 45]);
+  });
+
+  test('"N-M/S" steps within a range', () => {
+    expect(parseCronField('10-40/5', 0, 59)).toEqual([10, 15, 20, 25, 30, 35, 40]);
+  });
+
+  test('combined ranges, lists, and steps', () => {
+    expect(parseCronField('1-5,10,20-25/5', 0, 59)).toEqual([1, 2, 3, 4, 5, 10, 20, 25]);
+  });
+
+  test('month names resolve case-insensitively', () => {
+    expect(parseCronField('jan-mar', 1, 12, ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'])).toEqual([1, 2, 3]);
+  });
+
+  test('day-of-week folds 7 into 0 (both mean Sunday)', () => {
+    expect(parseCronField('0,7', 0, 7, ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'])).toEqual([0]);
+  });
+
+  test('rejects an out-of-range value', () => {
+    expect(() => parseCronField('60', 0, 59)).toThrow();
+    expect(() => parseCronField('13', 1, 12)).toThrow();
+    expect(() => parseCronField('8', 0, 7)).toThrow();
+  });
+
+  test('rejects a reversed range', () => {
+    expect(() => parseCronField('5-2', 0, 59)).toThrow();
+  });
+
+  test('rejects a zero or negative step', () => {
+    expect(() => parseCronField('*/0', 0, 59)).toThrow();
+  });
+
+  test('rejects non-numeric text in a field with no names', () => {
+    expect(() => parseCronField('abc', 1, 31)).toThrow();
+  });
+
+  test('rejects stray or doubled commas', () => {
+    expect(() => parseCronField('1,,2', 0, 59)).toThrow();
+    expect(() => parseCronField(',1', 0, 59)).toThrow();
+    expect(() => parseCronField('1,', 0, 59)).toThrow();
+  });
+
+  test('rejects an empty field', () => {
+    expect(() => parseCronField('', 0, 59)).toThrow();
+  });
+});
+
+describe('describeCronField', () => {
+  test('day-of-month single value', () => {
+    expect(describeCronField('1', 'dayOfMonth')).toBe('day 1 of the month');
+  });
+
+  test('month single value uses the full name', () => {
+    expect(describeCronField('1', 'month')).toBe('January');
+  });
+
+  test('day-of-week range reads as "X through Y"', () => {
+    expect(describeCronField('1-5', 'dayOfWeek')).toBe('Monday through Friday');
+  });
+
+  test('minute step reads as "every N minutes"', () => {
+    expect(describeCronField('*/15', 'minute')).toBe('Every 15 minutes');
+  });
+
+  test('throws for an unknown field kind', () => {
+    expect(() => describeCronField('*', 'nonsense')).toThrow();
+  });
+});
+
+describe('describeCron', () => {
+  test('worked example: yearly at midnight on Jan 1', () => {
+    expect(describeCron('0 0 1 1 *')).toBe('At 00:00, on day 1 of the month, only in January');
+  });
+
+  test('worked example: every 15 minutes on weekday business hours', () => {
+    expect(describeCron('*/15 9-17 * * 1-5')).toBe('Every 15 minutes, between 09:00 and 17:59, Monday through Friday');
+  });
+
+  test('worked example: 09:00 on Monday, Wednesday, and Friday', () => {
+    expect(describeCron('0 9 * * 1,3,5')).toBe('At 09:00, on Monday, Wednesday, and Friday');
+  });
+
+  test('worked example: monthly on day 1', () => {
+    expect(describeCron('30 4 1 * *')).toBe('At 04:30, on day 1 of the month');
+  });
+
+  test('@yearly and @annually expand to the same schedule', () => {
+    expect(describeCron('@yearly')).toBe(describeCron('0 0 1 1 *'));
+    expect(describeCron('@annually')).toBe(describeCron('0 0 1 1 *'));
+  });
+
+  test('@monthly expands correctly', () => {
+    expect(describeCron('@monthly')).toBe(describeCron('0 0 1 * *'));
+  });
+
+  test('@weekly expands correctly', () => {
+    expect(describeCron('@weekly')).toBe(describeCron('0 0 * * 0'));
+  });
+
+  test('@daily and @midnight expand to the same schedule', () => {
+    expect(describeCron('@daily')).toBe(describeCron('0 0 * * *'));
+    expect(describeCron('@midnight')).toBe(describeCron('0 0 * * *'));
+  });
+
+  test('@hourly expands correctly', () => {
+    expect(describeCron('@hourly')).toBe(describeCron('0 * * * *'));
+  });
+
+  test('@reboot is flagged as unsupported rather than expanded', () => {
+    expect(describeCron('@reboot')).toMatch(/startup/i);
+  });
+
+  test('an unrecognized macro throws', () => {
+    expect(() => describeCron('@fortnightly')).toThrow();
+  });
+
+  test('day-of-month and day-of-week both restricted use OR semantics', () => {
+    const result = describeCron('0 0 1 * 1');
+    expect(result).toContain('day 1 of the month');
+    expect(result).toContain('Monday');
+    expect(result).toMatch(/ or /);
+  });
+
+  test('day 31 is described accurately, not rejected', () => {
+    const result = describeCron('0 0 31 * *');
+    expect(result).toContain('day 31 of the month');
+    expect(result.toLowerCase()).toContain('not occur in every month');
+  });
+
+  test('day 29 gets a leap-year note', () => {
+    expect(describeCron('0 0 29 2 *').toLowerCase()).toContain('leap year');
+  });
+
+  test('a field with too many segments throws', () => {
+    expect(() => describeCron('* * * *')).toThrow();
+    expect(() => describeCron('* * * * * *')).toThrow();
+  });
+
+  test('an out-of-range value throws with a helpful message', () => {
+    expect(() => describeCron('60 0 1 1 *')).toThrow(/minute/i);
+    expect(() => describeCron('0 0 1 13 *')).toThrow(/month/i);
+    expect(() => describeCron('0 0 1 1 8')).toThrow(/day-of-week/i);
+  });
+
+  test('a malformed range or step throws', () => {
+    expect(() => describeCron('5-2 0 1 1 *')).toThrow();
+    expect(() => describeCron('*/0 0 1 1 *')).toThrow();
+    expect(() => describeCron('a 0 1 1 *')).toThrow();
+  });
+
+  test('empty input throws', () => {
+    expect(() => describeCron('')).toThrow();
+    expect(() => describeCron('   ')).toThrow();
+  });
+
+  test('every minute has no wildcard fragments', () => {
+    expect(describeCron('* * * * *')).toBe('Every minute');
+  });
+});
+
+describe('buildCronExpression', () => {
+  test('joins the 5 fields in order', () => {
+    expect(buildCronExpression({
+      minute: '30', hour: '4', dayOfMonth: '1', month: '*', dayOfWeek: '*',
+    })).toBe('30 4 1 * *');
+  });
+
+  test('its output can be fed straight into describeCron', () => {
+    const expr = buildCronExpression({
+      minute: '0', hour: '9', dayOfMonth: '*', month: '*', dayOfWeek: '1,3,5',
+    });
+    expect(describeCron(expr)).toBe('At 09:00, on Monday, Wednesday, and Friday');
+  });
+
+  test('rejects an invalid field', () => {
+    expect(() => buildCronExpression({
+      minute: '60', hour: '4', dayOfMonth: '1', month: '*', dayOfWeek: '*',
+    })).toThrow();
+  });
+});
+
+describe('expandCronMacro', () => {
+  test('expands a known macro', () => {
+    expect(expandCronMacro('@daily')).toBe('0 0 * * *');
+  });
+
+  test('is case-insensitive', () => {
+    expect(expandCronMacro('@DAILY')).toBe('0 0 * * *');
+  });
+
+  test('returns a non-macro expression unchanged (trimmed)', () => {
+    expect(expandCronMacro('  30 4 1 * *  ')).toBe('30 4 1 * *');
+  });
+
+  test('returns null for an unsupported macro', () => {
+    expect(expandCronMacro('@reboot')).toBeNull();
+  });
+
+  test('throws for an unrecognized macro', () => {
+    expect(() => expandCronMacro('@fortnightly')).toThrow();
   });
 });
