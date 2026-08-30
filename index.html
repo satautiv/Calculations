@@ -1414,7 +1414,7 @@
 
   <section id="percentage-calculator" class="view tab-panel">
     <h2>Percentage Calculator</h2>
-    <p class="hint">Find X% of Y, work out what percent one number is of another, or calculate the percentage increase or decrease between two values.</p>
+    <p class="hint">Find X% of Y, work out what percent one number is of another, calculate the percentage increase or decrease between two values, or work backwards from a final value and percent change to find the original value.</p>
 
     <div class="field">
       <label for="pct-mode">Calculation type</label>
@@ -1422,6 +1422,7 @@
         <option value="percent-of">X% of Y</option>
         <option value="what-percent">X is what % of Y</option>
         <option value="percent-change">Percentage increase/decrease</option>
+        <option value="find-original">Find original value</option>
       </select>
     </div>
 
@@ -1455,6 +1456,24 @@
       <div class="field">
         <label for="pct-new">New value</label>
         <input type="number" id="pct-new" step="any" placeholder="e.g. 100">
+      </div>
+    </div>
+
+    <div id="pct-orig-fields" hidden>
+      <div class="field">
+        <label for="pct-orig-final">Final value</label>
+        <input type="number" id="pct-orig-final" step="any" placeholder="e.g. 80">
+      </div>
+      <div class="field">
+        <label for="pct-orig-percent">Percent change</label>
+        <input type="number" id="pct-orig-percent" step="any" min="0" placeholder="e.g. 20">
+      </div>
+      <div class="field">
+        <label for="pct-orig-direction">Direction</label>
+        <select id="pct-orig-direction">
+          <option value="decrease">Decrease (e.g. a discount)</option>
+          <option value="increase">Increase (e.g. a raise)</option>
+        </select>
       </div>
     </div>
 
