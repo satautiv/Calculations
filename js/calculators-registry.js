@@ -640,6 +640,13 @@ const CALCULATOR_REGISTRY = [
     description: "See how far you've traveled through space via Earth's rotation and orbit around the Sun.",
     keywords: ['earth rotation', 'orbit', 'space travel', 'sidereal day', 'distance traveled', 'unusual'],
   },
+  {
+    id: 'decking-calculator',
+    name: 'Decking Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how many deck boards and screws you need, based on deck size, board dimensions, board gap, and joist spacing.',
+    keywords: ['decking', 'deck boards', 'joist spacing', 'deck screws', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

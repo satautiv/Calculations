@@ -2924,6 +2924,45 @@
     <button class="calc-btn" id="earth-calc">Calculate</button>
     <div class="result" id="earth-result"></div>
   </section>
+
+  <section id="decking-calculator" class="view tab-panel">
+    <h2>Decking Calculator</h2>
+    <p class="hint">Estimates how many deck boards and screws you'll need, based on deck size, board dimensions, the gap left between boards for drainage/expansion, and joist spacing. A planning estimate - always round up material orders and check local building requirements.</p>
+    <div class="field">
+      <label for="decking-deck-length">Deck length (m)</label>
+      <input type="number" id="decking-deck-length" min="0" step="0.1" placeholder="e.g. 4">
+    </div>
+    <div class="field">
+      <label for="decking-deck-width">Deck width (m)</label>
+      <input type="number" id="decking-deck-width" min="0" step="0.1" placeholder="e.g. 3">
+    </div>
+    <div class="field">
+      <label for="decking-board-width">Board width (mm)</label>
+      <input type="number" id="decking-board-width" min="0" step="1" placeholder="e.g. 140">
+    </div>
+    <div class="field">
+      <label for="decking-board-length">Board length (m)</label>
+      <input type="number" id="decking-board-length" min="0" step="0.1" placeholder="e.g. 3.6">
+    </div>
+    <div class="field">
+      <label for="decking-gap">Gap between boards (mm)</label>
+      <input type="number" id="decking-gap" min="0" step="0.5" value="5">
+    </div>
+    <div class="field">
+      <label for="decking-waste">Waste (%)</label>
+      <input type="number" id="decking-waste" min="0" step="1" value="10">
+    </div>
+    <div class="field">
+      <label for="decking-joist-spacing">Joist spacing (m)</label>
+      <input type="number" id="decking-joist-spacing" min="0" step="0.05" value="0.4">
+    </div>
+    <div class="field">
+      <label for="decking-screws-per-joist">Screws per joist crossing</label>
+      <input type="number" id="decking-screws-per-joist" min="1" step="1" value="2">
+    </div>
+    <button class="calc-btn" id="decking-calc">Calculate</button>
+    <div class="result" id="decking-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

@@ -2477,6 +2477,49 @@ function earthTravelDistance(latitudeDeg, hours, includeRotation = true, include
   return { rotationKm, orbitKm, totalKm: rotationKm + orbitKm };
 }
 
+// --- Decking calculator ---
+
+// Deck length/width and joist spacing in meters; board width and gap in
+// millimeters (matching how these are commonly sold/specified); board
+// length in meters. wastePercent and screwsPerJoist as whole numbers.
+// Boards run across the deck's width in parallel rows, each row spanning
+// the deck's length; joists run perpendicular to the boards, spanning the
+// deck's length, so joist crossings per board are based on deck length.
+function deckingMaterialsNeeded(
+  deckLengthM, deckWidthM, boardWidthMm, boardLengthM, gapMm, wastePercent, joistSpacingM, screwsPerJoist
+) {
+  if (!deckLengthM || deckLengthM <= 0) throw new Error('Deck length must be greater than zero.');
+  if (!deckWidthM || deckWidthM <= 0) throw new Error('Deck width must be greater than zero.');
+  if (!boardWidthMm || boardWidthMm <= 0) throw new Error('Board width must be greater than zero.');
+  if (!boardLengthM || boardLengthM <= 0) throw new Error('Board length must be greater than zero.');
+  if (gapMm < 0) throw new Error('Gap between boards cannot be negative.');
+  if (gapMm >= boardWidthMm) throw new Error('Gap between boards cannot be greater than or equal to the board width.');
+  if (wastePercent < 0) throw new Error('Waste percentage cannot be negative.');
+  if (!joistSpacingM || joistSpacingM <= 0) throw new Error('Joist spacing must be greater than zero.');
+  if (!screwsPerJoist || screwsPerJoist <= 0) throw new Error('Screws per joist crossing must be greater than zero.');
+
+  const effectiveBoardWidthM = (boardWidthMm + gapMm) / 1000;
+  const boardRows = Math.ceil(deckWidthM / effectiveBoardWidthM);
+  const totalLinearLengthM = boardRows * deckLengthM;
+  const boardsByLength = Math.ceil(totalLinearLengthM / boardLengthM);
+  const totalBoards = Math.ceil(boardsByLength * (1 + wastePercent / 100));
+
+  const joistsCrossedPerBoard = Math.ceil(deckLengthM / joistSpacingM) + 1;
+  const screwsPerBoard = joistsCrossedPerBoard * screwsPerJoist;
+  const totalScrews = screwsPerBoard * totalBoards;
+
+  return {
+    effectiveBoardWidthM,
+    boardRows,
+    totalLinearLengthM,
+    boardsByLength,
+    totalBoards,
+    joistsCrossedPerBoard,
+    screwsPerBoard,
+    totalScrews,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2691,5 +2734,6 @@ if (typeof module !== 'undefined' && module.exports) {
     EARTH_ORBITAL_SPEED_KMH,
     earthRotationSpeedKmh,
     earthTravelDistance,
+    deckingMaterialsNeeded,
   };
 }

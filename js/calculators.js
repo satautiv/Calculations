@@ -4765,3 +4765,32 @@ document.getElementById('earth-calc').addEventListener('click', () => {
     showError('earth-result', err.message);
   }
 });
+
+// --- Decking calculator ---
+document.getElementById('decking-calc').addEventListener('click', () => {
+  const deckLength = parseFloat(document.getElementById('decking-deck-length').value);
+  const deckWidth = parseFloat(document.getElementById('decking-deck-width').value);
+  const boardWidth = parseFloat(document.getElementById('decking-board-width').value);
+  const boardLength = parseFloat(document.getElementById('decking-board-length').value);
+  const gap = parseFloat(document.getElementById('decking-gap').value);
+  const waste = parseFloat(document.getElementById('decking-waste').value);
+  const joistSpacing = parseFloat(document.getElementById('decking-joist-spacing').value);
+  const screwsPerJoist = parseFloat(document.getElementById('decking-screws-per-joist').value);
+
+  try {
+    const {
+      boardRows, totalLinearLengthM, totalBoards, joistsCrossedPerBoard, screwsPerBoard, totalScrews,
+    } = deckingMaterialsNeeded(
+      deckLength, deckWidth, boardWidth, boardLength, gap, waste, joistSpacing, screwsPerJoist
+    );
+
+    document.getElementById('decking-result').innerHTML = `
+      <div class="headline">${totalBoards} boards, ${totalScrews} screws</div>
+      <div>${boardRows} rows across the deck's width, ${totalLinearLengthM.toFixed(1)} m of linear decking needed</div>
+      <div>${joistsCrossedPerBoard} joist crossings per board &times; ${screwsPerJoist} screws each = ${screwsPerBoard} screws per board</div>
+      <div class="hint">Board count includes waste for cutting and end-trimming; always round up and order a little extra.</div>
+    `;
+  } catch (err) {
+    showError('decking-result', err.message);
+  }
+});
