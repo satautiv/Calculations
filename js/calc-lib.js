@@ -4258,6 +4258,64 @@ function convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, vie
     vh: (px / viewportHeightPx) * 100,
   };
 }
+// --- Docker/Kubernetes resource request/limit calculator ---
+
+// Request comes from observed average usage (the scheduling floor);
+// limit comes from observed peak usage plus headroom, so a burst above
+// average doesn't immediately get throttled/OOMKilled. See issue #122.
+function k8sResourcePlan(avgCpuMillicores, peakCpuMillicores, avgMemoryMiB, peakMemoryMiB, headroomFactor = 1.3) {
+  const positiveChecks = [
+    ['Average CPU usage', avgCpuMillicores],
+    ['Peak CPU usage', peakCpuMillicores],
+    ['Average memory usage', avgMemoryMiB],
+    ['Peak memory usage', peakMemoryMiB],
+  ];
+  for (const [label, value] of positiveChecks) {
+    if (typeof value !== 'number' || !isFinite(value) || value <= 0) {
+      throw new Error(`${label} must be a positive number.`);
+    }
+  }
+  if (typeof headroomFactor !== 'number' || !isFinite(headroomFactor) || headroomFactor <= 1) {
+    throw new Error('Headroom factor must be greater than 1 - otherwise the limit would equal or fall below the peak, leaving no burst room.');
+  }
+  if (peakCpuMillicores < avgCpuMillicores) {
+    throw new Error('Peak CPU usage cannot be lower than average CPU usage.');
+  }
+  if (peakMemoryMiB < avgMemoryMiB) {
+    throw new Error('Peak memory usage cannot be lower than average memory usage.');
+  }
+
+  const cpuRequestMillicores = Math.round(avgCpuMillicores);
+  if (cpuRequestMillicores === 0) {
+    throw new Error('Computed CPU request is 0 - a 0 request is effectively unset/meaningless.');
+  }
+  const memRequestMiB = Math.round(avgMemoryMiB);
+  if (memRequestMiB === 0) {
+    throw new Error('Computed memory request is 0 - a 0 request is effectively unset/meaningless.');
+  }
+
+  const cpuLimitMillicores = Math.round((peakCpuMillicores * headroomFactor) / 10) * 10;
+  const memLimitMiB = Math.round(peakMemoryMiB * headroomFactor);
+
+  let qosClass;
+  if (cpuRequestMillicores === cpuLimitMillicores && memRequestMiB === memLimitMiB) {
+    qosClass = 'Guaranteed';
+  } else {
+    qosClass = 'Burstable';
+  }
+
+  const yamlSnippet = [
+    'resources:',
+    '  requests:',
+    `    cpu: "${cpuRequestMillicores}m"`,
+    `    memory: "${memRequestMiB}Mi"`,
+    '  limits:',
+    `    cpu: "${cpuLimitMillicores}m"`,
+    `    memory: "${memLimitMiB}Mi"`,
+  ].join('\n');
+
+  return { cpuRequestMillicores, cpuLimitMillicores, memRequestMiB, memLimitMiB, qosClass, yamlSnippet };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -4540,5 +4598,6 @@ if (typeof module !== 'undefined' && module.exports) {
     symbolicToOctal,
     octalToSymbolic,
     convertCssUnits,
+    k8sResourcePlan,
   };
 }

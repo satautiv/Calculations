@@ -5695,3 +5695,41 @@ document.getElementById('css-unit-calc').addEventListener('click', () => {
     showError('css-unit-result', err.message);
   }
 });
+// --- Docker/Kubernetes resource request/limit calculator ---
+document.getElementById('k8s-calc').addEventListener('click', () => {
+  const cpuAvg = parseFloat(document.getElementById('k8s-cpu-avg').value);
+  const cpuPeak = parseFloat(document.getElementById('k8s-cpu-peak').value);
+  const cpuUnit = document.getElementById('k8s-cpu-unit').value;
+  const memAvg = parseFloat(document.getElementById('k8s-mem-avg').value);
+  const memPeak = parseFloat(document.getElementById('k8s-mem-peak').value);
+  const memUnit = document.getElementById('k8s-mem-unit').value;
+  const headroom = parseFloat(document.getElementById('k8s-headroom').value);
+
+  const cpuMultiplier = cpuUnit === 'cores' ? 1000 : 1;
+  const memMultiplier = memUnit === 'gib' ? 1024 : 1;
+
+  try {
+    const plan = k8sResourcePlan(
+      cpuAvg * cpuMultiplier,
+      cpuPeak * cpuMultiplier,
+      memAvg * memMultiplier,
+      memPeak * memMultiplier,
+      headroom
+    );
+
+    document.getElementById('k8s-result').innerHTML = `
+      <div class="headline">QoS class: ${plan.qosClass}</div>
+      <table>
+        <thead><tr><th></th><th>Request</th><th>Limit</th></tr></thead>
+        <tbody>
+          <tr><td>CPU</td><td>${plan.cpuRequestMillicores}m</td><td>${plan.cpuLimitMillicores}m</td></tr>
+          <tr><td>Memory</td><td>${plan.memRequestMiB}Mi</td><td>${plan.memLimitMiB}Mi</td></tr>
+        </tbody>
+      </table>
+      <pre>${escapeHtml(plan.yamlSnippet)}</pre>
+      <p class="hint">Exceeding a CPU limit causes CFS throttling (slower execution), not termination - many production guides recommend omitting a CPU limit entirely for latency-sensitive workloads. Exceeding a memory limit gets the container OOMKilled (hard termination), so memory limits should generally use more conservative (larger) headroom than CPU.</p>
+    `;
+  } catch (err) {
+    showError('k8s-result', err.message);
+  }
+});
