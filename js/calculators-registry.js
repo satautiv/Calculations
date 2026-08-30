@@ -759,6 +759,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert an IPv4 address to its IPv4-mapped (or deprecated IPv4-compatible) IPv6 form, and back.',
     keywords: ['ipv4', 'ipv6', 'ip address', 'ipv4-mapped', 'ipv4-compatible', 'network', 'developer'],
   },
+  {
+    id: 'wind-chill-heat-index-calculator',
+    name: 'Wind Chill & Heat Index Calculator',
+    category: 'Unusual',
+    description: 'Estimate the "feels like" temperature for cold, windy conditions or hot, humid conditions using the official NWS/NOAA formulas.',
+    keywords: ['wind chill', 'heat index', 'feels like temperature', 'weather', 'nws', 'noaa', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

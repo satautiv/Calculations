@@ -3943,6 +3943,51 @@ function subnetInfo(ipString, prefixLength) {
     totalAddresses: Math.pow(2, 32 - prefixLength),
   };
 }
+// --- Wind chill & heat index calculator ---
+
+// Official NWS (2001) wind chill formula. Only meaningful for T <= 50F and
+// V > 3mph - outside that range wind doesn't meaningfully add to the cooling
+// effect of the air temperature itself, so no number is calculated.
+function windChillFahrenheit(tempF, windSpeedMph) {
+  if (typeof tempF !== 'number' || isNaN(tempF)) {
+    throw new Error('Enter a valid temperature.');
+  }
+  if (typeof windSpeedMph !== 'number' || isNaN(windSpeedMph) || windSpeedMph < 0) {
+    throw new Error('Wind speed must be a non-negative number.');
+  }
+  const applicable = tempF <= 50 && windSpeedMph > 3;
+  if (!applicable) {
+    return { applicable: false, feelsLikeF: null };
+  }
+  const v016 = Math.pow(windSpeedMph, 0.16);
+  const feelsLikeF = 35.74 + 0.6215 * tempF - 35.75 * v016 + 0.4275 * tempF * v016;
+  return { applicable: true, feelsLikeF };
+}
+
+// Official NWS/NOAA Rothfusz regression. Only valid/appropriate for T >= 80F;
+// below that, humidity's contribution to perceived heat is negligible enough
+// that the NWS doesn't apply the regression.
+function heatIndexFahrenheit(tempF, relativeHumidityPercent) {
+  if (typeof tempF !== 'number' || isNaN(tempF)) {
+    throw new Error('Enter a valid temperature.');
+  }
+  if (typeof relativeHumidityPercent !== 'number' || isNaN(relativeHumidityPercent) || relativeHumidityPercent < 0) {
+    throw new Error('Relative humidity must be a non-negative number.');
+  }
+  if (relativeHumidityPercent > 100) {
+    throw new Error('Relative humidity cannot exceed 100%.');
+  }
+  const applicable = tempF >= 80;
+  if (!applicable) {
+    return { applicable: false, feelsLikeF: null };
+  }
+  const T = tempF;
+  const RH = relativeHumidityPercent;
+  const feelsLikeF = -42.379 + 2.04901523 * T + 10.14333127 * RH - 0.22475541 * T * RH
+    - 0.00683783 * T * T - 0.05481717 * RH * RH + 0.00122874 * T * T * RH
+    + 0.00085282 * T * RH * RH - 0.00000199 * T * T * RH * RH;
+  return { applicable: true, feelsLikeF };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -4215,5 +4260,7 @@ if (typeof module !== 'undefined' && module.exports) {
     ipv4ToIpv6Mapped,
     ipv4ToIpv6Compatible,
     ipv6ToIpv4,
+    windChillFahrenheit,
+    heatIndexFahrenheit,
   };
 }
