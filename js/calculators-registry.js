@@ -794,6 +794,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Suggest CPU and memory requests/limits for a container from observed average and peak usage, with a YAML snippet and QoS class.',
     keywords: ['kubernetes', 'k8s', 'docker', 'resource limits', 'resource requests', 'cpu', 'memory', 'qos', 'yaml', 'developer'],
   },
+  {
+    id: 'sql-formatter',
+    name: 'SQL Formatter',
+    category: 'Developer',
+    description: 'Reformat a raw SQL query into consistently indented, consistently cased SQL, or minify it to one line.',
+    keywords: ['sql', 'format', 'formatter', 'minify', 'pretty print', 'query', 'indent', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

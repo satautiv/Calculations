@@ -3590,6 +3590,38 @@
     <button class="calc-btn" id="k8s-calc">Calculate</button>
     <div class="result" id="k8s-result"></div>
   </section>
+
+  <section id="sql-formatter" class="view tab-panel">
+    <h2>SQL Formatter</h2>
+    <p class="hint">Reformat a raw SQL query into consistently indented, consistently cased SQL, or minify it to one line. This is a hand-written tokenizer covering common ANSI-ish SQL &mdash; not a full multi-dialect parser. Keywords inside string/quoted-identifier literals are left untouched, and subqueries in parentheses are preserved as-is rather than recursively re-indented.</p>
+    <div class="field">
+      <label for="sql-formatter-mode">Mode</label>
+      <select id="sql-formatter-mode">
+        <option value="format">Format (pretty-print)</option>
+        <option value="minify">Minify (collapse to one line)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sql-formatter-case">Keyword case</label>
+      <select id="sql-formatter-case">
+        <option value="upper">UPPERCASE</option>
+        <option value="lower">lowercase</option>
+      </select>
+    </div>
+    <div class="field" id="sql-formatter-indent-field">
+      <label for="sql-formatter-indent">Indent width (Format mode)</label>
+      <select id="sql-formatter-indent">
+        <option value="2">2 spaces</option>
+        <option value="4">4 spaces</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="sql-formatter-input">SQL query</label>
+      <textarea id="sql-formatter-input" rows="10" placeholder="e.g.&#10;select id, name, email from users where status = 'active' and age > 18 order by created_at desc limit 10"></textarea>
+    </div>
+    <button class="calc-btn" id="sql-formatter-calc">Calculate</button>
+    <div class="result" id="sql-formatter-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

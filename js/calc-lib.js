@@ -4316,6 +4316,383 @@ function k8sResourcePlan(avgCpuMillicores, peakCpuMillicores, avgMemoryMiB, peak
 
   return { cpuRequestMillicores, cpuLimitMillicores, memRequestMiB, memLimitMiB, qosClass, yamlSnippet };
 }
+// --- SQL Formatter ---
+
+// Single-word reserved words. Multi-word clauses (GROUP BY, INNER JOIN, ...)
+// are recognized afterward by merging adjacent single-word keyword tokens,
+// so e.g. a column literally named `group` stays an identifier until it's
+// actually followed by `by`.
+const SQL_RESERVED_WORDS = [
+  'SELECT', 'FROM', 'WHERE', 'JOIN', 'INNER', 'LEFT', 'RIGHT', 'FULL', 'OUTER', 'CROSS', 'ON',
+  'GROUP', 'BY', 'ORDER', 'HAVING', 'LIMIT', 'OFFSET', 'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET',
+  'DELETE', 'AND', 'OR', 'NOT', 'IN', 'IS', 'NULL', 'AS', 'DISTINCT', 'UNION', 'ALL', 'CASE', 'WHEN',
+  'THEN', 'ELSE', 'END', 'ASC', 'DESC',
+];
+const SQL_KEYWORD_SET = new Set(SQL_RESERVED_WORDS);
+
+// Checked longest-first isn't required here since every sequence starts with
+// a distinct first word, so a single left-to-right greedy scan is unambiguous.
+const SQL_COMPOUND_KEYWORDS = [
+  ['LEFT', 'OUTER', 'JOIN'],
+  ['RIGHT', 'OUTER', 'JOIN'],
+  ['FULL', 'OUTER', 'JOIN'],
+  ['INNER', 'JOIN'],
+  ['LEFT', 'JOIN'],
+  ['RIGHT', 'JOIN'],
+  ['FULL', 'JOIN'],
+  ['CROSS', 'JOIN'],
+  ['GROUP', 'BY'],
+  ['ORDER', 'BY'],
+  ['INSERT', 'INTO'],
+  ['DELETE', 'FROM'],
+  ['UNION', 'ALL'],
+];
+
+// Keywords that start a new top-level line at the base indent when they
+// appear outside of any parentheses (subqueries/function args are left alone).
+const SQL_CLAUSE_KEYWORDS = new Set([
+  'SELECT', 'FROM', 'WHERE', 'GROUP BY', 'ORDER BY', 'HAVING', 'LIMIT', 'OFFSET',
+  'JOIN', 'INNER JOIN', 'LEFT JOIN', 'RIGHT JOIN', 'FULL JOIN', 'CROSS JOIN',
+  'LEFT OUTER JOIN', 'RIGHT OUTER JOIN', 'FULL OUTER JOIN',
+  'UNION', 'UNION ALL', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM',
+]);
+
+function mergeSqlCompoundKeywords(tokens) {
+  const result = [];
+  let i = 0;
+  while (i < tokens.length) {
+    let matched = null;
+    for (const compound of SQL_COMPOUND_KEYWORDS) {
+      if (i + compound.length > tokens.length) continue;
+      let ok = true;
+      for (let k = 0; k < compound.length; k++) {
+        const t = tokens[i + k];
+        if (t.type !== 'keyword' || t.value.toUpperCase() !== compound[k]) { ok = false; break; }
+      }
+      if (ok) { matched = compound; break; }
+    }
+    if (matched) {
+      result.push({ type: 'keyword', value: matched.join(' ') });
+      i += matched.length;
+    } else {
+      result.push(tokens[i]);
+      i += 1;
+    }
+  }
+  return result;
+}
+
+// Tokenizes raw SQL text into { type, value } tokens, respecting quote and
+// comment boundaries so content inside them is never re-cased or treated as
+// a keyword/clause boundary. Degrades gracefully on unterminated strings,
+// identifiers, or comments by consuming to end-of-input instead of throwing,
+// so malformed input still gets best-effort normalization rather than a crash.
+function tokenizeSql(sql) {
+  const tokens = [];
+  const text = String(sql == null ? '' : sql);
+  const n = text.length;
+  let i = 0;
+
+  const isDigit = (ch) => ch >= '0' && ch <= '9';
+  const isIdentStart = (ch) => /[A-Za-z_]/.test(ch);
+  const isIdentChar = (ch) => /[A-Za-z0-9_$]/.test(ch);
+
+  while (i < n) {
+    const ch = text[i];
+
+    if (/\s/.test(ch)) { i += 1; continue; }
+
+    if (ch === '-' && text[i + 1] === '-') {
+      let j = i + 2;
+      while (j < n && text[j] !== '\n') j += 1;
+      tokens.push({ type: 'comment', value: text.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    if (ch === '/' && text[i + 1] === '*') {
+      let j = i + 2;
+      while (j < n && !(text[j] === '*' && text[j + 1] === '/')) j += 1;
+      j = Math.min(j + 2, n);
+      tokens.push({ type: 'comment', value: text.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    if (ch === "'") {
+      let j = i + 1;
+      while (j < n) {
+        if (text[j] === "'") {
+          if (text[j + 1] === "'") { j += 2; continue; }
+          j += 1;
+          break;
+        }
+        j += 1;
+      }
+      tokens.push({ type: 'string', value: text.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    if (ch === '"') {
+      let j = i + 1;
+      while (j < n) {
+        if (text[j] === '"') {
+          if (text[j + 1] === '"') { j += 2; continue; }
+          j += 1;
+          break;
+        }
+        j += 1;
+      }
+      tokens.push({ type: 'identifier', value: text.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    if (ch === '`') {
+      let j = i + 1;
+      while (j < n && text[j] !== '`') j += 1;
+      j = Math.min(j + 1, n);
+      tokens.push({ type: 'identifier', value: text.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    if (isDigit(ch) || (ch === '.' && isDigit(text[i + 1]))) {
+      let j = i;
+      while (j < n && isDigit(text[j])) j += 1;
+      if (text[j] === '.') {
+        j += 1;
+        while (j < n && isDigit(text[j])) j += 1;
+      }
+      if (text[j] === 'e' || text[j] === 'E') {
+        let k = j + 1;
+        if (text[k] === '+' || text[k] === '-') k += 1;
+        if (isDigit(text[k])) {
+          j = k;
+          while (j < n && isDigit(text[j])) j += 1;
+        }
+      }
+      tokens.push({ type: 'number', value: text.slice(i, j) });
+      i = j;
+      continue;
+    }
+
+    if (isIdentStart(ch)) {
+      let j = i + 1;
+      while (j < n && isIdentChar(text[j])) j += 1;
+      const word = text.slice(i, j);
+      const type = SQL_KEYWORD_SET.has(word.toUpperCase()) ? 'keyword' : 'identifier';
+      tokens.push({ type, value: word });
+      i = j;
+      continue;
+    }
+
+    const twoChar = text.slice(i, i + 2);
+    if (['<=', '>=', '<>', '!=', '||', '::'].includes(twoChar)) {
+      tokens.push({ type: 'operator', value: twoChar });
+      i += 2;
+      continue;
+    }
+
+    if (',();'.includes(ch) || ch === '.') {
+      tokens.push({ type: 'punctuation', value: ch });
+      i += 1;
+      continue;
+    }
+
+    if ('=<>+-*/%'.includes(ch)) {
+      tokens.push({ type: 'operator', value: ch });
+      i += 1;
+      continue;
+    }
+
+    // Unrecognized character (malformed input) - keep it as its own token
+    // rather than throwing, so the rest of the query still gets formatted.
+    tokens.push({ type: 'operator', value: ch });
+    i += 1;
+  }
+
+  return mergeSqlCompoundKeywords(tokens);
+}
+
+function sqlKeywordCase(value, uppercase) {
+  return uppercase ? value.toUpperCase() : value.toLowerCase();
+}
+
+function renderSqlToken(token, uppercase) {
+  return token.type === 'keyword' ? sqlKeywordCase(token.value, uppercase) : token.value;
+}
+
+function sqlNoSpaceBeforeToken(token, prevToken) {
+  if (!prevToken) return true;
+  if (token.type === 'punctuation' && [',', ')', ';', '.'].includes(token.value)) return true;
+  if (prevToken.type === 'punctuation' && ['(', '.'].includes(prevToken.value)) return true;
+  if (token.type === 'punctuation' && token.value === '(' && prevToken.type === 'identifier') return true;
+  if (token.type === 'operator' && token.value === '::') return true;
+  if (prevToken.type === 'operator' && prevToken.value === '::') return true;
+  return false;
+}
+
+function joinSqlTokens(tokens, uppercase) {
+  let result = '';
+  let prev = null;
+  for (const tok of tokens) {
+    if (result !== '' && !sqlNoSpaceBeforeToken(tok, prev)) result += ' ';
+    result += renderSqlToken(tok, uppercase);
+    prev = tok;
+  }
+  return result;
+}
+
+// Splits a token stream into statements on top-level `;` tokens (ignoring any
+// inside parentheses), so each statement can be formatted independently and
+// restarts at the base indent level. Records whether each statement was
+// actually terminated by `;` in the source so a trailing statement with no
+// semicolon doesn't get one invented for it.
+function splitSqlStatements(tokens) {
+  const statements = [];
+  let current = [];
+  let parenDepth = 0;
+  for (const tok of tokens) {
+    if (tok.type === 'punctuation' && tok.value === '(') parenDepth += 1;
+    else if (tok.type === 'punctuation' && tok.value === ')') parenDepth = Math.max(0, parenDepth - 1);
+
+    if (tok.type === 'punctuation' && tok.value === ';' && parenDepth === 0) {
+      statements.push({ tokens: current, terminated: true });
+      current = [];
+      continue;
+    }
+    current.push(tok);
+  }
+  if (current.length > 0) statements.push({ tokens: current, terminated: false });
+  return statements;
+}
+
+// Renders one statement's tokens with clause line-breaks and indentation.
+// Content inside parentheses (function args, subqueries, tuples) is appended
+// inline as-is rather than recursively re-indented - it's preserved correctly
+// without disturbing the outer query's formatting, which is enough for this
+// implementation's scope.
+function formatSqlStatementTokens(tokens, indentWidth, uppercase) {
+  const indentUnit = ' '.repeat(indentWidth);
+  const lines = [];
+  let currentIndent = 0;
+  let currentTokens = [];
+
+  function flush() {
+    if (currentTokens.length > 0) {
+      lines.push(indentUnit.repeat(currentIndent) + joinSqlTokens(currentTokens, uppercase));
+      currentTokens = [];
+    }
+  }
+
+  function startLine(indent) {
+    flush();
+    currentIndent = indent;
+  }
+
+  let clause = null; // 'SELECT' | 'WHERE' | 'OTHER' | null
+  let parenDepth = 0;
+
+  for (let idx = 0; idx < tokens.length; idx += 1) {
+    const tok = tokens[idx];
+
+    if (tok.type === 'comment') {
+      flush();
+      lines.push(indentUnit.repeat(currentIndent) + tok.value);
+      continue;
+    }
+
+    if (tok.type === 'punctuation' && tok.value === '(') {
+      parenDepth += 1;
+      currentTokens.push(tok);
+      continue;
+    }
+    if (tok.type === 'punctuation' && tok.value === ')') {
+      parenDepth = Math.max(0, parenDepth - 1);
+      currentTokens.push(tok);
+      continue;
+    }
+
+    if (parenDepth === 0 && tok.type === 'keyword' && SQL_CLAUSE_KEYWORDS.has(tok.value.toUpperCase())) {
+      const upper = tok.value.toUpperCase();
+      startLine(0);
+      currentTokens.push(tok);
+
+      if (upper === 'SELECT') {
+        const next = tokens[idx + 1];
+        if (next && next.type === 'keyword' && next.value.toUpperCase() === 'DISTINCT') {
+          currentTokens.push(next);
+          idx += 1;
+        }
+        clause = 'SELECT';
+        startLine(1);
+      } else if (upper === 'WHERE') {
+        clause = 'WHERE';
+        startLine(1);
+      } else {
+        clause = 'OTHER';
+      }
+      continue;
+    }
+
+    if (parenDepth === 0 && clause === 'SELECT' && tok.type === 'punctuation' && tok.value === ',') {
+      currentTokens.push(tok);
+      startLine(1);
+      continue;
+    }
+
+    if (parenDepth === 0 && clause === 'WHERE' && tok.type === 'keyword' && ['AND', 'OR'].includes(tok.value.toUpperCase())) {
+      startLine(1);
+      currentTokens.push(tok);
+      continue;
+    }
+
+    currentTokens.push(tok);
+  }
+
+  flush();
+  return lines.join('\n');
+}
+
+function formatSql(sql, options = {}) {
+  const indentWidth = options.indentWidth === 4 ? 4 : 2;
+  const uppercase = options.uppercase !== false;
+  if (sql == null || String(sql).trim() === '') return '';
+
+  const tokens = tokenizeSql(sql);
+  const statements = splitSqlStatements(tokens)
+    .map((stmt) => ({
+      text: formatSqlStatementTokens(stmt.tokens, indentWidth, uppercase),
+      terminated: stmt.terminated,
+    }))
+    .filter((stmt) => stmt.text.trim() !== '');
+
+  return statements
+    .map((stmt, idx) => (stmt.terminated || idx < statements.length - 1 ? `${stmt.text};` : stmt.text))
+    .join('\n\n');
+}
+
+// Minifying and then re-formatting a `--` line comment would swallow the rest
+// of the (now single) line as a comment, so comments are dropped in minified
+// output rather than kept and silently breaking the query.
+function minifySql(sql, options = {}) {
+  const uppercase = options.uppercase !== false;
+  if (sql == null || String(sql).trim() === '') return '';
+
+  const tokens = tokenizeSql(sql).filter((tok) => tok.type !== 'comment');
+  const statements = splitSqlStatements(tokens)
+    .map((stmt) => ({
+      text: joinSqlTokens(stmt.tokens, uppercase),
+      terminated: stmt.terminated,
+    }))
+    .filter((stmt) => stmt.text.trim() !== '');
+
+  return statements
+    .map((stmt, idx) => (stmt.terminated || idx < statements.length - 1 ? `${stmt.text};` : stmt.text))
+    .join(' ');
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -4599,5 +4976,8 @@ if (typeof module !== 'undefined' && module.exports) {
     octalToSymbolic,
     convertCssUnits,
     k8sResourcePlan,
+    tokenizeSql,
+    formatSql,
+    minifySql,
   };
 }
