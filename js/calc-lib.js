@@ -4214,6 +4214,50 @@ function octalToSymbolic(octalStr) {
     chmodTriadSymbolic(otherDigit, sticky, 't', 'T')
   );
 }
+// --- CSS Unit Converter ---
+
+// Everything funnels through a canonical px value first, then fans back out
+// to all four units - simpler than writing six separate pairwise formulas,
+// and it's what lets the tool report px/rem/vw/vh simultaneously.
+function convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, viewportHeightPx) {
+  if (typeof value !== 'number' || isNaN(value)) {
+    throw new Error('Enter a valid numeric value to convert.');
+  }
+  if (!rootFontSizePx || rootFontSizePx <= 0) {
+    throw new Error('Root font-size must be greater than zero.');
+  }
+  if (!viewportWidthPx || viewportWidthPx <= 0) {
+    throw new Error('Viewport width must be greater than zero.');
+  }
+  if (!viewportHeightPx || viewportHeightPx <= 0) {
+    throw new Error('Viewport height must be greater than zero.');
+  }
+
+  let px;
+  switch (sourceUnit) {
+    case 'px':
+      px = value;
+      break;
+    case 'rem':
+      px = value * rootFontSizePx;
+      break;
+    case 'vw':
+      px = (value / 100) * viewportWidthPx;
+      break;
+    case 'vh':
+      px = (value / 100) * viewportHeightPx;
+      break;
+    default:
+      throw new Error('Unsupported source unit.');
+  }
+
+  return {
+    px,
+    rem: px / rootFontSizePx,
+    vw: (px / viewportWidthPx) * 100,
+    vh: (px / viewportHeightPx) * 100,
+  };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -4495,5 +4539,6 @@ if (typeof module !== 'undefined' && module.exports) {
     sha512Hex,
     symbolicToOctal,
     octalToSymbolic,
+    convertCssUnits,
   };
 }

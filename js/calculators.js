@@ -5668,3 +5668,30 @@ document.getElementById('chmod-calc').addEventListener('click', () => {
     showError('chmod-result', err.message);
   }
 });
+// --- CSS Unit Converter ---
+
+// Trims trailing floating-point noise for display (e.g. 2.222222 -> 2.2222).
+function formatCssUnitValue(value) {
+  return parseFloat(value.toFixed(4)).toString();
+}
+
+document.getElementById('css-unit-calc').addEventListener('click', () => {
+  const value = parseFloat(document.getElementById('css-unit-value').value);
+  const sourceUnit = document.getElementById('css-unit-source').value;
+  const rootFontSizePx = parseFloat(document.getElementById('css-unit-root-font').value);
+  const viewportWidthPx = parseFloat(document.getElementById('css-unit-viewport-width').value);
+  const viewportHeightPx = parseFloat(document.getElementById('css-unit-viewport-height').value);
+
+  try {
+    const { px, rem, vw, vh } = convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, viewportHeightPx);
+
+    document.getElementById('css-unit-result').innerHTML = `
+      <div class="headline">${formatCssUnitValue(px)}px</div>
+      <div>rem: ${formatCssUnitValue(rem)}rem</div>
+      <div>vw: ${formatCssUnitValue(vw)}vw</div>
+      <div>vh: ${formatCssUnitValue(vh)}vh</div>
+    `;
+  } catch (err) {
+    showError('css-unit-result', err.message);
+  }
+});

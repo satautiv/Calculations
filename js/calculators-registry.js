@@ -780,6 +780,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert Unix file permissions between symbolic form (rwxr-xr-x) and octal/numeric form (755), including setuid/setgid/sticky bits.',
     keywords: ['chmod', 'unix permissions', 'symbolic', 'octal', 'setuid', 'setgid', 'sticky bit', 'file permissions', 'developer'],
   },
+  {
+    id: 'css-unit-converter',
+    name: 'CSS Unit Converter',
+    category: 'Developer',
+    description: 'Convert CSS length values between px, rem, vw, and vh using your own root font-size and viewport dimensions.',
+    keywords: ['css', 'unit converter', 'px', 'rem', 'vw', 'vh', 'viewport', 'root font size', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
