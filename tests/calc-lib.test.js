@@ -179,6 +179,11 @@ const {
   urlDecode,
   base64UrlDecode,
   decodeJwt,
+  UUID_MAX_QUANTITY,
+  generateUuidV1,
+  generateUuidV4,
+  generateUuidV7,
+  generateUuids,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4075,5 +4080,92 @@ describe('decodeJwt', () => {
   test('names the payload segment when it is not valid JSON', () => {
     const badPayload = base64UrlEncode('not json');
     expect(() => decodeJwt(`${base64UrlEncode({ alg: 'HS256' })}.${badPayload}.sig`)).toThrow(/payload/);
+  });
+});
+// --- UUID generator ---
+
+describe('generateUuidV4', () => {
+  test('produces a well-formed v4 UUID: version nibble 4, variant 8-b', () => {
+    const uuid = generateUuidV4();
+    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  test('two calls produce different values', () => {
+    expect(generateUuidV4()).not.toBe(generateUuidV4());
+  });
+});
+
+describe('generateUuidV1', () => {
+  test('produces a well-formed v1 UUID: version nibble 1, variant 8-b', () => {
+    const uuid = generateUuidV1();
+    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-1[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  test('node id has the multicast bit set (no fabricated MAC address)', () => {
+    const uuid = generateUuidV1();
+    const nodeFirstByte = parseInt(uuid.split('-')[4].slice(0, 2), 16);
+    expect(nodeFirstByte & 0x01).toBe(1);
+  });
+
+  test('two calls produce different values', () => {
+    expect(generateUuidV1()).not.toBe(generateUuidV1());
+  });
+});
+
+describe('generateUuidV7', () => {
+  test('produces a well-formed v7 UUID: version nibble 7, variant 8-b', () => {
+    const uuid = generateUuidV7();
+    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
+  });
+
+  test('leading 48 bits encode a current Unix ms timestamp', () => {
+    const before = BigInt(Date.now());
+    const uuid = generateUuidV7();
+    const after = BigInt(Date.now());
+    const hex = uuid.split('-').slice(0, 2).join('');
+    const timestamp = BigInt('0x' + hex);
+    expect(timestamp >= before && timestamp <= after).toBe(true);
+  });
+
+  test('two calls produce different values', () => {
+    expect(generateUuidV7()).not.toBe(generateUuidV7());
+  });
+});
+
+describe('generateUuids', () => {
+  test('worked example: generates the requested quantity of v4 UUIDs', () => {
+    const uuids = generateUuids('v4', 5, false);
+    expect(uuids).toHaveLength(5);
+    uuids.forEach(u => expect(u).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/));
+  });
+
+  test('supports v1 and v7', () => {
+    expect(generateUuids('v1', 1, false)[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-1/);
+    expect(generateUuids('v7', 1, false)[0]).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-7/);
+  });
+
+  test('applies uppercase output case', () => {
+    const [uuid] = generateUuids('v4', 1, true);
+    expect(uuid).toBe(uuid.toUpperCase());
+  });
+
+  test('clamps an unreasonably huge quantity to UUID_MAX_QUANTITY', () => {
+    const uuids = generateUuids('v4', UUID_MAX_QUANTITY + 500, false);
+    expect(uuids).toHaveLength(UUID_MAX_QUANTITY);
+  });
+
+  test('rejects zero, negative, and non-integer quantities', () => {
+    expect(() => generateUuids('v4', 0, false)).toThrow();
+    expect(() => generateUuids('v4', -1, false)).toThrow();
+    expect(() => generateUuids('v4', 1.5, false)).toThrow();
+  });
+
+  test('rejects an unknown version', () => {
+    expect(() => generateUuids('v9', 1, false)).toThrow();
+  });
+
+  test('a batch of UUIDs has no duplicates for a reasonably sized sample', () => {
+    const uuids = generateUuids('v4', 200, false);
+    expect(new Set(uuids).size).toBe(200);
   });
 });

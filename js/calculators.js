@@ -5319,3 +5319,31 @@ document.getElementById('jwt-calc').addEventListener('click', () => {
     showError('jwt-result', err.message);
   }
 });
+
+// --- UUID generator ---
+document.getElementById('uuid-generator-calc').addEventListener('click', () => {
+  const version = document.getElementById('uuid-version').value;
+  const quantityRaw = document.getElementById('uuid-quantity').value;
+  const uppercase = document.getElementById('uuid-case').value === 'upper';
+
+  const quantity = parseFloat(quantityRaw);
+  if (quantityRaw === '' || isNaN(quantity)) {
+    showError('uuid-generator-result', 'Enter a valid quantity.');
+    return;
+  }
+
+  try {
+    const uuids = generateUuids(version, quantity, uppercase);
+    const clampedNote = quantity > UUID_MAX_QUANTITY
+      ? `<div class="hint">Capped at ${UUID_MAX_QUANTITY.toLocaleString()} - the requested quantity was reduced to keep the page responsive.</div>`
+      : '';
+
+    document.getElementById('uuid-generator-result').innerHTML = `
+      <div class="headline">${uuids.length.toLocaleString()} UUID${uuids.length === 1 ? '' : 's'} generated</div>
+      <pre>${uuids.join('\n')}</pre>
+      ${clampedNote}
+    `;
+  } catch (err) {
+    showError('uuid-generator-result', err.message);
+  }
+});
