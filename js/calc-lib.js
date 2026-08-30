@@ -3096,6 +3096,7 @@ function decodeJwt(token) {
 
   claims.isExpired = typeof payload.exp === 'number' && !Number.isNaN(payload.exp) && payload.exp < now;
   claims.isNotYetValid = typeof payload.nbf === 'number' && !Number.isNaN(payload.nbf) && payload.nbf > now;
+  claims.hasNoneAlg = typeof header.alg === 'string' && header.alg.toLowerCase() === 'none';
 
   return { header, payload, signature, claims };
 }
