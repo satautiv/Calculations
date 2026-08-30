@@ -5641,3 +5641,30 @@ document.getElementById('hash-calc').addEventListener('click', async () => {
     showError('hash-result', err.message);
   }
 });
+// --- Unix Permissions (chmod) Calculator ---
+document.getElementById('chmod-mode').addEventListener('change', (e) => {
+  const isOctalToSymbolic = e.target.value === 'octal-to-symbolic';
+  document.getElementById('chmod-input-label').textContent = isOctalToSymbolic ? 'Octal mode' : 'Symbolic permissions';
+  document.getElementById('chmod-input').placeholder = isOctalToSymbolic ? 'e.g. 755 or 4755' : 'e.g. rwxr-xr-x';
+});
+
+document.getElementById('chmod-calc').addEventListener('click', () => {
+  const mode = document.getElementById('chmod-mode').value;
+  const input = document.getElementById('chmod-input').value.trim();
+
+  try {
+    if (mode === 'octal-to-symbolic') {
+      const symbolic = octalToSymbolic(input);
+      document.getElementById('chmod-result').innerHTML = `
+        <div class="headline">${escapeHtml(symbolic)}</div>
+      `;
+    } else {
+      const octal = symbolicToOctal(input);
+      document.getElementById('chmod-result').innerHTML = `
+        <div class="headline">${escapeHtml(octal)}</div>
+      `;
+    }
+  } catch (err) {
+    showError('chmod-result', err.message);
+  }
+});
