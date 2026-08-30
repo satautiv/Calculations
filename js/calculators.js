@@ -5733,3 +5733,29 @@ document.getElementById('k8s-calc').addEventListener('click', () => {
     showError('k8s-result', err.message);
   }
 });
+// --- SQL Formatter ---
+
+document.getElementById('sql-formatter-mode').addEventListener('change', (e) => {
+  document.getElementById('sql-formatter-indent-field').hidden = e.target.value !== 'format';
+});
+
+document.getElementById('sql-formatter-calc').addEventListener('click', () => {
+  const mode = document.getElementById('sql-formatter-mode').value;
+  const uppercase = document.getElementById('sql-formatter-case').value === 'upper';
+  const indentWidth = parseInt(document.getElementById('sql-formatter-indent').value, 10);
+  const input = document.getElementById('sql-formatter-input').value;
+
+  if (!input || !input.trim()) {
+    showError('sql-formatter-result', 'Enter a SQL query.');
+    return;
+  }
+
+  try {
+    const output = mode === 'minify'
+      ? minifySql(input, { uppercase })
+      : formatSql(input, { indentWidth, uppercase });
+    document.getElementById('sql-formatter-result').innerHTML = `<pre>${escapeHtml(output)}</pre>`;
+  } catch (err) {
+    showError('sql-formatter-result', err.message);
+  }
+});

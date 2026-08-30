@@ -212,6 +212,9 @@ const {
   octalToSymbolic,
   convertCssUnits,
   k8sResourcePlan,
+  tokenizeSql,
+  formatSql,
+  minifySql,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -5212,5 +5215,223 @@ describe('k8sResourcePlan', () => {
   test('throws when the computed request rounds to 0', () => {
     expect(() => k8sResourcePlan(0.4, 600, 256, 700, 1.3)).toThrow(/request is 0/i);
     expect(() => k8sResourcePlan(200, 600, 0.4, 700, 1.3)).toThrow(/request is 0/i);
+  });
+});
+describe('tokenizeSql', () => {
+  test('tokenizes keywords, identifiers, strings, numbers, operators, and punctuation', () => {
+    const tokens = tokenizeSql("SELECT id, age FROM t WHERE age >= 18 AND name = 'Ada'");
+    expect(tokens).toEqual([
+      { type: 'keyword', value: 'SELECT' },
+      { type: 'identifier', value: 'id' },
+      { type: 'punctuation', value: ',' },
+      { type: 'identifier', value: 'age' },
+      { type: 'keyword', value: 'FROM' },
+      { type: 'identifier', value: 't' },
+      { type: 'keyword', value: 'WHERE' },
+      { type: 'identifier', value: 'age' },
+      { type: 'operator', value: '>=' },
+      { type: 'number', value: '18' },
+      { type: 'keyword', value: 'AND' },
+      { type: 'identifier', value: 'name' },
+      { type: 'operator', value: '=' },
+      { type: 'string', value: "'Ada'" },
+    ]);
+  });
+
+  test('merges adjacent single-word keywords into recognized compound keywords', () => {
+    const tokens = tokenizeSql('a INNER JOIN b GROUP BY c ORDER BY d');
+    expect(tokens.filter((t) => t.type === 'keyword').map((t) => t.value)).toEqual([
+      'INNER JOIN', 'GROUP BY', 'ORDER BY',
+    ]);
+  });
+
+  test('does not merge or re-case a bare word that only partially matches a compound', () => {
+    const tokens = tokenizeSql('SELECT "group" FROM t');
+    expect(tokens[1]).toEqual({ type: 'identifier', value: '"group"' });
+  });
+
+  test('a keyword-looking word inside a single-quoted string stays a string, not a keyword', () => {
+    const tokens = tokenizeSql("SELECT * FROM t WHERE note = 'select from where'");
+    const stringToken = tokens.find((t) => t.type === 'string');
+    expect(stringToken).toEqual({ type: 'string', value: "'select from where'" });
+  });
+
+  test('a column literally named "order" (double-quoted) is an identifier, not a clause boundary', () => {
+    const tokens = tokenizeSql('SELECT "order" FROM orders');
+    expect(tokens[1]).toEqual({ type: 'identifier', value: '"order"' });
+  });
+
+  test('backtick-quoted identifiers are tokenized as identifiers', () => {
+    const tokens = tokenizeSql('SELECT `select` FROM t');
+    expect(tokens[1]).toEqual({ type: 'identifier', value: '`select`' });
+  });
+
+  test('handles escaped quotes inside string and quoted-identifier literals', () => {
+    const tokens = tokenizeSql("SELECT '' FROM t WHERE name = 'O''Brien'");
+    expect(tokens.find((t) => t.type === 'string' && t.value.includes('Brien'))).toEqual({
+      type: 'string', value: "'O''Brien'",
+    });
+  });
+
+  test('tokenizes -- line comments and /* block */ comments without dropping content', () => {
+    const tokens = tokenizeSql('SELECT id -- get the id\nFROM t /* main table */');
+    expect(tokens.filter((t) => t.type === 'comment').map((t) => t.value)).toEqual([
+      '-- get the id',
+      '/* main table */',
+    ]);
+  });
+
+  test('degrades gracefully on an unterminated string instead of throwing', () => {
+    expect(() => tokenizeSql("SELECT id FROM t WHERE name = 'abc")).not.toThrow();
+    const tokens = tokenizeSql("SELECT id FROM t WHERE name = 'abc");
+    expect(tokens[tokens.length - 1]).toEqual({ type: 'string', value: "'abc" });
+  });
+
+  test('degrades gracefully on an unterminated block comment instead of throwing', () => {
+    expect(() => tokenizeSql('SELECT id FROM t /* unterminated')).not.toThrow();
+  });
+
+  test('empty input tokenizes to an empty array', () => {
+    expect(tokenizeSql('')).toEqual([]);
+  });
+});
+
+describe('formatSql', () => {
+  test('the worked example from the issue', () => {
+    const input = "select id, name, email from users where status = 'active' and age > 18 order by created_at desc limit 10";
+    expect(formatSql(input)).toBe(
+      "SELECT\n" +
+      "  id,\n" +
+      "  name,\n" +
+      "  email\n" +
+      "FROM users\n" +
+      "WHERE\n" +
+      "  status = 'active'\n" +
+      "  AND age > 18\n" +
+      "ORDER BY created_at DESC\n" +
+      "LIMIT 10"
+    );
+  });
+
+  test('uppercases keywords by default and leaves identifiers/strings untouched', () => {
+    const output = formatSql("select Name from Users where Name = 'Select'");
+    expect(output).toBe(
+      "SELECT\n  Name\nFROM Users\nWHERE\n  Name = 'Select'"
+    );
+  });
+
+  test('lowercase keyword-case option', () => {
+    const output = formatSql('SELECT ID FROM USERS', { uppercase: false });
+    expect(output).toBe('select\n  ID\nfrom USERS');
+  });
+
+  test('supports a 4-space indent width', () => {
+    const output = formatSql('select id, name from users');
+    const output4 = formatSql('select id, name from users', { indentWidth: 4 });
+    expect(output).toBe('SELECT\n  id,\n  name\nFROM users');
+    expect(output4).toBe('SELECT\n    id,\n    name\nFROM users');
+  });
+
+  test('each top-level AND/OR in WHERE starts its own indented line', () => {
+    const output = formatSql("select id from t where a = 1 and b = 2 or c = 3");
+    expect(output).toBe(
+      "SELECT\n  id\nFROM t\nWHERE\n  a = 1\n  AND b = 2\n  OR c = 3"
+    );
+  });
+
+  test('formats JOIN variants as their own top-level clause line', () => {
+    const output = formatSql(
+      'select u.id, o.total from users u inner join orders o on u.id = o.user_id where o.total > 100'
+    );
+    expect(output).toBe(
+      "SELECT\n" +
+      "  u.id,\n" +
+      "  o.total\n" +
+      "FROM users u\n" +
+      "INNER JOIN orders o ON u.id = o.user_id\n" +
+      "WHERE\n" +
+      "  o.total > 100"
+    );
+  });
+
+  test('a quoted identifier named "order" is never re-cased or treated as a clause boundary', () => {
+    const output = formatSql('select "order", name from orders');
+    expect(output).toBe('SELECT\n  "order",\n  name\nFROM orders');
+  });
+
+  test('a string literal containing a keyword is left untouched', () => {
+    const output = formatSql("select id from t where note = 'from where and'");
+    expect(output).toBe("SELECT\n  id\nFROM t\nWHERE\n  note = 'from where and'");
+  });
+
+  test('preserves a parenthesized subquery inline without recursively re-indenting it', () => {
+    const output = formatSql(
+      'select id from users where id in (select user_id from orders where total > 100)'
+    );
+    expect(output).toBe(
+      "SELECT\n  id\nFROM users\nWHERE\n  id IN (SELECT user_id FROM orders WHERE total > 100)"
+    );
+  });
+
+  test('formats multiple ;-separated statements independently, each restarting at base indent', () => {
+    const output = formatSql('select 1; select 2;');
+    expect(output).toBe('SELECT\n  1;\n\nSELECT\n  2;');
+  });
+
+  test('does not invent a trailing semicolon for a final unterminated statement', () => {
+    const output = formatSql('select 1; select 2');
+    expect(output).toBe('SELECT\n  1;\n\nSELECT\n  2');
+  });
+
+  test('keeps -- and /* */ comment content verbatim on their own line', () => {
+    const output = formatSql('select id -- get id\nfrom t');
+    expect(output).toContain('-- get id');
+    expect(output).not.toContain('get id\nfrom');
+  });
+
+  test('degrades gracefully on unbalanced parentheses instead of throwing', () => {
+    expect(() => formatSql('select id from users where (id = 1')).not.toThrow();
+    const output = formatSql('select id from users where (id = 1');
+    expect(output).toContain('SELECT');
+    expect(output).toContain('(id = 1');
+  });
+
+  test('degrades gracefully on an unterminated string instead of throwing', () => {
+    expect(() => formatSql("select id from t where name = 'abc")).not.toThrow();
+  });
+
+  test('empty input returns an empty string', () => {
+    expect(formatSql('')).toBe('');
+    expect(formatSql('   ')).toBe('');
+  });
+});
+
+describe('minifySql', () => {
+  test('collapses formatted SQL back to a single line with keyword casing applied', () => {
+    const input = "SELECT\n  id,\n  name\nFROM users\nWHERE\n  status = 'active'\n  AND age > 18";
+    expect(minifySql(input)).toBe("SELECT id, name FROM users WHERE status = 'active' AND age > 18");
+  });
+
+  test('lowercase keyword-case option', () => {
+    expect(minifySql('SELECT ID FROM USERS', { uppercase: false })).toBe('select ID from USERS');
+  });
+
+  test('drops comments rather than letting a -- comment swallow the rest of the line', () => {
+    const output = minifySql('select id -- get id\nfrom t');
+    expect(output).toBe('SELECT id FROM t');
+  });
+
+  test('minifies multiple ;-separated statements onto one line, each still terminated', () => {
+    expect(minifySql('select 1; select 2;')).toBe('SELECT 1; SELECT 2;');
+  });
+
+  test('leaves an identifier or string containing a keyword-like word untouched', () => {
+    const output = minifySql("select \"order\" from t where note = 'from where'");
+    expect(output).toBe('SELECT "order" FROM t WHERE note = \'from where\'');
+  });
+
+  test('empty input returns an empty string', () => {
+    expect(minifySql('')).toBe('');
+    expect(minifySql('   ')).toBe('');
   });
 });
