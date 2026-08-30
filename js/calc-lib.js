@@ -3796,6 +3796,65 @@ function buildCronExpression({ minute, hour, dayOfMonth, month, dayOfWeek }) {
   return [minute, hour, dayOfMonth, month, dayOfWeek].join(' ');
 }
 
+function parseIpv4(str) {
+  if (typeof str !== 'string') throw new Error('IP address must be a string.');
+  const trimmed = str.trim();
+  const parts = trimmed.split('.');
+  if (parts.length !== 4) throw new Error('IP address must have 4 dot-separated octets.');
+
+  const octets = parts.map((part) => {
+    if (!/^\d+$/.test(part)) throw new Error(`Invalid octet "${part}" - octets must be numeric.`);
+    const value = parseInt(part, 10);
+    if (value < 0 || value > 255) throw new Error(`Invalid octet "${part}" - must be between 0 and 255.`);
+    return value;
+  });
+
+  return (((octets[0] << 24) | (octets[1] << 16) | (octets[2] << 8) | octets[3]) >>> 0);
+}
+
+function ipv4IntToString(n) {
+  return `${(n >>> 24) & 255}.${(n >>> 16) & 255}.${(n >>> 8) & 255}.${n & 255}`;
+}
+
+function subnetInfo(ipString, prefixLength) {
+  if (!Number.isInteger(prefixLength) || prefixLength < 0 || prefixLength > 32) {
+    throw new Error('Prefix length must be an integer between 0 and 32.');
+  }
+
+  const ipInt = parseIpv4(ipString);
+  const mask = prefixLength === 0 ? 0 : (0xFFFFFFFF << (32 - prefixLength)) >>> 0;
+  const network = (ipInt & mask) >>> 0;
+  const broadcast = (network | (~mask >>> 0)) >>> 0;
+
+  let firstUsable;
+  let lastUsable;
+  let usableHostCount;
+
+  if (prefixLength === 32) {
+    firstUsable = ipv4IntToString(network);
+    lastUsable = ipv4IntToString(network);
+    usableHostCount = 1;
+  } else if (prefixLength === 31) {
+    firstUsable = ipv4IntToString(network);
+    lastUsable = ipv4IntToString(broadcast);
+    usableHostCount = 2;
+  } else {
+    firstUsable = ipv4IntToString((network + 1) >>> 0);
+    lastUsable = ipv4IntToString((broadcast - 1) >>> 0);
+    usableHostCount = Math.pow(2, 32 - prefixLength) - 2;
+  }
+
+  return {
+    networkAddress: ipv4IntToString(network),
+    broadcastAddress: ipv4IntToString(broadcast),
+    subnetMask: ipv4IntToString(mask),
+    firstUsable,
+    lastUsable,
+    usableHostCount,
+    totalAddresses: Math.pow(2, 32 - prefixLength),
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -4060,5 +4119,8 @@ if (typeof module !== 'undefined' && module.exports) {
     describeCron,
     buildCronExpression,
     expandCronMacro,
+    parseIpv4,
+    ipv4IntToString,
+    subnetInfo,
   };
 }

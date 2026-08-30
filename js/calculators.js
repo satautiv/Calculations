@@ -5458,3 +5458,50 @@ document.getElementById('cron-calc').addEventListener('click', () => {
     showError('cron-result', err.message);
   }
 });
+
+// --- CIDR/Subnet calculator ---
+document.getElementById('cidr-calc').addEventListener('click', () => {
+  const raw = document.getElementById('cidr-input').value.trim();
+
+  if (!raw) {
+    showError('cidr-result', 'Enter an IPv4 address and prefix length, e.g. 192.168.1.10/26.');
+    return;
+  }
+
+  const slashIndex = raw.indexOf('/');
+  if (slashIndex === -1) {
+    showError('cidr-result', 'Enter the address and prefix length as a.b.c.d/p, e.g. 192.168.1.10/26.');
+    return;
+  }
+
+  const ipPart = raw.slice(0, slashIndex).trim();
+  const prefixPart = raw.slice(slashIndex + 1).trim();
+
+  if (!/^\d+$/.test(prefixPart)) {
+    showError('cidr-result', 'Prefix length must be a whole number between 0 and 32.');
+    return;
+  }
+
+  const prefixLength = parseInt(prefixPart, 10);
+
+  try {
+    const info = subnetInfo(ipPart, prefixLength);
+    const hostRange = info.firstUsable === info.lastUsable
+      ? escapeHtml(info.firstUsable)
+      : `${escapeHtml(info.firstUsable)} - ${escapeHtml(info.lastUsable)}`;
+
+    document.getElementById('cidr-result').innerHTML = `
+      <div class="headline">${escapeHtml(info.networkAddress)}/${prefixLength}</div>
+      <table>
+        <tr><td>Network address</td><td>${escapeHtml(info.networkAddress)}</td></tr>
+        <tr><td>Broadcast address</td><td>${escapeHtml(info.broadcastAddress)}</td></tr>
+        <tr><td>Subnet mask</td><td>${escapeHtml(info.subnetMask)}</td></tr>
+        <tr><td>Usable host range</td><td>${hostRange}</td></tr>
+        <tr><td>Usable hosts</td><td>${info.usableHostCount.toLocaleString()}</td></tr>
+        <tr><td>Total addresses</td><td>${info.totalAddresses.toLocaleString()}</td></tr>
+      </table>
+    `;
+  } catch (err) {
+    showError('cidr-result', err.message);
+  }
+});
