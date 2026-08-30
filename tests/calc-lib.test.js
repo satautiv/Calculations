@@ -174,6 +174,7 @@ const {
   base64Encode,
   base64Decode,
   findRegexMatches,
+  applyRegexReplacement,
   horizonDistance,
   solarPanelSizing,
   solarPaybackPeriod,
@@ -3864,6 +3865,36 @@ describe('findRegexMatches', () => {
 
   test('rejects malformed regex syntax', () => {
     expect(() => findRegexMatches('(unclosed', 'g', 'some text')).toThrow();
+  });
+});
+
+describe('applyRegexReplacement', () => {
+  test('worked example: numbered capture groups reordered', () => {
+    const result = applyRegexReplacement('(\\w+)@(\\w+)\\.com', '', 'contact: alice@example.com', '$2 user: $1');
+    expect(result).toBe('contact: example user: alice');
+  });
+
+  test('worked example: named capture groups', () => {
+    const result = applyRegexReplacement('(?<user>\\w+)@(?<domain>\\w+)\\.com', '', 'alice@example.com', '$<user> at $<domain>');
+    expect(result).toBe('alice at example');
+  });
+
+  test('the g flag replaces every match', () => {
+    const result = applyRegexReplacement('\\d+', 'g', 'a1 b22 c333', '#');
+    expect(result).toBe('a# b# c#');
+  });
+
+  test('without the g flag only the first match is replaced', () => {
+    const result = applyRegexReplacement('\\d+', '', 'a1 b22 c333', '#');
+    expect(result).toBe('a# b22 c333');
+  });
+
+  test('rejects an empty pattern', () => {
+    expect(() => applyRegexReplacement('', 'g', 'some text', 'x')).toThrow();
+  });
+
+  test('rejects malformed regex syntax', () => {
+    expect(() => applyRegexReplacement('(unclosed', 'g', 'some text', 'x')).toThrow();
   });
 });
 

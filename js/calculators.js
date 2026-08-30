@@ -5083,6 +5083,7 @@ document.getElementById('regex-calc').addEventListener('click', () => {
     .filter((flag) => document.getElementById(`regex-flag-${flag}`).checked)
     .join('');
   const text = document.getElementById('regex-text').value;
+  const replacement = document.getElementById('regex-replacement').value;
 
   try {
     const matches = findRegexMatches(pattern, flags, text);
@@ -5148,10 +5149,20 @@ document.getElementById('regex-calc').addEventListener('click', () => {
       ${cappedNote}
     ` : '';
 
+    let replacementSection = '';
+    if (replacement) {
+      const replaced = applyRegexReplacement(pattern, flags, text, replacement);
+      replacementSection = `
+        <div><strong>Replacement result</strong></div>
+        <pre>${escapeHtml(replaced)}</pre>
+      `;
+    }
+
     document.getElementById('regex-result').innerHTML = `
       <div class="headline">${matches.length} match${matches.length === 1 ? '' : 'es'}</div>
       <div class="regex-highlight">${highlighted || '<span class="hint">(empty sample text)</span>'}</div>
       ${tableSection}
+      ${replacementSection}
     `;
   } catch (err) {
     showError('regex-result', err.message);
