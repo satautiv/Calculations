@@ -5127,3 +5127,38 @@ document.getElementById('regex-calc').addEventListener('click', () => {
     showError('regex-result', err.message);
   }
 });
+
+// --- Horizon distance calculator ---
+document.getElementById('horizon-calc').addEventListener('click', () => {
+  const height = parseFloat(document.getElementById('horizon-height').value);
+  const heightUnit = document.getElementById('horizon-height-unit').value;
+  const includeRefraction = document.getElementById('horizon-refraction').value === 'yes';
+
+  if (isNaN(height) || height < 0) {
+    showError('horizon-result', 'Enter a valid, non-negative height.');
+    return;
+  }
+
+  const METERS_PER_FOOT = 0.3048;
+  const heightM = heightUnit === 'ft' ? height * METERS_PER_FOOT : height;
+
+  try {
+    const { geometricKm, refractedKm } = horizonDistance(heightM);
+    const displayKm = includeRefraction ? refractedKm : geometricKm;
+
+    const format = (km, unit) => (unit === 'mi' ? km / KM_PER_MILE : km).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+    const comparisonLine = includeRefraction
+      ? `<div>Pure geometry: ${format(geometricKm, 'km')} km / ${format(geometricKm, 'mi')} mi</div>
+         <div>With refraction: ${format(refractedKm, 'km')} km / ${format(refractedKm, 'mi')} mi</div>`
+      : `<div>Pure geometry (no refraction): ${format(geometricKm, 'km')} km / ${format(geometricKm, 'mi')} mi</div>`;
+
+    document.getElementById('horizon-result').innerHTML = `
+      <div class="headline">${format(displayKm, 'km')} km (${format(displayKm, 'mi')} mi) to the horizon</div>
+      ${comparisonLine}
+      <div class="hint">The refraction coefficient (k = 0.13) varies with weather and temperature gradients, so the refracted figure is a typical-conditions estimate, not exact.</div>
+    `;
+  } catch (err) {
+    showError('horizon-result', err.message);
+  }
+});

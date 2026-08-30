@@ -2771,6 +2771,32 @@ function findRegexMatches(pattern, flags, text) {
   }));
 }
 
+// --- Horizon distance calculator ---
+
+// Standard atmospheric refraction coefficient: light bends slightly toward
+// Earth's surface, extending the visible horizon a bit further than pure
+// geometry predicts. This varies with weather/temperature gradients, so it's
+// a typical-conditions estimate rather than an exact figure.
+const HORIZON_REFRACTION_COEFFICIENT = 0.13;
+
+// Distance to the horizon from an observer height `heightM` (meters above
+// the surface), via d = sqrt(2 * R * h). Refraction is modeled as an
+// effective Earth radius R' = R / (1 - k), which is larger than the true
+// radius and so yields a longer horizon distance.
+function horizonDistance(heightM, refractionCoefficient = HORIZON_REFRACTION_COEFFICIENT) {
+  if (isNaN(heightM) || heightM < 0) {
+    throw new Error('Height must be a non-negative number.');
+  }
+  const earthRadiusM = EARTH_RADIUS_KM * 1000;
+  const geometricM = Math.sqrt(2 * earthRadiusM * heightM);
+  const effectiveRadiusM = earthRadiusM / (1 - refractionCoefficient);
+  const refractedM = Math.sqrt(2 * effectiveRadiusM * heightM);
+  return {
+    geometricKm: geometricM / 1000,
+    refractedKm: refractedM / 1000,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -3009,5 +3035,7 @@ if (typeof module !== 'undefined' && module.exports) {
     base64Decode,
     REGEX_MATCH_DISPLAY_CAP,
     findRegexMatches,
+    HORIZON_REFRACTION_COEFFICIENT,
+    horizonDistance,
   };
 }

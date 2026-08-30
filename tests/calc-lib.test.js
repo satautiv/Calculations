@@ -171,6 +171,7 @@ const {
   base64Encode,
   base64Decode,
   findRegexMatches,
+  horizonDistance,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3725,5 +3726,40 @@ describe('findRegexMatches', () => {
 
   test('rejects malformed regex syntax', () => {
     expect(() => findRegexMatches('(unclosed', 'g', 'some text')).toThrow();
+  });
+});
+
+// --- Horizon distance calculator ---
+
+describe('horizonDistance', () => {
+  test('worked example: 1.7 m eye height', () => {
+    const { geometricKm, refractedKm } = horizonDistance(1.7);
+    expect(geometricKm).toBeCloseTo(4.654, 3);
+    expect(refractedKm).toBeCloseTo(4.990, 3);
+  });
+
+  test('refracted distance is roughly 7% farther than pure geometry', () => {
+    const { geometricKm, refractedKm } = horizonDistance(1.7);
+    expect((refractedKm - geometricKm) / geometricKm).toBeCloseTo(0.0721, 3);
+  });
+
+  test('height of zero yields a horizon distance of zero', () => {
+    const { geometricKm, refractedKm } = horizonDistance(0);
+    expect(geometricKm).toBe(0);
+    expect(refractedKm).toBe(0);
+  });
+
+  test('handles large heights such as aircraft cruising altitude', () => {
+    const { geometricKm, refractedKm } = horizonDistance(10000);
+    expect(geometricKm).toBeCloseTo(356.96, 1);
+    expect(refractedKm).toBeCloseTo(382.70, 1);
+  });
+
+  test('rejects negative height', () => {
+    expect(() => horizonDistance(-1)).toThrow();
+  });
+
+  test('rejects non-numeric height', () => {
+    expect(() => horizonDistance(NaN)).toThrow();
   });
 });
