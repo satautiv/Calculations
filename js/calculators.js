@@ -5545,6 +5545,7 @@ document.getElementById('cidr-calc').addEventListener('click', () => {
         <tr><td>Network address</td><td>${escapeHtml(info.networkAddress)}</td></tr>
         <tr><td>Broadcast address</td><td>${escapeHtml(info.broadcastAddress)}</td></tr>
         <tr><td>Subnet mask</td><td>${escapeHtml(info.subnetMask)}</td></tr>
+        <tr><td>Wildcard mask</td><td>${escapeHtml(info.wildcardMask)}</td></tr>
         <tr><td>Usable host range</td><td>${hostRange}</td></tr>
         <tr><td>Usable hosts</td><td>${info.usableHostCount.toLocaleString()}</td></tr>
         <tr><td>Total addresses</td><td>${info.totalAddresses.toLocaleString()}</td></tr>

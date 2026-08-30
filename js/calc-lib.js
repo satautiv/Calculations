@@ -4106,6 +4106,7 @@ function subnetInfo(ipString, prefixLength) {
     networkAddress: ipv4IntToString(network),
     broadcastAddress: ipv4IntToString(broadcast),
     subnetMask: ipv4IntToString(mask),
+    wildcardMask: ipv4IntToString((~mask) >>> 0),
     firstUsable,
     lastUsable,
     usableHostCount,
