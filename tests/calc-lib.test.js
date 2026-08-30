@@ -160,6 +160,8 @@ const {
   earthTravelDistance,
   deckingMaterialsNeeded,
   staircasePlan,
+  panelFenceCalculation,
+  railFenceCalculation,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3369,5 +3371,78 @@ describe('staircasePlan', () => {
   test('rejects a non-positive target riser height', () => {
     expect(() => staircasePlan(2700, 3600, 0)).toThrow();
     expect(() => staircasePlan(2700, 3600, -10)).toThrow();
+  });
+});
+// --- Fence calculator ---
+
+describe('panelFenceCalculation', () => {
+  test('worked example: 21.6 m run with 1.8 m panels', () => {
+    const { numPanels, numPosts } = panelFenceCalculation(21.6, 1.8);
+    expect(numPanels).toBe(12);
+    expect(numPosts).toBe(13);
+  });
+
+  test('panel width greater than fence length still computes (1 panel, 2 posts)', () => {
+    const { numPanels, numPosts } = panelFenceCalculation(1, 1.8);
+    expect(numPanels).toBe(1);
+    expect(numPosts).toBe(2);
+  });
+
+  test('rejects a non-positive fence length', () => {
+    expect(() => panelFenceCalculation(0, 1.8)).toThrow();
+    expect(() => panelFenceCalculation(-5, 1.8)).toThrow();
+  });
+
+  test('rejects a non-positive panel width', () => {
+    expect(() => panelFenceCalculation(20, 0)).toThrow();
+    expect(() => panelFenceCalculation(20, -1.8)).toThrow();
+  });
+
+  test('rejects non-numeric input', () => {
+    expect(() => panelFenceCalculation(NaN, 1.8)).toThrow();
+    expect(() => panelFenceCalculation(20, NaN)).toThrow();
+  });
+});
+
+describe('railFenceCalculation', () => {
+  test('worked example: 20 m run, 2.4 m max spacing, 2 rail lines', () => {
+    const { numPosts, actualSpacing, numRails } = railFenceCalculation(20, 2.4, 2);
+    expect(numPosts).toBe(10);
+    expect(actualSpacing).toBeCloseTo(2.22, 2);
+    expect(actualSpacing).toBeLessThanOrEqual(2.4);
+    expect(numRails).toBe(18);
+  });
+
+  test('max post spacing greater than fence length still computes (2 posts, 1 section)', () => {
+    const { numPosts, actualSpacing, numRails } = railFenceCalculation(1, 2.4, 2);
+    expect(numPosts).toBe(2);
+    expect(actualSpacing).toBeCloseTo(1, 5);
+    expect(numRails).toBe(2);
+  });
+
+  test('3 rail lines scales the rail count accordingly', () => {
+    const { numPosts, numRails } = railFenceCalculation(20, 2.4, 3);
+    expect(numRails).toBe(3 * (numPosts - 1));
+  });
+
+  test('rejects a non-positive fence length', () => {
+    expect(() => railFenceCalculation(0, 2.4, 2)).toThrow();
+    expect(() => railFenceCalculation(-5, 2.4, 2)).toThrow();
+  });
+
+  test('rejects a non-positive max post spacing', () => {
+    expect(() => railFenceCalculation(20, 0, 2)).toThrow();
+    expect(() => railFenceCalculation(20, -2.4, 2)).toThrow();
+  });
+
+  test('rejects a non-positive number of rail lines', () => {
+    expect(() => railFenceCalculation(20, 2.4, 0)).toThrow();
+    expect(() => railFenceCalculation(20, 2.4, -2)).toThrow();
+  });
+
+  test('rejects non-numeric input', () => {
+    expect(() => railFenceCalculation(NaN, 2.4, 2)).toThrow();
+    expect(() => railFenceCalculation(20, NaN, 2)).toThrow();
+    expect(() => railFenceCalculation(20, 2.4, NaN)).toThrow();
   });
 });

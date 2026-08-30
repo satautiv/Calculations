@@ -2569,6 +2569,32 @@ function staircasePlan(totalHeightMm, availableRunMm, targetRiserHeightMm = STAI
     twoRPlusTWithinComfort,
   };
 }
+// --- Fence calculator ---
+
+// Pre-made panels of a fixed width, hung between posts along a straight run.
+function panelFenceCalculation(fenceLength, panelWidth) {
+  if (!fenceLength || fenceLength <= 0) throw new Error('Fence length must be greater than zero.');
+  if (!panelWidth || panelWidth <= 0) throw new Error('Panel width must be greater than zero.');
+
+  const numPanels = Math.ceil(fenceLength / panelWidth);
+  const numPosts = numPanels + 1;
+  return { numPanels, numPosts };
+}
+
+// Posts spaced no further apart than `maxPostSpacing`, then evenly
+// redistributed across the run so actual spacing never exceeds the max -
+// rails run horizontally between each adjacent pair of posts.
+function railFenceCalculation(fenceLength, maxPostSpacing, railLines) {
+  if (!fenceLength || fenceLength <= 0) throw new Error('Fence length must be greater than zero.');
+  if (!maxPostSpacing || maxPostSpacing <= 0) throw new Error('Max post spacing must be greater than zero.');
+  if (!railLines || railLines <= 0) throw new Error('Number of rail lines must be greater than zero.');
+
+  const numSections = Math.ceil(fenceLength / maxPostSpacing);
+  const numPosts = numSections + 1;
+  const actualSpacing = fenceLength / (numPosts - 1);
+  const numRails = railLines * (numPosts - 1);
+  return { numPosts, actualSpacing, numRails };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -2795,5 +2821,7 @@ if (typeof module !== 'undefined' && module.exports) {
     STAIRCASE_2R_PLUS_T_MIN_MM,
     STAIRCASE_2R_PLUS_T_MAX_MM,
     staircasePlan,
+    panelFenceCalculation,
+    railFenceCalculation,
   };
 }

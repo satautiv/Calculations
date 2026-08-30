@@ -2982,6 +2982,43 @@
     <button class="calc-btn" id="staircase-calc">Calculate</button>
     <div class="result" id="staircase-result"></div>
   </section>
+
+  <section id="fence-calculator" class="view tab-panel">
+    <h2>Fence Calculator</h2>
+    <p class="hint">Estimate how many posts, panels, or rails a straight fence run needs, and how they space out - helpful for planning material purchases and marking post-hole locations before digging.</p>
+    <div class="field">
+      <label for="fence-length">Total fence length (m)</label>
+      <input type="number" id="fence-length" min="0" step="0.1" placeholder="e.g. 21.6">
+    </div>
+    <div class="field">
+      <label for="fence-type">Fencing type</label>
+      <select id="fence-type">
+        <option value="panel">Pre-made panels</option>
+        <option value="rail">Rails/pickets (posts + rails)</option>
+      </select>
+    </div>
+
+    <div id="fence-panel-fields">
+      <div class="field">
+        <label for="fence-panel-width">Panel width (m)</label>
+        <input type="number" id="fence-panel-width" min="0" step="0.1" value="1.8" placeholder="e.g. 1.8">
+      </div>
+    </div>
+
+    <div id="fence-rail-fields" hidden>
+      <div class="field">
+        <label for="fence-post-spacing">Max post spacing (m)</label>
+        <input type="number" id="fence-post-spacing" min="0" step="0.1" value="2.4" placeholder="e.g. 2.4">
+      </div>
+      <div class="field">
+        <label for="fence-rail-lines">Number of rail lines</label>
+        <input type="number" id="fence-rail-lines" min="1" step="1" value="2" placeholder="e.g. 2">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="fence-calc">Calculate</button>
+    <div class="result" id="fence-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

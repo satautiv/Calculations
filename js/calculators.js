@@ -4859,3 +4859,41 @@ document.getElementById('staircase-calc').addEventListener('click', () => {
     showError('staircase-result', err.message);
   }
 });
+// --- Fence calculator ---
+document.getElementById('fence-type').addEventListener('change', (e) => {
+  const isRailMode = e.target.value === 'rail';
+  document.getElementById('fence-panel-fields').hidden = isRailMode;
+  document.getElementById('fence-rail-fields').hidden = !isRailMode;
+});
+
+document.getElementById('fence-calc').addEventListener('click', () => {
+  const fenceLength = parseFloat(document.getElementById('fence-length').value);
+  const fenceType = document.getElementById('fence-type').value;
+
+  try {
+    if (fenceType === 'panel') {
+      const panelWidth = parseFloat(document.getElementById('fence-panel-width').value);
+      const { numPanels, numPosts } = panelFenceCalculation(fenceLength, panelWidth);
+
+      document.getElementById('fence-result').innerHTML = `
+        <div class="headline">${numPosts} posts, ${numPanels} panel${numPanels === 1 ? '' : 's'}</div>
+        <div>${numPanels} panel${numPanels === 1 ? '' : 's'} &times; ${panelWidth} m + 1 end post = ${numPosts} posts</div>
+        <div class="hint">Assumes a straight, unbroken run - corners, gates, and end conditions may need extra posts.</div>
+      `;
+    } else {
+      const postSpacing = parseFloat(document.getElementById('fence-post-spacing').value);
+      const railLines = parseFloat(document.getElementById('fence-rail-lines').value);
+      const { numPosts, actualSpacing, numRails } = railFenceCalculation(fenceLength, postSpacing, railLines);
+      const numSections = numPosts - 1;
+
+      document.getElementById('fence-result').innerHTML = `
+        <div class="headline">${numPosts} posts, ${numRails} rails</div>
+        <div>Actual post spacing: ${actualSpacing.toFixed(2)} m (evenly redistributed, max allowed ${postSpacing} m)</div>
+        <div>${railLines} rail line${railLines === 1 ? '' : 's'} &times; ${numSections} section${numSections === 1 ? '' : 's'} = ${numRails} rails</div>
+        <div class="hint">Assumes a straight, unbroken run - corners, gates, and end conditions may need extra posts.</div>
+      `;
+    }
+  } catch (err) {
+    showError('fence-result', err.message);
+  }
+});

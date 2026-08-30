@@ -653,6 +653,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Home & DIY',
     description: 'Work out how many steps a staircase needs and check the resulting rise and run against code-recommended comfort ranges.',
     keywords: ['staircase', 'stairs', 'steps', 'riser', 'tread', 'rise and run', 'stringer', 'home', 'diy'],
+    id: 'fence-calculator',
+    name: 'Fence Calculator',
+    category: 'Home & DIY',
+    description: 'Calculate how many fence posts, panels, or rails you need for a straight run, and how they space out.',
+    keywords: ['fence', 'fencing', 'posts', 'panels', 'rails', 'pickets', 'post spacing', 'home', 'diy'],
   },
 ];
 
