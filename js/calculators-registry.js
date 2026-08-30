@@ -708,6 +708,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Generate v1, v4, or v7 UUIDs in bulk for primary keys, request IDs, and correlation IDs.',
     keywords: ['uuid', 'guid', 'unique identifier', 'random', 'v4', 'v1', 'v7', 'developer'],
+    id: 'json-yaml-formatter',
+    name: 'JSON Formatter, Minifier & YAML Converter',
+    category: 'Developer',
+    description: 'Pretty-print, minify, or validate JSON, and convert between JSON and YAML.',
+    keywords: ['json', 'yaml', 'format', 'minify', 'validate', 'pretty print', 'converter', 'developer'],
   },
 ];
 

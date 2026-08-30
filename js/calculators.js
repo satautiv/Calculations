@@ -5347,3 +5347,33 @@ document.getElementById('uuid-generator-calc').addEventListener('click', () => {
     showError('uuid-generator-result', err.message);
   }
 });
+
+// --- JSON Formatter, Minifier & YAML Converter ---
+
+document.getElementById('json-yaml-mode').addEventListener('change', (e) => {
+  document.getElementById('json-yaml-indent-field').hidden = e.target.value !== 'format';
+});
+
+document.getElementById('json-yaml-calc').addEventListener('click', () => {
+  const mode = document.getElementById('json-yaml-mode').value;
+  const input = document.getElementById('json-yaml-input').value;
+  const indentWidth = parseInt(document.getElementById('json-yaml-indent').value, 10);
+
+  try {
+    if (mode === 'validate') {
+      validateJson(input);
+      document.getElementById('json-yaml-result').innerHTML = '<div class="headline">Valid JSON</div>';
+      return;
+    }
+
+    let output;
+    if (mode === 'format') output = formatJson(input, indentWidth);
+    else if (mode === 'minify') output = minifyJson(input);
+    else if (mode === 'json-to-yaml') output = jsonToYaml(input);
+    else output = yamlToJson(input);
+
+    document.getElementById('json-yaml-result').innerHTML = `<pre>${escapeHtml(output)}</pre>`;
+  } catch (err) {
+    showError('json-yaml-result', err.message);
+  }
+});

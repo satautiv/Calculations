@@ -3033,6 +3033,403 @@ function generateUuids(version, quantity, uppercase = false) {
   const uuids = Array.from({ length: clampedQuantity }, generate);
   return uppercase ? uuids.map(u => u.toUpperCase()) : uuids;
 }
+// --- JSON Formatter, Minifier & YAML Converter ---
+
+// Scans outside of quoted strings so a "//" or "/*" inside a JSON string
+// value (e.g. a URL) doesn't trigger a false "comments aren't allowed" hint.
+function containsJsonComments(input) {
+  let inString = false;
+  let escapeNext = false;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (inString) {
+      if (escapeNext) { escapeNext = false; continue; }
+      if (ch === '\\') { escapeNext = true; continue; }
+      if (ch === '"') inString = false;
+      continue;
+    }
+    if (ch === '"') { inString = true; continue; }
+    if (ch === '/' && (input[i + 1] === '/' || input[i + 1] === '*')) return true;
+  }
+  return false;
+}
+
+function parseJsonOrThrow(input) {
+  if (input == null || input.trim() === '') {
+    throw new Error('Input is empty. Enter some JSON.');
+  }
+  try {
+    return JSON.parse(input);
+  } catch (err) {
+    if (containsJsonComments(input)) {
+      throw new Error('JSON does not support comments (// or /* */). Remove them and try again.');
+    }
+    throw new Error(`Invalid JSON: ${err.message}`);
+  }
+}
+
+function formatJson(input, indentWidth = 2) {
+  return JSON.stringify(parseJsonOrThrow(input), null, indentWidth);
+}
+
+function minifyJson(input) {
+  return JSON.stringify(parseJsonOrThrow(input));
+}
+
+function validateJson(input) {
+  parseJsonOrThrow(input);
+  return { valid: true };
+}
+
+function isYamlContainer(value) {
+  return value !== null && typeof value === 'object';
+}
+
+function isYamlEmptyContainer(value) {
+  return Array.isArray(value) ? value.length === 0 : Object.keys(value).length === 0;
+}
+
+// Per the issue's simplified quoting rule: over-quoting is always safe, so
+// bias toward quoting anything that could otherwise be misread as another
+// YAML type or a structural token.
+function yamlScalarNeedsQuoting(str) {
+  if (str === '') return true;
+  if (/[:#]/.test(str)) return true;
+  if (/^[-?&*!|>%@`]/.test(str)) return true;
+  if (/^(true|false|null|yes|no|on|off)$/i.test(str)) return true;
+  if (/^[+-]?(\d+(\.\d+)?|\.\d+)([eE][+-]?\d+)?$/.test(str)) return true;
+  if (/^\s|\s$/.test(str)) return true;
+  return false;
+}
+
+function yamlQuoteString(str) {
+  const escaped = str
+    .replace(/\\/g, '\\\\')
+    .replace(/"/g, '\\"')
+    .replace(/\n/g, '\\n')
+    .replace(/\t/g, '\\t');
+  return `"${escaped}"`;
+}
+
+function yamlScalarString(value) {
+  if (value === null) return 'null';
+  if (typeof value === 'boolean' || typeof value === 'number') return String(value);
+  if (typeof value === 'string') {
+    return yamlScalarNeedsQuoting(value) ? yamlQuoteString(value) : value;
+  }
+  throw new Error('Unsupported value type for YAML output.');
+}
+
+function yamlInlineContainer(value) {
+  if (Array.isArray(value)) return '[]';
+  return '{}';
+}
+
+// Emits `value` (an object or non-empty array) as a block of YAML lines at
+// the given indent level (2 spaces per level). Recursive, but realistic JSON
+// nesting depths (a few hundred levels) are well within JS's default call
+// stack, per the issue's stated scope.
+function emitYamlLines(value, indent) {
+  const pad = '  '.repeat(indent);
+  const lines = [];
+
+  if (Array.isArray(value)) {
+    value.forEach(item => {
+      if (isYamlContainer(item) && !isYamlEmptyContainer(item)) {
+        const childLines = emitYamlLines(item, indent + 1);
+        const childPad = '  '.repeat(indent + 1);
+        lines.push(`${pad}- ${childLines[0].slice(childPad.length)}`);
+        for (let i = 1; i < childLines.length; i++) lines.push(childLines[i]);
+      } else if (isYamlContainer(item)) {
+        lines.push(`${pad}- ${yamlInlineContainer(item)}`);
+      } else {
+        lines.push(`${pad}- ${yamlScalarString(item)}`);
+      }
+    });
+    return lines;
+  }
+
+  Object.keys(value).forEach(key => {
+    const v = value[key];
+    const keyStr = yamlScalarString(key);
+    if (isYamlContainer(v) && !isYamlEmptyContainer(v)) {
+      lines.push(`${pad}${keyStr}:`);
+      lines.push(...emitYamlLines(v, indent + 1));
+    } else if (isYamlContainer(v)) {
+      lines.push(`${pad}${keyStr}: ${yamlInlineContainer(v)}`);
+    } else {
+      lines.push(`${pad}${keyStr}: ${yamlScalarString(v)}`);
+    }
+  });
+  return lines;
+}
+
+function jsonToYaml(input) {
+  const parsed = parseJsonOrThrow(input);
+  if (isYamlContainer(parsed) && !isYamlEmptyContainer(parsed)) {
+    return emitYamlLines(parsed, 0).join('\n') + '\n';
+  }
+  if (isYamlContainer(parsed)) return `${yamlInlineContainer(parsed)}\n`;
+  return `${yamlScalarString(parsed)}\n`;
+}
+
+// --- Hand-written YAML subset parser (block style only - see issue #108) ---
+
+// Strips a trailing "# comment", ignoring '#' inside single/double-quoted
+// strings so e.g. a URL fragment or literal '#' in a quoted value survives.
+function stripYamlComment(line) {
+  let inSingle = false;
+  let inDouble = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (inSingle) {
+      if (ch === "'") {
+        if (line[i + 1] === "'") { i++; continue; }
+        inSingle = false;
+      }
+      continue;
+    }
+    if (inDouble) {
+      if (ch === '\\') { i++; continue; }
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (ch === "'") { inSingle = true; continue; }
+    if (ch === '"') { inDouble = true; continue; }
+    if (ch === '#' && (i === 0 || /\s/.test(line[i - 1]))) return line.slice(0, i);
+  }
+  return line;
+}
+
+function tokenizeYaml(input) {
+  const rawLines = input.split(/\r\n|\r|\n/);
+  const lines = [];
+  rawLines.forEach((raw, idx) => {
+    const lineNum = idx + 1;
+    if (raw.trim() === '') return;
+
+    const leading = /^[ \t]*/.exec(raw)[0];
+    if (leading.includes('\t')) {
+      throw new Error(`Line ${lineNum}: tabs are not supported for YAML indentation; use spaces.`);
+    }
+
+    const stripped = stripYamlComment(raw);
+    if (stripped.trim() === '') return;
+
+    const indentMatch = /^ */.exec(stripped)[0];
+    const content = stripped.slice(indentMatch.length).replace(/\s+$/, '');
+    if (content === '' || content === '---' || content === '...') return;
+
+    lines.push({ indent: indentMatch.length, content, lineNum });
+  });
+  return lines;
+}
+
+function isYamlSequenceItem(content) {
+  return content === '-' || content.startsWith('- ');
+}
+
+// Finds the colon that separates a mapping key from its value: only a colon
+// followed by a space or end-of-line counts, so plain scalars containing a
+// colon (like a URL) don't get misread as "key: value".
+function findYamlMappingColon(content) {
+  const consumeQuoted = (quote) => {
+    let i = 1;
+    while (i < content.length) {
+      if (quote === '"' && content[i] === '\\') { i += 2; continue; }
+      if (content[i] === quote) {
+        if (quote === "'" && content[i + 1] === "'") { i += 2; continue; }
+        return i + 1;
+      }
+      i++;
+    }
+    return -1;
+  };
+
+  let start = 0;
+  if (content[0] === '"' || content[0] === "'") {
+    const afterQuote = consumeQuoted(content[0]);
+    if (afterQuote === -1) return -1;
+    start = afterQuote;
+    while (content[start] === ' ') start++;
+    return content[start] === ':' && (start + 1 === content.length || content[start + 1] === ' ') ? start : -1;
+  }
+
+  for (let i = start; i < content.length; i++) {
+    if (content[i] === ':' && (i + 1 === content.length || content[i + 1] === ' ')) return i;
+  }
+  return -1;
+}
+
+function splitYamlMappingLine(content) {
+  const idx = findYamlMappingColon(content);
+  if (idx === -1) return null;
+  return { rawKey: content.slice(0, idx).trim(), rawValue: content.slice(idx + 1).trim() };
+}
+
+function checkYamlUnsupportedToken(token, lineNum) {
+  const c = token[0];
+  if (c === '"' || c === "'") return;
+  // Empty flow collections are the one flow-style exception: they're the only
+  // way jsonToYaml can represent an empty array/object, and there's no
+  // ambiguity to mis-parse since they carry no content.
+  if (token === '[]' || token === '{}') return;
+  if (c === '{' || c === '[') {
+    throw new Error(`Line ${lineNum}: flow style ("{...}" / "[...]") is not supported; use block style.`);
+  }
+  if (c === '&') throw new Error(`Line ${lineNum}: anchors ("&") are not supported.`);
+  if (c === '*') throw new Error(`Line ${lineNum}: aliases ("*") are not supported.`);
+  if (c === '!') throw new Error(`Line ${lineNum}: tags ("!") are not supported.`);
+  if (c === '|' || c === '>') {
+    throw new Error(`Line ${lineNum}: multi-line block scalars ("|" / ">") are not supported.`);
+  }
+}
+
+function parseYamlDoubleQuoted(content, lineNum) {
+  if (content.length < 2 || content[content.length - 1] !== '"') {
+    throw new Error(`Line ${lineNum}: unterminated double-quoted string.`);
+  }
+  const inner = content.slice(1, -1);
+  const escapes = { n: '\n', t: '\t', r: '\r', '"': '"', '\\': '\\', '/': '/', b: '\b', f: '\f', '0': '\0' };
+  let result = '';
+  for (let i = 0; i < inner.length; i++) {
+    if (inner[i] === '\\' && i + 1 < inner.length) {
+      const next = inner[i + 1];
+      result += next in escapes ? escapes[next] : next;
+      i++;
+    } else {
+      result += inner[i];
+    }
+  }
+  return result;
+}
+
+function parseYamlSingleQuoted(content, lineNum) {
+  if (content.length < 2 || content[content.length - 1] !== "'") {
+    throw new Error(`Line ${lineNum}: unterminated single-quoted string.`);
+  }
+  return content.slice(1, -1).replace(/''/g, "'");
+}
+
+function parseYamlScalarValue(content, lineNum) {
+  if (content[0] === '"') return parseYamlDoubleQuoted(content, lineNum);
+  if (content[0] === "'") return parseYamlSingleQuoted(content, lineNum);
+  if (content === '[]') return [];
+  if (content === '{}') return {};
+  if (content === '~' || /^null$/i.test(content)) return null;
+  if (/^true$/i.test(content)) return true;
+  if (/^false$/i.test(content)) return false;
+  if (/^[+-]?\d+$/.test(content)) return parseInt(content, 10);
+  if (/^[+-]?(\d+\.\d*|\.\d+|\d+)([eE][+-]?\d+)?$/.test(content) && /[.eE]/.test(content)) {
+    return parseFloat(content);
+  }
+  return content;
+}
+
+function parseYamlScalarToken(content, lineNum) {
+  checkYamlUnsupportedToken(content, lineNum);
+  return parseYamlScalarValue(content, lineNum);
+}
+
+function parseYamlKeyString(rawKey, lineNum) {
+  if (rawKey === '') throw new Error(`Line ${lineNum}: missing mapping key before ":".`);
+  checkYamlUnsupportedToken(rawKey, lineNum);
+  if (rawKey[0] === '"') return parseYamlDoubleQuoted(rawKey, lineNum);
+  if (rawKey[0] === "'") return parseYamlSingleQuoted(rawKey, lineNum);
+  return rawKey;
+}
+
+// lines/pos are shared mutable state threaded through the recursive-descent
+// parser below: `pos.i` is the read cursor into the flat, pre-tokenized line
+// list, advanced as each block/mapping/sequence/scalar consumes its lines.
+function parseYamlBlock(lines, pos, indent) {
+  const first = lines[pos.i];
+  if (first.indent !== indent) {
+    throw new Error(`Line ${first.lineNum}: unexpected indentation (expected ${indent} spaces).`);
+  }
+  if (isYamlSequenceItem(first.content)) return parseYamlSequenceBlock(lines, pos, indent);
+  if (splitYamlMappingLine(first.content)) return parseYamlMappingBlock(lines, pos, indent);
+
+  pos.i++;
+  return parseYamlScalarToken(first.content, first.lineNum);
+}
+
+function parseYamlSequenceBlock(lines, pos, indent) {
+  const result = [];
+  while (pos.i < lines.length && lines[pos.i].indent === indent && isYamlSequenceItem(lines[pos.i].content)) {
+    const line = lines[pos.i];
+    const rest = line.content === '-' ? '' : line.content.slice(2);
+
+    if (rest.trim() === '') {
+      pos.i++;
+      if (pos.i < lines.length && lines[pos.i].indent > indent) {
+        result.push(parseYamlBlock(lines, pos, lines[pos.i].indent));
+      } else {
+        result.push(null);
+      }
+      continue;
+    }
+
+    // Rewrite "- key: value" / "- - nested" as a synthetic line one indent
+    // level in, so the generic mapping/sequence logic above can parse it
+    // (and any further real lines at that indent continue the same block).
+    lines[pos.i] = { indent: indent + 2, content: rest, lineNum: line.lineNum };
+    if (isYamlSequenceItem(rest) || splitYamlMappingLine(rest)) {
+      result.push(parseYamlBlock(lines, pos, indent + 2));
+    } else {
+      pos.i++;
+      result.push(parseYamlScalarToken(rest, line.lineNum));
+    }
+  }
+  return result;
+}
+
+function parseYamlMappingBlock(lines, pos, indent) {
+  const result = {};
+  while (pos.i < lines.length && lines[pos.i].indent === indent && !isYamlSequenceItem(lines[pos.i].content)) {
+    const line = lines[pos.i];
+    const kv = splitYamlMappingLine(line.content);
+    if (!kv) throw new Error(`Line ${line.lineNum}: expected a "key: value" mapping entry.`);
+
+    const key = parseYamlKeyString(kv.rawKey, line.lineNum);
+    if (kv.rawValue === '') {
+      pos.i++;
+      if (pos.i < lines.length && lines[pos.i].indent > indent) {
+        result[key] = parseYamlBlock(lines, pos, lines[pos.i].indent);
+      } else {
+        result[key] = null;
+      }
+    } else {
+      pos.i++;
+      result[key] = parseYamlScalarToken(kv.rawValue, line.lineNum);
+    }
+  }
+  return result;
+}
+
+function parseYamlDocument(input) {
+  const lines = tokenizeYaml(input);
+  if (lines.length === 0) {
+    throw new Error('No YAML content found (input may be empty or only comments).');
+  }
+  if (lines[0].indent !== 0) {
+    throw new Error(`Line ${lines[0].lineNum}: top-level content must not be indented.`);
+  }
+
+  const pos = { i: 0 };
+  const value = parseYamlBlock(lines, pos, 0);
+  if (pos.i !== lines.length) {
+    throw new Error(`Line ${lines[pos.i].lineNum}: unexpected content - check indentation.`);
+  }
+  return value;
+}
+
+function yamlToJson(input) {
+  if (input == null || input.trim() === '') {
+    throw new Error('Input is empty. Enter some YAML.');
+  }
+  return JSON.stringify(parseYamlDocument(input));
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -3286,5 +3683,10 @@ if (typeof module !== 'undefined' && module.exports) {
     generateUuidV4,
     generateUuidV7,
     generateUuids,
+    formatJson,
+    minifyJson,
+    validateJson,
+    jsonToYaml,
+    yamlToJson,
   };
 }
