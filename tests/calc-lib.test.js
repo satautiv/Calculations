@@ -171,6 +171,7 @@ const {
   timestampToDate,
   formatDateInTimeZone,
   dateFieldsToEpoch,
+  relativeTimeFromNow,
   base64Encode,
   base64Decode,
   findRegexMatches,
@@ -3695,6 +3696,52 @@ describe('timestampToDate', () => {
   test('rejects a non-numeric or empty value', () => {
     expect(() => timestampToDate(NaN, 'seconds')).toThrow();
     expect(() => timestampToDate(undefined, 'seconds')).toThrow();
+  });
+});
+
+describe('relativeTimeFromNow', () => {
+  const now = new Date('2025-01-01T12:00:00Z');
+
+  test('a moment within 30 seconds of now, in either direction, reads as "just now"', () => {
+    expect(relativeTimeFromNow(new Date('2025-01-01T11:59:35Z'), now)).toBe('just now');
+    expect(relativeTimeFromNow(new Date('2025-01-01T12:00:25Z'), now)).toBe('just now');
+  });
+
+  test('a few minutes in the past', () => {
+    expect(relativeTimeFromNow(new Date('2025-01-01T11:55:00Z'), now)).toBe('5 minutes ago');
+  });
+
+  test('a single minute in the past uses the singular unit', () => {
+    expect(relativeTimeFromNow(new Date('2025-01-01T11:59:00Z'), now)).toBe('1 minute ago');
+  });
+
+  test('a few hours in the past', () => {
+    expect(relativeTimeFromNow(new Date('2025-01-01T09:00:00Z'), now)).toBe('3 hours ago');
+  });
+
+  test('a single hour in the past uses the singular unit', () => {
+    expect(relativeTimeFromNow(new Date('2025-01-01T11:00:00Z'), now)).toBe('1 hour ago');
+  });
+
+  test('a moment in the future is phrased as "in X <unit>"', () => {
+    expect(relativeTimeFromNow(new Date('2025-01-01T12:12:00Z'), now)).toBe('in 12 minutes');
+  });
+
+  test('several days in the past', () => {
+    expect(relativeTimeFromNow(new Date('2024-12-29T12:00:00Z'), now)).toBe('3 days ago');
+  });
+
+  test('several months in the past', () => {
+    expect(relativeTimeFromNow(new Date('2024-09-01T12:00:00Z'), now)).toBe('4 months ago');
+  });
+
+  test('more than a year in the past', () => {
+    expect(relativeTimeFromNow(new Date('2022-01-01T12:00:00Z'), now)).toBe('3 years ago');
+  });
+
+  test('defaults `now` to the current time when omitted', () => {
+    const almostNow = new Date(Date.now() - 5000);
+    expect(relativeTimeFromNow(almostNow)).toBe('just now');
   });
 });
 
