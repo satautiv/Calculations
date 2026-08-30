@@ -688,6 +688,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Home & DIY',
     description: 'Estimate how many solar panels you need to cover your daily energy use, and how long the system takes to pay for itself.',
     keywords: ['solar panel', 'solar sizing', 'payback period', 'roi', 'kwh', 'sun hours', 'home', 'diy'],
+    id: 'projectile-motion-calculator',
+    name: 'Projectile Motion & Fall Time Calculator',
+    category: 'Unusual',
+    description: 'Calculate time of flight, max height, and range for a launched projectile, or fall time for a simple drop.',
+    keywords: ['projectile motion', 'fall time', 'trajectory', 'free fall', 'kinematics', 'physics', 'unusual'],
   },
 ];
 

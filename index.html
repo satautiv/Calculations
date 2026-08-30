@@ -3206,6 +3206,25 @@
     <button class="calc-btn" id="solar-calc">Calculate</button>
     <div class="result" id="solar-result"></div>
   </section>
+
+  <section id="projectile-motion-calculator" class="view tab-panel">
+    <h2>Projectile Motion &amp; Fall Time Calculator</h2>
+    <p class="hint">Calculates time of flight, maximum height, and range for a launched projectile - or the fall time for a simple drop when speed/angle are zero. Ignores air resistance and assumes flat, level ground and constant gravity.</p>
+    <div class="field">
+      <label for="projectile-speed">Launch speed (m/s)</label>
+      <input type="number" id="projectile-speed" min="0" step="0.1" placeholder="e.g. 20">
+    </div>
+    <div class="field">
+      <label for="projectile-angle">Launch angle (degrees, 0-90)</label>
+      <input type="number" id="projectile-angle" min="0" max="90" step="0.1" placeholder="e.g. 45">
+    </div>
+    <div class="field">
+      <label for="projectile-height">Initial height above landing surface (meters)</label>
+      <input type="number" id="projectile-height" min="0" step="0.1" placeholder="e.g. 0">
+    </div>
+    <button class="calc-btn" id="projectile-calc">Calculate</button>
+    <div class="result" id="projectile-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
