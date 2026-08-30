@@ -210,6 +210,7 @@ const {
   sha512Hex,
   symbolicToOctal,
   octalToSymbolic,
+  convertCssUnits,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -5074,5 +5075,78 @@ describe('octalToSymbolic', () => {
 
   test('throws on more than 4 digits', () => {
     expect(() => octalToSymbolic('47551')).toThrow();
+  });
+});
+describe('convertCssUnits', () => {
+  test('worked example: 24px, root 16px, viewport 1920x1080', () => {
+    const result = convertCssUnits(24, 'px', 16, 1920, 1080);
+    expect(result.px).toBe(24);
+    expect(result.rem).toBeCloseTo(1.5, 4);
+    expect(result.vw).toBeCloseTo(1.25, 4);
+    expect(result.vh).toBeCloseTo(2.2222, 4);
+  });
+
+  test('px to rem with default root font-size of 16px', () => {
+    expect(convertCssUnits(24, 'px', 16, 1920, 1080).rem).toBeCloseTo(1.5, 4);
+  });
+
+  test('px to rem with a custom root font-size of 10px', () => {
+    expect(convertCssUnits(24, 'px', 10, 1920, 1080).rem).toBeCloseTo(2.4, 4);
+  });
+
+  test('vw example: 192px is 10vw of a 1920px-wide viewport', () => {
+    expect(convertCssUnits(192, 'px', 16, 1920, 1080).vw).toBeCloseTo(10, 4);
+  });
+
+  test('vh example: 108px is 10vh of a 1080px-tall viewport', () => {
+    expect(convertCssUnits(108, 'px', 16, 1920, 1080).vh).toBeCloseTo(10, 4);
+  });
+
+  test('converts rem source unit back to px', () => {
+    expect(convertCssUnits(1.5, 'rem', 16, 1920, 1080).px).toBeCloseTo(24, 4);
+  });
+
+  test('converts vw source unit back to px', () => {
+    expect(convertCssUnits(10, 'vw', 16, 1920, 1080).px).toBeCloseTo(192, 4);
+  });
+
+  test('converts vh source unit back to px', () => {
+    expect(convertCssUnits(10, 'vh', 16, 1920, 1080).px).toBeCloseTo(108, 4);
+  });
+
+  test('allows a negative value (e.g. a negative margin)', () => {
+    expect(convertCssUnits(-16, 'px', 16, 1920, 1080).rem).toBeCloseTo(-1, 4);
+  });
+
+  test('rejects a non-numeric value', () => {
+    expect(() => convertCssUnits(NaN, 'px', 16, 1920, 1080)).toThrow();
+  });
+
+  test('rejects a zero root font-size', () => {
+    expect(() => convertCssUnits(24, 'px', 0, 1920, 1080)).toThrow();
+  });
+
+  test('rejects a negative root font-size', () => {
+    expect(() => convertCssUnits(24, 'px', -16, 1920, 1080)).toThrow();
+  });
+
+  test('rejects a zero viewport width', () => {
+    expect(() => convertCssUnits(24, 'vw', 16, 0, 1080)).toThrow();
+  });
+
+  test('rejects a negative viewport width', () => {
+    expect(() => convertCssUnits(24, 'vw', 16, -1920, 1080)).toThrow();
+  });
+
+  test('rejects a zero viewport height', () => {
+    expect(() => convertCssUnits(24, 'vh', 16, 1920, 0)).toThrow();
+  });
+
+  test('rejects a negative viewport height', () => {
+    expect(() => convertCssUnits(24, 'vh', 16, 1920, -1080)).toThrow();
+  });
+
+  test('rejects an unsupported source unit', () => {
+    expect(() => convertCssUnits(24, 'pt', 16, 1920, 1080)).toThrow();
   });
 });

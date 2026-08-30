@@ -3517,6 +3517,38 @@
     <button class="calc-btn" id="chmod-calc">Calculate</button>
     <div class="result" id="chmod-result"></div>
   </section>
+
+  <section id="css-unit-converter" class="view tab-panel">
+    <h2>CSS Unit Converter</h2>
+    <p class="hint">Converts a CSS length between px, rem, vw, and vh at once, using the root font-size and viewport dimensions you supply &mdash; no assumptions are made about this page's own viewport or font-size.</p>
+    <div class="field">
+      <label for="css-unit-value">Value to convert</label>
+      <input type="number" id="css-unit-value" step="any" placeholder="e.g. 24">
+    </div>
+    <div class="field">
+      <label for="css-unit-source">Source unit</label>
+      <select id="css-unit-source">
+        <option value="px">px</option>
+        <option value="rem">rem</option>
+        <option value="vw">vw</option>
+        <option value="vh">vh</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="css-unit-root-font">Root font-size (px)</label>
+      <input type="number" id="css-unit-root-font" min="0" step="any" value="16" placeholder="e.g. 16">
+    </div>
+    <div class="field">
+      <label for="css-unit-viewport-width">Viewport width (px)</label>
+      <input type="number" id="css-unit-viewport-width" min="0" step="any" value="1920" placeholder="e.g. 1920">
+    </div>
+    <div class="field">
+      <label for="css-unit-viewport-height">Viewport height (px)</label>
+      <input type="number" id="css-unit-viewport-height" min="0" step="any" value="1080" placeholder="e.g. 1080">
+    </div>
+    <button class="calc-btn" id="css-unit-calc">Calculate</button>
+    <div class="result" id="css-unit-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
