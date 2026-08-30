@@ -172,6 +172,8 @@ const {
   base64Decode,
   findRegexMatches,
   horizonDistance,
+  solarPanelSizing,
+  solarPaybackPeriod,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3761,5 +3763,89 @@ describe('horizonDistance', () => {
 
   test('rejects non-numeric height', () => {
     expect(() => horizonDistance(NaN)).toThrow();
+  });
+});
+
+// --- Solar panel sizing & ROI calculator ---
+
+describe('solarPanelSizing', () => {
+  test('worked example: 15 kWh/day target, 400W panels, 4.5 sun hours, 0.8 derate', () => {
+    const { dailyOutputPerPanelKwh, numberOfPanels, systemSizeKw } = solarPanelSizing(15, 400, 4.5, 0.8);
+    expect(dailyOutputPerPanelKwh).toBeCloseTo(1.44, 5);
+    expect(numberOfPanels).toBe(11);
+    expect(systemSizeKw).toBeCloseTo(4.4, 5);
+  });
+
+  test('accepts a derate factor of exactly 1', () => {
+    const { dailyOutputPerPanelKwh } = solarPanelSizing(10, 300, 5, 1);
+    expect(dailyOutputPerPanelKwh).toBeCloseTo(1.5, 5);
+  });
+
+  test('rounds panel count up rather than down', () => {
+    const { numberOfPanels } = solarPanelSizing(10, 500, 4, 0.8);
+    expect(numberOfPanels).toBe(Math.ceil(10 / 1.6));
+  });
+
+  test('rejects non-positive target consumption', () => {
+    expect(() => solarPanelSizing(0, 400, 4.5, 0.8)).toThrow();
+    expect(() => solarPanelSizing(-5, 400, 4.5, 0.8)).toThrow();
+  });
+
+  test('rejects non-positive panel wattage', () => {
+    expect(() => solarPanelSizing(15, 0, 4.5, 0.8)).toThrow();
+    expect(() => solarPanelSizing(15, -400, 4.5, 0.8)).toThrow();
+  });
+
+  test('rejects non-positive sun hours', () => {
+    expect(() => solarPanelSizing(15, 400, 0, 0.8)).toThrow();
+    expect(() => solarPanelSizing(15, 400, -1, 0.8)).toThrow();
+  });
+
+  test('rejects a derate factor outside (0, 1]', () => {
+    expect(() => solarPanelSizing(15, 400, 4.5, 0)).toThrow();
+    expect(() => solarPanelSizing(15, 400, 4.5, -0.1)).toThrow();
+    expect(() => solarPanelSizing(15, 400, 4.5, 1.1)).toThrow();
+  });
+});
+
+describe('solarPaybackPeriod', () => {
+  test('worked example: 11 panels at 1.44 kWh/day, EUR 8000 system, EUR 0.30/kWh', () => {
+    const { annualProductionKwh, annualSavings, paybackYears } = solarPaybackPeriod(1.44, 11, 8000, 0.30);
+    expect(annualProductionKwh).toBeCloseTo(5781.6, 1);
+    expect(annualSavings).toBeCloseTo(1734.48, 2);
+    expect(paybackYears).toBeCloseTo(4.61, 2);
+  });
+
+  test('subtracts annual maintenance cost from savings before computing payback', () => {
+    const withoutMaintenance = solarPaybackPeriod(1.44, 11, 8000, 0.30);
+    const withMaintenance = solarPaybackPeriod(1.44, 11, 8000, 0.30, 200);
+    expect(withMaintenance.annualSavings).toBeCloseTo(withoutMaintenance.annualSavings - 200, 5);
+    expect(withMaintenance.paybackYears).toBeGreaterThan(withoutMaintenance.paybackYears);
+  });
+
+  test('rejects non-positive system cost', () => {
+    expect(() => solarPaybackPeriod(1.44, 11, 0, 0.30)).toThrow();
+    expect(() => solarPaybackPeriod(1.44, 11, -100, 0.30)).toThrow();
+  });
+
+  test('rejects non-positive energy price', () => {
+    expect(() => solarPaybackPeriod(1.44, 11, 8000, 0)).toThrow();
+    expect(() => solarPaybackPeriod(1.44, 11, 8000, -0.1)).toThrow();
+  });
+
+  test('rejects a negative maintenance cost', () => {
+    expect(() => solarPaybackPeriod(1.44, 11, 8000, 0.30, -50)).toThrow();
+  });
+
+  test('rejects when maintenance cost meets or exceeds gross annual savings', () => {
+    const grossSavings = 1.44 * 11 * 365 * 0.30;
+    expect(() => solarPaybackPeriod(1.44, 11, 8000, 0.30, grossSavings)).toThrow();
+    expect(() => solarPaybackPeriod(1.44, 11, 8000, 0.30, grossSavings + 100)).toThrow();
+  });
+
+  test('still returns a valid (large) payback period for tiny savings vs. huge cost', () => {
+    const { paybackYears } = solarPaybackPeriod(0.5, 1, 1000000, 0.10);
+    expect(paybackYears).toBeGreaterThan(1000);
+    expect(Number.isFinite(paybackYears)).toBe(true);
   });
 });

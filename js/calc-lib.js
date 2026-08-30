@@ -2797,6 +2797,46 @@ function horizonDistance(heightM, refractionCoefficient = HORIZON_REFRACTION_COE
   };
 }
 
+// --- Solar panel sizing & ROI calculator ---
+
+// How many panels are needed to cover a target daily energy consumption,
+// and the resulting system size.
+function solarPanelSizing(targetDailyKwh, panelWattage, peakSunHours, derateFactor) {
+  if (!targetDailyKwh || targetDailyKwh <= 0) {
+    throw new Error('Target daily energy consumption must be greater than zero.');
+  }
+  if (!panelWattage || panelWattage <= 0) throw new Error('Panel wattage must be greater than zero.');
+  if (!peakSunHours || peakSunHours <= 0) throw new Error('Peak sun hours must be greater than zero.');
+  if (!derateFactor || derateFactor <= 0 || derateFactor > 1) {
+    throw new Error('Derate factor must be greater than 0 and at most 1.');
+  }
+
+  const dailyOutputPerPanelKwh = (panelWattage * peakSunHours * derateFactor) / 1000;
+  const numberOfPanels = Math.ceil(targetDailyKwh / dailyOutputPerPanelKwh);
+  const systemSizeKw = (numberOfPanels * panelWattage) / 1000;
+
+  return { dailyOutputPerPanelKwh, numberOfPanels, systemSizeKw };
+}
+
+// Simplified payback period from the sized system's expected production -
+// ignores financing, incentives, price inflation, and panel degradation.
+function solarPaybackPeriod(dailyOutputPerPanelKwh, numberOfPanels, systemCost, energyPricePerKwh, annualMaintenanceCost = 0) {
+  if (!systemCost || systemCost <= 0) throw new Error('System cost must be greater than zero.');
+  if (!energyPricePerKwh || energyPricePerKwh <= 0) throw new Error('Energy price must be greater than zero.');
+  if (annualMaintenanceCost < 0) throw new Error('Annual maintenance cost cannot be negative.');
+
+  const annualProductionKwh = dailyOutputPerPanelKwh * numberOfPanels * 365;
+  const annualSavings = annualProductionKwh * energyPricePerKwh - annualMaintenanceCost;
+
+  if (annualSavings <= 0) {
+    throw new Error('Annual savings must be greater than zero - reduce maintenance cost or check the energy price.');
+  }
+
+  const paybackYears = systemCost / annualSavings;
+
+  return { annualProductionKwh, annualSavings, paybackYears };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -3037,5 +3077,7 @@ if (typeof module !== 'undefined' && module.exports) {
     findRegexMatches,
     HORIZON_REFRACTION_COEFFICIENT,
     horizonDistance,
+    solarPanelSizing,
+    solarPaybackPeriod,
   };
 }

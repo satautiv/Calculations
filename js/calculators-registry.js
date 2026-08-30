@@ -683,6 +683,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Unusual',
     description: "Calculate how far away the visible horizon is based on your height above the surface, accounting for Earth's curvature and atmospheric refraction.",
     keywords: ['horizon', 'distance', 'curvature', 'refraction', 'eye height', 'line of sight', 'unusual'],
+    id: 'solar-panel-calculator',
+    name: 'Solar Panel Sizing & ROI Calculator',
+    category: 'Home & DIY',
+    description: 'Estimate how many solar panels you need to cover your daily energy use, and how long the system takes to pay for itself.',
+    keywords: ['solar panel', 'solar sizing', 'payback period', 'roi', 'kwh', 'sun hours', 'home', 'diy'],
   },
 ];
 
