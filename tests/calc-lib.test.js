@@ -156,6 +156,8 @@ const {
   dueDateFromLmp,
   dueDateFromConception,
   gestationalAgeDays,
+  earthRotationSpeedKmh,
+  earthTravelDistance,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3191,5 +3193,57 @@ describe('gestationalAgeDays', () => {
     const conception = new Date('2026-01-01T00:00:00Z');
     const asOf = new Date('2026-02-01T00:00:00Z');
     expect(gestationalAgeDays('conception', conception, asOf)).toBe(45);
+  });
+});
+
+// --- Earth rotation and orbit distance calculator ---
+
+describe('earthRotationSpeedKmh', () => {
+  test('worked example: equator speed is about 1,674 km/h', () => {
+    expect(earthRotationSpeedKmh(0)).toBeCloseTo(1674, -1);
+  });
+
+  test('worked example: 45 degrees latitude is about 1,183 km/h', () => {
+    expect(earthRotationSpeedKmh(45)).toBeCloseTo(1183, 0);
+  });
+
+  test('speed at the poles is ~0 (cos(90deg) = 0)', () => {
+    expect(earthRotationSpeedKmh(90)).toBeCloseTo(0, 5);
+    expect(earthRotationSpeedKmh(-90)).toBeCloseTo(0, 5);
+  });
+
+  test('rejects an out-of-range latitude', () => {
+    expect(() => earthRotationSpeedKmh(91)).toThrow();
+    expect(() => earthRotationSpeedKmh(-91)).toThrow();
+  });
+});
+
+describe('earthTravelDistance', () => {
+  test('worked example: 45 degrees latitude over 24 hours', () => {
+    const { rotationKm, orbitKm, totalKm } = earthTravelDistance(45, 24);
+    expect(rotationKm).toBeCloseTo(28392, -2);
+    expect(orbitKm).toBeCloseTo(2573000, -3);
+    expect(totalKm).toBeCloseTo(rotationKm + orbitKm, 5);
+  });
+
+  test('rotation-only excludes orbital distance', () => {
+    const { rotationKm, orbitKm, totalKm } = earthTravelDistance(0, 1, true, false);
+    expect(orbitKm).toBe(0);
+    expect(totalKm).toBe(rotationKm);
+  });
+
+  test('orbit-only excludes rotational distance', () => {
+    const { rotationKm, orbitKm, totalKm } = earthTravelDistance(0, 1, false, true);
+    expect(rotationKm).toBe(0);
+    expect(totalKm).toBe(orbitKm);
+  });
+
+  test('rejects a non-positive duration', () => {
+    expect(() => earthTravelDistance(0, 0)).toThrow();
+    expect(() => earthTravelDistance(0, -1)).toThrow();
+  });
+
+  test('rejects excluding both motions', () => {
+    expect(() => earthTravelDistance(0, 1, false, false)).toThrow();
   });
 });

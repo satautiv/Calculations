@@ -633,6 +633,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Estimate a due date from the last menstrual period or a known conception date, plus current gestational age.',
     keywords: ['pregnancy', 'due date', 'naegele', 'gestational age', 'lmp', 'conception', 'unusual'],
   },
+  {
+    id: 'earth-motion-calculator',
+    name: 'Earth Rotation & Orbit Distance Calculator',
+    category: 'Unusual',
+    description: "See how far you've traveled through space via Earth's rotation and orbit around the Sun.",
+    keywords: ['earth rotation', 'orbit', 'space travel', 'sidereal day', 'distance traveled', 'unusual'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

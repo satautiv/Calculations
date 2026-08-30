@@ -2439,6 +2439,44 @@ function gestationalAgeDays(mode, referenceDate, asOfDate) {
   return mode === 'conception' ? daysSinceReference + 14 : daysSinceReference;
 }
 
+// --- Earth rotation and orbit distance calculator ---
+
+const EARTH_RADIUS_KM = 6371;
+// Sidereal day (Earth's true rotation period relative to distant stars),
+// ~4 minutes shorter than the 24h solar day, which is more physically
+// correct for computing rotational speed at a fixed latitude.
+const EARTH_SIDEREAL_DAY_HOURS = 23.9345;
+// Earth's mean orbital speed around the Sun (~29.78 km/s), treated as
+// constant even though the orbit is a slight ellipse and real speed varies
+// a little through the year.
+const EARTH_ORBITAL_SPEED_KMH = 107208;
+
+// Speed due to Earth's rotation at a given latitude: points away from the
+// equator trace a smaller circle per rotation, scaled by cos(latitude).
+function earthRotationSpeedKmh(latitudeDeg) {
+  if (latitudeDeg < -90 || latitudeDeg > 90) {
+    throw new Error('Latitude must be between -90 and 90 degrees.');
+  }
+  const latRad = latitudeDeg * Math.PI / 180;
+  return (2 * Math.PI * EARTH_RADIUS_KM * Math.cos(latRad)) / EARTH_SIDEREAL_DAY_HOURS;
+}
+
+// Distance traveled over `hours` due to rotation and/or orbit, at a given
+// latitude. The combined total is a simple additive approximation for
+// user-facing intuition - the two motions aren't generally in the same
+// direction, so it isn't a true vector sum.
+function earthTravelDistance(latitudeDeg, hours, includeRotation = true, includeOrbit = true) {
+  if (latitudeDeg < -90 || latitudeDeg > 90) {
+    throw new Error('Latitude must be between -90 and 90 degrees.');
+  }
+  if (!hours || hours <= 0) throw new Error('Duration must be greater than zero.');
+  if (!includeRotation && !includeOrbit) throw new Error('Select at least one motion to include.');
+
+  const rotationKm = includeRotation ? earthRotationSpeedKmh(latitudeDeg) * hours : 0;
+  const orbitKm = includeOrbit ? EARTH_ORBITAL_SPEED_KMH * hours : 0;
+  return { rotationKm, orbitKm, totalKm: rotationKm + orbitKm };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2648,5 +2686,10 @@ if (typeof module !== 'undefined' && module.exports) {
     dueDateFromLmp,
     dueDateFromConception,
     gestationalAgeDays,
+    EARTH_RADIUS_KM,
+    EARTH_SIDEREAL_DAY_HOURS,
+    EARTH_ORBITAL_SPEED_KMH,
+    earthRotationSpeedKmh,
+    earthTravelDistance,
   };
 }
