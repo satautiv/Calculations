@@ -3225,6 +3225,31 @@
     <button class="calc-btn" id="projectile-calc">Calculate</button>
     <div class="result" id="projectile-result"></div>
   </section>
+
+  <section id="url-encoder-decoder" class="view tab-panel">
+    <h2>URL Encoder/Decoder</h2>
+    <p class="hint">Percent-encodes or decodes text for safe use in URLs (RFC 3986). Space becomes <code>%20</code>, not <code>+</code> - the <code>+</code>-for-space convention belongs to form bodies, not this tool. Encoding already-encoded text will double-encode it (a literal <code>%</code> becomes <code>%2520</code>).</p>
+    <div class="field">
+      <label for="url-mode">Mode</label>
+      <select id="url-mode">
+        <option value="encode">Encode</option>
+        <option value="decode">Decode</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="url-function">Encoding function</label>
+      <select id="url-function">
+        <option value="component">Component (single value, e.g. a query parameter)</option>
+        <option value="full">Full URI (a complete URL - preserves : / ? & = # etc.)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="url-text">Text</label>
+      <textarea id="url-text" rows="4" placeholder="e.g. a b&c=d"></textarea>
+    </div>
+    <button class="calc-btn" id="url-calc">Calculate</button>
+    <div class="result" id="url-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

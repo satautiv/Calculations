@@ -2863,6 +2863,27 @@ function projectileMotion(speed, angleDeg, initialHeight, gravity = 9.81) {
   return { timeOfFlight, maxHeight, range, vx, vy };
 }
 
+// --- URL Encoder/Decoder ---
+
+// Percent-encodes text per RFC 3986. mode 'component' treats the text as a
+// single value in isolation (a query param, a path segment) and escapes
+// reserved delimiters too; 'full' treats it as an already-structured URI and
+// leaves delimiters like : / ? & = # intact.
+function urlEncode(text, mode = 'component') {
+  return mode === 'full' ? encodeURI(text) : encodeURIComponent(text);
+}
+
+// Reverses urlEncode. Malformed %XX sequences or percent-decoded bytes that
+// aren't valid UTF-8 throw a native URIError - rethrown here with a clearer,
+// tool-specific message.
+function urlDecode(text, mode = 'component') {
+  try {
+    return mode === 'full' ? decodeURI(text) : decodeURIComponent(text);
+  } catch (err) {
+    throw new Error('Invalid percent-encoding: the text contains a malformed %XX sequence or decodes to invalid UTF-8.');
+  }
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -3106,5 +3127,7 @@ if (typeof module !== 'undefined' && module.exports) {
     solarPanelSizing,
     solarPaybackPeriod,
     projectileMotion,
+    urlEncode,
+    urlDecode,
   };
 }

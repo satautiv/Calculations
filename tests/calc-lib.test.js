@@ -175,6 +175,8 @@ const {
   solarPanelSizing,
   solarPaybackPeriod,
   projectileMotion,
+  urlEncode,
+  urlDecode,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3901,5 +3903,65 @@ describe('projectileMotion', () => {
 
   test('rejects a negative initial height', () => {
     expect(() => projectileMotion(10, 45, -1)).toThrow();
+  });
+});
+// --- URL Encoder/Decoder ---
+
+describe('urlEncode', () => {
+  test('worked example: component mode encodes reserved delimiters like & and =', () => {
+    expect(urlEncode('a b&c=d', 'component')).toBe('a%20b%26c%3Dd');
+  });
+
+  test('worked example: full mode preserves structural characters, only encodes space', () => {
+    expect(urlEncode('https://example.com/a b?c=d&e=f', 'full')).toBe('https://example.com/a%20b?c=d&e=f');
+  });
+
+  test('defaults to component mode', () => {
+    expect(urlEncode('a b&c=d')).toBe(urlEncode('a b&c=d', 'component'));
+  });
+
+  test('encodes space as %20, not +', () => {
+    expect(urlEncode('a b')).toBe('a%20b');
+  });
+
+  test('handles empty input', () => {
+    expect(urlEncode('')).toBe('');
+    expect(urlEncode('', 'full')).toBe('');
+  });
+
+  test('double-encoding an already-encoded value escapes the percent sign', () => {
+    expect(urlEncode('a%20b')).toBe('a%2520b');
+  });
+});
+
+describe('urlDecode', () => {
+  test('worked example: component mode decodes back to the original text', () => {
+    expect(urlDecode('a%20b%26c%3Dd', 'component')).toBe('a b&c=d');
+  });
+
+  test('full mode decodes a complete URI', () => {
+    expect(urlDecode('https://example.com/a%20b?c=d&e=f', 'full')).toBe('https://example.com/a b?c=d&e=f');
+  });
+
+  test('defaults to component mode', () => {
+    expect(urlDecode('a%20b')).toBe(urlDecode('a%20b', 'component'));
+  });
+
+  test('handles empty input', () => {
+    expect(urlDecode('')).toBe('');
+  });
+
+  test('round-trips through encode then decode', () => {
+    const original = 'Héllo, world! 100% sure? yes/no & maybe';
+    expect(urlDecode(urlEncode(original, 'component'), 'component')).toBe(original);
+  });
+
+  test('throws a clear error on a malformed percent sequence', () => {
+    expect(() => urlDecode('100%')).toThrow(/malformed/i);
+    expect(() => urlDecode('%zz')).toThrow(/malformed/i);
+  });
+
+  test('throws a clear error on percent-decoded bytes that are not valid UTF-8', () => {
+    expect(() => urlDecode('%E0%A4%A')).toThrow(/malformed/i);
   });
 });

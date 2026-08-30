@@ -693,6 +693,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Unusual',
     description: 'Calculate time of flight, max height, and range for a launched projectile, or fall time for a simple drop.',
     keywords: ['projectile motion', 'fall time', 'trajectory', 'free fall', 'kinematics', 'physics', 'unusual'],
+    id: 'url-encoder-decoder',
+    name: 'URL Encoder/Decoder',
+    category: 'Developer',
+    description: 'Percent-encode or decode text for safe use in URLs, query parameters, and links (RFC 3986).',
+    keywords: ['url encode', 'url decode', 'percent encoding', 'uri', 'encodeuricomponent', 'developer'],
   },
 ];
 
