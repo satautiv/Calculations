@@ -211,6 +211,7 @@ const {
   symbolicToOctal,
   octalToSymbolic,
   convertCssUnits,
+  k8sResourcePlan,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -5148,5 +5149,68 @@ describe('convertCssUnits', () => {
 
   test('rejects an unsupported source unit', () => {
     expect(() => convertCssUnits(24, 'pt', 16, 1920, 1080)).toThrow();
+  });
+});
+describe('k8sResourcePlan', () => {
+  test('matches the issue worked example', () => {
+    const plan = k8sResourcePlan(200, 600, 256, 700, 1.3);
+    expect(plan.cpuRequestMillicores).toBe(200);
+    expect(plan.cpuLimitMillicores).toBe(780);
+    expect(plan.memRequestMiB).toBe(256);
+    expect(plan.memLimitMiB).toBe(910);
+    expect(plan.qosClass).toBe('Burstable');
+    expect(plan.yamlSnippet).toBe(
+      [
+        'resources:',
+        '  requests:',
+        '    cpu: "200m"',
+        '    memory: "256Mi"',
+        '  limits:',
+        '    cpu: "780m"',
+        '    memory: "910Mi"',
+      ].join('\n')
+    );
+  });
+
+  test('rounds CPU limit to the nearest 10m', () => {
+    const plan = k8sResourcePlan(100, 250, 128, 256, 1.35);
+    expect(plan.cpuLimitMillicores).toBe(340);
+  });
+
+  test('rounds memory limit to the nearest 1 MiB', () => {
+    const plan = k8sResourcePlan(100, 250, 128, 300, 1.33);
+    expect(plan.memLimitMiB).toBe(399);
+  });
+
+  test('reports Guaranteed QoS when rounding collapses the limit back onto the request', () => {
+    // A headroom factor just above 1 can round back down to the same
+    // request once CPU snaps to the nearest 10m / memory to the nearest 1Mi.
+    const plan = k8sResourcePlan(200, 200, 256, 256, 1.001);
+    expect(plan.cpuRequestMillicores).toBe(plan.cpuLimitMillicores);
+    expect(plan.memRequestMiB).toBe(plan.memLimitMiB);
+    expect(plan.qosClass).toBe('Guaranteed');
+  });
+
+  test('throws when peak CPU is lower than average CPU', () => {
+    expect(() => k8sResourcePlan(600, 200, 256, 700, 1.3)).toThrow(/peak cpu/i);
+  });
+
+  test('throws when peak memory is lower than average memory', () => {
+    expect(() => k8sResourcePlan(200, 600, 700, 256, 1.3)).toThrow(/peak memory/i);
+  });
+
+  test('throws for zero or negative usage values', () => {
+    expect(() => k8sResourcePlan(0, 600, 256, 700, 1.3)).toThrow();
+    expect(() => k8sResourcePlan(200, 600, -1, 700, 1.3)).toThrow();
+  });
+
+  test('throws when headroom factor is 1 or less', () => {
+    expect(() => k8sResourcePlan(200, 600, 256, 700, 1)).toThrow(/headroom/i);
+    expect(() => k8sResourcePlan(200, 600, 256, 700, 0.9)).toThrow(/headroom/i);
+  });
+
+  test('throws when the computed request rounds to 0', () => {
+    expect(() => k8sResourcePlan(0.4, 600, 256, 700, 1.3)).toThrow(/request is 0/i);
+    expect(() => k8sResourcePlan(200, 600, 0.4, 700, 1.3)).toThrow(/request is 0/i);
   });
 });

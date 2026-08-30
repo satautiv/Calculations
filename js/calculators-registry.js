@@ -787,6 +787,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert CSS length values between px, rem, vw, and vh using your own root font-size and viewport dimensions.',
     keywords: ['css', 'unit converter', 'px', 'rem', 'vw', 'vh', 'viewport', 'root font size', 'developer'],
   },
+  {
+    id: 'k8s-resource-calculator',
+    name: 'Docker/Kubernetes Resource Calculator',
+    category: 'Developer',
+    description: 'Suggest CPU and memory requests/limits for a container from observed average and peak usage, with a YAML snippet and QoS class.',
+    keywords: ['kubernetes', 'k8s', 'docker', 'resource limits', 'resource requests', 'cpu', 'memory', 'qos', 'yaml', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
