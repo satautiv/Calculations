@@ -4852,6 +4852,7 @@ describe('subnetInfo', () => {
     expect(info.networkAddress).toBe('192.168.1.0');
     expect(info.broadcastAddress).toBe('192.168.1.63');
     expect(info.subnetMask).toBe('255.255.255.192');
+    expect(info.wildcardMask).toBe('0.0.0.63');
     expect(info.firstUsable).toBe('192.168.1.1');
     expect(info.lastUsable).toBe('192.168.1.62');
     expect(info.usableHostCount).toBe(62);
@@ -4863,6 +4864,7 @@ describe('subnetInfo', () => {
     expect(info.networkAddress).toBe('192.168.1.0');
     expect(info.broadcastAddress).toBe('192.168.1.255');
     expect(info.subnetMask).toBe('255.255.255.0');
+    expect(info.wildcardMask).toBe('0.0.0.255');
     expect(info.firstUsable).toBe('192.168.1.1');
     expect(info.lastUsable).toBe('192.168.1.254');
     expect(info.usableHostCount).toBe(254);
@@ -4874,8 +4876,15 @@ describe('subnetInfo', () => {
     expect(info.networkAddress).toBe('0.0.0.0');
     expect(info.broadcastAddress).toBe('255.255.255.255');
     expect(info.subnetMask).toBe('0.0.0.0');
+    expect(info.wildcardMask).toBe('255.255.255.255');
     expect(info.usableHostCount).toBe(Math.pow(2, 32) - 2);
     expect(info.totalAddresses).toBe(Math.pow(2, 32));
+  });
+
+  test('computes the wildcard mask for a /30', () => {
+    const info = subnetInfo('192.168.1.4', 30);
+    expect(info.subnetMask).toBe('255.255.255.252');
+    expect(info.wildcardMask).toBe('0.0.0.3');
   });
 
   test('special-cases /31 as a two-address point-to-point link (RFC 3021)', () => {
