@@ -158,6 +158,7 @@ const {
   gestationalAgeDays,
   earthRotationSpeedKmh,
   earthTravelDistance,
+  deckingMaterialsNeeded,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3245,5 +3246,59 @@ describe('earthTravelDistance', () => {
 
   test('rejects excluding both motions', () => {
     expect(() => earthTravelDistance(0, 1, false, false)).toThrow();
+  });
+});
+
+// --- Decking calculator ---
+
+describe('deckingMaterialsNeeded', () => {
+  test('worked example: 4m x 3m deck, 140mm x 3.6m boards, 5mm gap, 10% waste, 0.4m joist spacing', () => {
+    const result = deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 10, 0.4, 2);
+    expect(result.effectiveBoardWidthM).toBeCloseTo(0.145, 5);
+    expect(result.boardRows).toBe(21);
+    expect(result.totalLinearLengthM).toBeCloseTo(84, 5);
+    expect(result.boardsByLength).toBe(24);
+    expect(result.totalBoards).toBe(27);
+    expect(result.joistsCrossedPerBoard).toBe(11);
+    expect(result.screwsPerBoard).toBe(22);
+    expect(result.totalScrews).toBe(594);
+  });
+
+  test('joist spacing larger than deck length still gives the two end joists', () => {
+    const result = deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 10, 10, 2);
+    expect(result.joistsCrossedPerBoard).toBe(2);
+    expect(result.screwsPerBoard).toBe(4);
+  });
+
+  test('zero waste and default single screw crossing still ceil-rounds cleanly', () => {
+    const result = deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 0, 0.4, 1);
+    expect(result.totalBoards).toBe(24);
+    expect(result.screwsPerBoard).toBe(11);
+    expect(result.totalScrews).toBe(264);
+  });
+
+  test('rejects non-positive deck dimensions', () => {
+    expect(() => deckingMaterialsNeeded(0, 3, 140, 3.6, 5, 10, 0.4, 2)).toThrow();
+    expect(() => deckingMaterialsNeeded(4, -1, 140, 3.6, 5, 10, 0.4, 2)).toThrow();
+  });
+
+  test('rejects non-positive board dimensions', () => {
+    expect(() => deckingMaterialsNeeded(4, 3, 0, 3.6, 5, 10, 0.4, 2)).toThrow();
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 0, 5, 10, 0.4, 2)).toThrow();
+  });
+
+  test('rejects a gap greater than or equal to the board width', () => {
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 140, 10, 0.4, 2)).toThrow();
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 200, 10, 0.4, 2)).toThrow();
+  });
+
+  test('rejects a negative gap or negative waste percentage', () => {
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, -1, 10, 0.4, 2)).toThrow();
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 5, -5, 0.4, 2)).toThrow();
+  });
+
+  test('rejects non-positive joist spacing or screws per joist crossing', () => {
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 10, 0, 2)).toThrow();
+    expect(() => deckingMaterialsNeeded(4, 3, 140, 3.6, 5, 10, 0.4, 0)).toThrow();
   });
 });
