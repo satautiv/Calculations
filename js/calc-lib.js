@@ -3894,6 +3894,84 @@ function buildCronExpression({ minute, hour, dayOfMonth, month, dayOfWeek }) {
   return [minute, hour, dayOfMonth, month, dayOfWeek].join(' ');
 }
 
+// Upper bound on how far into the future nextCronRunTimes() will search for
+// a match, in minutes (~4 years). Guards against a pathological expression
+// (e.g. "0 0 30 2 *", which never fires since February never has a 30th)
+// spinning forever, and against runaway searches for a huge `count`.
+const CRON_MAX_SEARCH_MINUTES = 4 * 365 * 24 * 60;
+
+// Walks forward minute-by-minute from `fromDate` (rounding up to the next
+// whole minute first) and returns the next `count` Date objects at which
+// `cronString` fires. Reuses the same field parsing as describeCron(), and
+// applies the same day-of-month/day-of-week OR semantics: when both fields
+// are restricted, a candidate matches if EITHER matches; when only one is
+// restricted, that one alone must match.
+function nextCronRunTimes(cronString, count, fromDate = new Date()) {
+  if (!Number.isInteger(count) || count < 1) {
+    throw new Error('Number of run times must be a positive integer.');
+  }
+  if (typeof cronString !== 'string' || cronString.trim() === '') {
+    throw new Error('Enter a cron expression.');
+  }
+  const trimmed = cronString.trim();
+
+  const expanded = expandCronMacro(trimmed);
+  if (expanded === null) {
+    throw new Error(`"${trimmed}" has no fixed schedule to compute upcoming run times for.`);
+  }
+
+  const fields = expanded.split(/\s+/);
+  if (fields.length !== 5) {
+    throw new Error(`A cron expression needs exactly 5 space-separated fields (minute hour day-of-month month day-of-week), or a recognized @macro; got ${fields.length}.`);
+  }
+  const [minuteStr, hourStr, domStr, monthStr, dowStr] = fields;
+
+  const minuteValues = new Set(parseCronFieldOrThrow('minute', minuteStr, 0, 59));
+  const hourValues = new Set(parseCronFieldOrThrow('hour', hourStr, 0, 23));
+  const domValues = new Set(parseCronFieldOrThrow('day-of-month', domStr, 1, 31));
+  const monthValues = new Set(parseCronFieldOrThrow('month', monthStr, 1, 12, CRON_MONTH_NAMES));
+  const dowValues = new Set(parseCronFieldOrThrow('day-of-week', dowStr, 0, 7, CRON_DOW_NAMES));
+
+  const domRestricted = domStr !== '*';
+  const dowRestricted = dowStr !== '*';
+
+  const candidate = new Date(fromDate.getTime());
+  candidate.setSeconds(0, 0);
+  if (candidate.getTime() < fromDate.getTime()) {
+    candidate.setMinutes(candidate.getMinutes() + 1);
+  }
+
+  const results = [];
+  for (let steps = 0; steps <= CRON_MAX_SEARCH_MINUTES && results.length < count; steps += 1) {
+    const domMatch = domValues.has(candidate.getDate());
+    const dowMatch = dowValues.has(candidate.getDay());
+    const dayMatches = domRestricted && dowRestricted
+      ? domMatch || dowMatch
+      : domRestricted
+        ? domMatch
+        : dowRestricted
+          ? dowMatch
+          : true;
+
+    if (
+      minuteValues.has(candidate.getMinutes())
+      && hourValues.has(candidate.getHours())
+      && monthValues.has(candidate.getMonth() + 1)
+      && dayMatches
+    ) {
+      results.push(new Date(candidate.getTime()));
+    }
+
+    candidate.setMinutes(candidate.getMinutes() + 1);
+  }
+
+  if (results.length < count) {
+    throw new Error(`Could not find ${count} upcoming run time(s) within ${Math.round(CRON_MAX_SEARCH_MINUTES / (365 * 24 * 60))} years - this cron expression may never fire (e.g. a day-of-month that never occurs in the given month).`);
+  }
+
+  return results;
+}
+
 function parseIpv4(str) {
   if (typeof str !== 'string') throw new Error('IP address must be a string.');
   const trimmed = str.trim();
@@ -4966,6 +5044,7 @@ if (typeof module !== 'undefined' && module.exports) {
     describeCronField,
     describeCron,
     buildCronExpression,
+    nextCronRunTimes,
     expandCronMacro,
     parseIpv4,
     ipv4IntToString,
