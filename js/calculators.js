@@ -5325,6 +5325,7 @@ document.getElementById('uuid-generator-calc').addEventListener('click', () => {
   const version = document.getElementById('uuid-version').value;
   const quantityRaw = document.getElementById('uuid-quantity').value;
   const uppercase = document.getElementById('uuid-case').value === 'upper';
+  const format = document.getElementById('uuid-format').value;
 
   const quantity = parseFloat(quantityRaw);
   if (quantityRaw === '' || isNaN(quantity)) {
@@ -5333,7 +5334,7 @@ document.getElementById('uuid-generator-calc').addEventListener('click', () => {
   }
 
   try {
-    const uuids = generateUuids(version, quantity, uppercase);
+    const uuids = generateUuids(version, quantity, uppercase, format);
     const clampedNote = quantity > UUID_MAX_QUANTITY
       ? `<div class="hint">Capped at ${UUID_MAX_QUANTITY.toLocaleString()} - the requested quantity was reduced to keep the page responsive.</div>`
       : '';

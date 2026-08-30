@@ -3109,7 +3109,7 @@ function generateUuidV7() {
 // "generate as many as possible" is a reasonable ask that should still
 // produce output. Callers can compare the requested quantity against the
 // returned array's length to know whether clamping happened.
-function generateUuids(version, quantity, uppercase = false) {
+function generateUuids(version, quantity, uppercase = false, format = 'hyphenated') {
   if (!Number.isFinite(quantity) || !Number.isInteger(quantity) || quantity <= 0) {
     throw new Error('Quantity must be a positive whole number.');
   }
@@ -3118,9 +3118,18 @@ function generateUuids(version, quantity, uppercase = false) {
   const generate = generators[version];
   if (!generate) throw new Error('Unknown UUID version.');
 
+  const formatters = {
+    hyphenated: u => u,
+    none: u => u.replace(/-/g, ''),
+    braced: u => `{${u}}`,
+  };
+  const applyFormat = formatters[format];
+  if (!applyFormat) throw new Error('Unknown output format.');
+
   const clampedQuantity = Math.min(quantity, UUID_MAX_QUANTITY);
   const uuids = Array.from({ length: clampedQuantity }, generate);
-  return uppercase ? uuids.map(u => u.toUpperCase()) : uuids;
+  const cased = uppercase ? uuids.map(u => u.toUpperCase()) : uuids;
+  return cased.map(applyFormat);
 }
 // --- JSON Formatter, Minifier & YAML Converter ---
 
