@@ -90,6 +90,7 @@ const {
   solveProportion,
   luggageWeightCheck,
   ageBreakdown,
+  nextBirthdayCountdown,
   dayOfYear,
   sunriseSunset,
   formatMinutesAsLocalTime,
@@ -1808,6 +1809,40 @@ describe('ageBreakdown', () => {
 
   test('throws when the as-of date is before the birth date', () => {
     expect(() => ageBreakdown(utc('2020-06-01'), utc('2020-05-01'))).toThrow();
+  });
+});
+
+describe('nextBirthdayCountdown', () => {
+  function utc(dateString) {
+    return new Date(dateString + 'T00:00:00Z');
+  }
+
+  test('birthday is still later this year', () => {
+    const result = nextBirthdayCountdown(utc('2000-03-15'), utc('2026-01-10'));
+    expect(result.nextBirthdayDate).toEqual(utc('2026-03-15'));
+    expect(result.daysUntil).toBe(64);
+    expect(result.turningAge).toBe(26);
+  });
+
+  test('birthday already passed this year rolls to next year', () => {
+    const result = nextBirthdayCountdown(utc('1990-06-01'), utc('2026-08-25'));
+    expect(result.nextBirthdayDate).toEqual(utc('2027-06-01'));
+    expect(result.daysUntil).toBe(280);
+    expect(result.turningAge).toBe(37);
+  });
+
+  test('as-of date is exactly the birthday: 0 days until, turning the age reached that day', () => {
+    const result = nextBirthdayCountdown(utc('1995-11-20'), utc('2026-11-20'));
+    expect(result.nextBirthdayDate).toEqual(utc('2026-11-20'));
+    expect(result.daysUntil).toBe(0);
+    expect(result.turningAge).toBe(31);
+  });
+
+  test('Feb 29 birthday falls back to Feb 28 in a non-leap target year', () => {
+    const result = nextBirthdayCountdown(utc('2000-02-29'), utc('2026-01-01'));
+    expect(result.nextBirthdayDate).toEqual(utc('2026-02-28'));
+    expect(result.daysUntil).toBe(58);
+    expect(result.turningAge).toBe(26);
   });
 });
 
