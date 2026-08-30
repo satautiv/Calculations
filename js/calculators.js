@@ -3794,10 +3794,18 @@ document.getElementById('uc-calc').addEventListener('click', () => {
     const fromLabel = UNIT_CONVERTER_LABELS[category][fromUnit];
     const toLabel = UNIT_CONVERTER_LABELS[category][toUnit];
 
+    const allUnitsRows = convertToAllUnits(category, value, fromUnit)
+      .map(({ unit, value: convertedValue }) => `<tr><td>${UNIT_CONVERTER_LABELS[category][unit]}</td><td>${convertedValue.toLocaleString(undefined, { maximumFractionDigits: 6 })}</td></tr>`)
+      .join('');
+
     document.getElementById('uc-result').innerHTML = `
       <div class="headline">${result.toLocaleString(undefined, { maximumFractionDigits: 6 })}</div>
       <div>${value} ${fromLabel} = ${result.toLocaleString(undefined, { maximumFractionDigits: 6 })} ${toLabel}</div>
       ${warning}
+      <table>
+        <thead><tr><th>Unit</th><th>Value</th></tr></thead>
+        <tbody>${allUnitsRows}</tbody>
+      </table>
     `;
   } catch (err) {
     showError('uc-result', err.message);

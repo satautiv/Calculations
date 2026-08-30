@@ -112,6 +112,7 @@ const {
   glCoefficient,
   glPoints,
   convertUnit,
+  convertToAllUnits,
   ffmi,
   ffmiCategory,
   leanBodyMassFromBodyFat,
@@ -2355,6 +2356,30 @@ describe('convertUnit', () => {
   test('throws for an unknown category or unit', () => {
     expect(() => convertUnit('nonsense', 1, 'm', 'km')).toThrow();
     expect(() => convertUnit('length', 1, 'm', 'furlong')).toThrow();
+  });
+});
+
+describe('convertToAllUnits', () => {
+  test('worked example: 5 mi across every length unit', () => {
+    const results = convertToAllUnits('length', 5, 'mi');
+    const km = results.find(r => r.unit === 'km');
+    const m = results.find(r => r.unit === 'm');
+    expect(km.value).toBeCloseTo(8.04672, 5);
+    expect(m.value).toBeCloseTo(8046.72, 2);
+    expect(results.map(r => r.unit)).toEqual(['mm', 'cm', 'm', 'km', 'in', 'ft', 'yd', 'mi']);
+  });
+
+  test('worked example: 100 F across every temperature unit', () => {
+    const results = convertToAllUnits('temperature', 100, 'F');
+    const celsius = results.find(r => r.unit === 'C');
+    const kelvin = results.find(r => r.unit === 'K');
+    expect(celsius.value).toBeCloseTo(37.78, 2);
+    expect(kelvin.value).toBeCloseTo(310.93, 2);
+    expect(results.map(r => r.unit)).toEqual(['C', 'F', 'K']);
+  });
+
+  test('throws for an unknown category', () => {
+    expect(() => convertToAllUnits('nonsense', 1, 'm')).toThrow();
   });
 });
 
