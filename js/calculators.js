@@ -5162,3 +5162,48 @@ document.getElementById('horizon-calc').addEventListener('click', () => {
     showError('horizon-result', err.message);
   }
 });
+
+// --- Solar panel sizing & ROI calculator ---
+document.getElementById('solar-calc').addEventListener('click', () => {
+  const targetDailyKwh = parseFloat(document.getElementById('solar-target-kwh').value);
+  const panelWattage = parseFloat(document.getElementById('solar-panel-wattage').value);
+  const peakSunHours = parseFloat(document.getElementById('solar-sun-hours').value);
+  const derateFactorInput = document.getElementById('solar-derate-factor').value;
+  const derateFactor = derateFactorInput === '' ? 0.8 : parseFloat(derateFactorInput);
+  const systemCost = parseFloat(document.getElementById('solar-system-cost').value);
+  const energyPrice = parseFloat(document.getElementById('solar-energy-price').value);
+  const maintenanceCostInput = document.getElementById('solar-maintenance-cost').value;
+  const maintenanceCost = maintenanceCostInput === '' ? 0 : parseFloat(maintenanceCostInput);
+
+  if ([targetDailyKwh, panelWattage, peakSunHours, derateFactor, systemCost, energyPrice, maintenanceCost].some(isNaN)) {
+    showError('solar-result', 'Enter valid numbers for all fields.');
+    return;
+  }
+
+  try {
+    const { dailyOutputPerPanelKwh, numberOfPanels, systemSizeKw } = solarPanelSizing(
+      targetDailyKwh,
+      panelWattage,
+      peakSunHours,
+      derateFactor,
+    );
+    const { annualProductionKwh, annualSavings, paybackYears } = solarPaybackPeriod(
+      dailyOutputPerPanelKwh,
+      numberOfPanels,
+      systemCost,
+      energyPrice,
+      maintenanceCost,
+    );
+
+    document.getElementById('solar-result').innerHTML = `
+      <div class="headline">${numberOfPanels} panels &middot; ${systemSizeKw.toFixed(2)} kW system</div>
+      <div>Daily output per panel: ${dailyOutputPerPanelKwh.toFixed(2)} kWh</div>
+      <div>Estimated annual production: ${annualProductionKwh.toLocaleString(undefined, { maximumFractionDigits: 0 })} kWh</div>
+      <div>Estimated annual savings: ${formatMoney(annualSavings)}</div>
+      <div>Payback period: ${paybackYears.toFixed(1)} years</div>
+      <div class="hint">Simplified estimate - real-world results vary with weather, shading, and panel degradation, and this doesn't account for financing, incentives, or energy price inflation.</div>
+    `;
+  } catch (err) {
+    showError('solar-result', err.message);
+  }
+});
