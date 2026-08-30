@@ -5553,3 +5553,66 @@ document.getElementById('ipconv-calc').addEventListener('click', () => {
     showError('ipconv-result', err.message);
   }
 });
+// --- Wind chill & heat index calculator ---
+
+document.getElementById('wchi-mode').addEventListener('change', (e) => {
+  const isHeatIndex = e.target.value === 'heatindex';
+  document.getElementById('wchi-wind-fields').hidden = isHeatIndex;
+  document.getElementById('wchi-humidity-fields').hidden = !isHeatIndex;
+});
+
+document.getElementById('wchi-calc').addEventListener('click', () => {
+  const mode = document.getElementById('wchi-mode').value;
+  const tempInput = parseFloat(document.getElementById('wchi-temp').value);
+  const tempUnit = document.getElementById('wchi-temp-unit').value;
+
+  try {
+    const tempF = tempUnit === 'C' ? celsiusToFahrenheit(tempInput) : tempInput;
+
+    if (mode === 'windchill') {
+      const windSpeedInput = parseFloat(document.getElementById('wchi-wind-speed').value);
+      const windUnit = document.getElementById('wchi-wind-unit').value;
+      const windSpeedMph = windUnit === 'kmh'
+        ? convertLinearUnit('speed', windSpeedInput, 'kmh', 'mph')
+        : windSpeedInput;
+
+      const { applicable, feelsLikeF } = windChillFahrenheit(tempF, windSpeedMph);
+
+      if (!applicable) {
+        document.getElementById('wchi-result').innerHTML = `
+          <div class="headline">Not applicable</div>
+          <div>Wind chill is only defined for air temperatures of 50&deg;F (10&deg;C) or below with wind speeds above 3 mph (4.8 km/h). Outside that range, wind doesn't meaningfully change the perceived temperature.</div>
+        `;
+        return;
+      }
+
+      const feelsLikeDisplay = tempUnit === 'C' ? fahrenheitToCelsius(feelsLikeF) : feelsLikeF;
+      const unitLabel = tempUnit === 'C' ? '&deg;C' : '&deg;F';
+      document.getElementById('wchi-result').innerHTML = `
+        <div class="headline">${feelsLikeDisplay.toFixed(1)}${unitLabel} feels like</div>
+        <div class="hint">Based on the official NWS (2001) wind chill formula. This is an approximation with its own margin of error.</div>
+      `;
+    } else {
+      const humidity = parseFloat(document.getElementById('wchi-humidity').value);
+
+      const { applicable, feelsLikeF } = heatIndexFahrenheit(tempF, humidity);
+
+      if (!applicable) {
+        document.getElementById('wchi-result').innerHTML = `
+          <div class="headline">Not applicable</div>
+          <div>Heat index is only calculated for air temperatures of 80&deg;F (26.7&deg;C) or above. Below that, humidity has a negligible effect on the perceived temperature.</div>
+        `;
+        return;
+      }
+
+      const feelsLikeDisplay = tempUnit === 'C' ? fahrenheitToCelsius(feelsLikeF) : feelsLikeF;
+      const unitLabel = tempUnit === 'C' ? '&deg;C' : '&deg;F';
+      document.getElementById('wchi-result').innerHTML = `
+        <div class="headline">${feelsLikeDisplay.toFixed(1)}${unitLabel} feels like</div>
+        <div class="hint">Based on the official NWS/NOAA Rothfusz regression. This is an approximation with its own margin of error.</div>
+      `;
+    }
+  } catch (err) {
+    showError('wchi-result', err.message);
+  }
+});

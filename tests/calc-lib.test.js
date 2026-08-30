@@ -201,6 +201,8 @@ const {
   ipv4ToIpv6Mapped,
   ipv4ToIpv6Compatible,
   ipv6ToIpv4,
+  windChillFahrenheit,
+  heatIndexFahrenheit,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4822,5 +4824,72 @@ describe('ipv6ToIpv4', () => {
   test('rejects an empty or unrelated string', () => {
     expect(() => ipv6ToIpv4('')).toThrow();
     expect(() => ipv6ToIpv4('not an ip')).toThrow();
+  });
+});
+// --- Wind chill & heat index calculator ---
+
+describe('windChillFahrenheit', () => {
+  test('worked example: 20F, 15mph', () => {
+    const { applicable, feelsLikeF } = windChillFahrenheit(20, 15);
+    expect(applicable).toBe(true);
+    expect(feelsLikeF).toBeCloseTo(6.2189, 3);
+  });
+
+  test('not applicable above 50F even with strong wind', () => {
+    const result = windChillFahrenheit(51, 15);
+    expect(result.applicable).toBe(false);
+    expect(result.feelsLikeF).toBeNull();
+  });
+
+  test('not applicable at or below 3mph wind', () => {
+    const result = windChillFahrenheit(20, 3);
+    expect(result.applicable).toBe(false);
+    expect(result.feelsLikeF).toBeNull();
+  });
+
+  test('applicable at the boundary: 50F and just above 3mph', () => {
+    const { applicable, feelsLikeF } = windChillFahrenheit(50, 3.5);
+    expect(applicable).toBe(true);
+    expect(feelsLikeF).toBeCloseTo(49.2496, 3);
+  });
+
+  test('rejects non-numeric temperature', () => {
+    expect(() => windChillFahrenheit(NaN, 15)).toThrow();
+  });
+
+  test('rejects negative wind speed', () => {
+    expect(() => windChillFahrenheit(20, -1)).toThrow();
+  });
+});
+
+describe('heatIndexFahrenheit', () => {
+  test('worked example: 90F, 60% RH', () => {
+    const { applicable, feelsLikeF } = heatIndexFahrenheit(90, 60);
+    expect(applicable).toBe(true);
+    expect(feelsLikeF).toBeCloseTo(99.6777, 3);
+  });
+
+  test('not applicable below 80F', () => {
+    const result = heatIndexFahrenheit(79.9, 60);
+    expect(result.applicable).toBe(false);
+    expect(result.feelsLikeF).toBeNull();
+  });
+
+  test('applicable at the 80F boundary', () => {
+    const { applicable, feelsLikeF } = heatIndexFahrenheit(80, 0);
+    expect(applicable).toBe(true);
+    expect(feelsLikeF).toBeCloseTo(77.7801, 3);
+  });
+
+  test('rejects non-numeric temperature', () => {
+    expect(() => heatIndexFahrenheit(NaN, 50)).toThrow();
+  });
+
+  test('rejects negative relative humidity', () => {
+    expect(() => heatIndexFahrenheit(90, -1)).toThrow();
+  });
+
+  test('rejects relative humidity above 100%', () => {
+    expect(() => heatIndexFahrenheit(90, 101)).toThrow();
   });
 });

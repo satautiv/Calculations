@@ -3430,6 +3430,55 @@
     <button class="calc-btn" id="ipconv-calc">Calculate</button>
     <div class="result" id="ipconv-result"></div>
   </section>
+
+  <section id="wind-chill-heat-index-calculator" class="view tab-panel">
+    <h2>Wind Chill &amp; Heat Index Calculator</h2>
+    <p class="hint">Estimate the "feels like" temperature for cold, windy conditions (wind chill) or hot, humid conditions (heat index), using the official U.S. National Weather Service (NWS/NOAA) formulas. Both are approximations with their own margin of error.</p>
+
+    <div class="field">
+      <label for="wchi-mode">Mode</label>
+      <select id="wchi-mode">
+        <option value="windchill">Wind Chill (cold + wind)</option>
+        <option value="heatindex">Heat Index (hot + humidity)</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="wchi-temp">Air temperature</label>
+      <input type="number" id="wchi-temp" step="0.1" placeholder="e.g. 20">
+    </div>
+    <div class="field">
+      <label for="wchi-temp-unit">Temperature unit</label>
+      <select id="wchi-temp-unit">
+        <option value="F">Fahrenheit (&deg;F)</option>
+        <option value="C">Celsius (&deg;C)</option>
+      </select>
+    </div>
+
+    <div id="wchi-wind-fields">
+      <div class="field">
+        <label for="wchi-wind-speed">Wind speed</label>
+        <input type="number" id="wchi-wind-speed" min="0" step="0.1" placeholder="e.g. 15">
+      </div>
+      <div class="field">
+        <label for="wchi-wind-unit">Wind speed unit</label>
+        <select id="wchi-wind-unit">
+          <option value="mph">Miles/hour (mph)</option>
+          <option value="kmh">Kilometers/hour (km/h)</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="wchi-humidity-fields" hidden>
+      <div class="field">
+        <label for="wchi-humidity">Relative humidity (%)</label>
+        <input type="number" id="wchi-humidity" min="0" max="100" step="1" placeholder="e.g. 60">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="wchi-calc">Calculate</button>
+    <div class="result" id="wchi-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
