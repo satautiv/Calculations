@@ -3174,6 +3174,21 @@ function containsJsonComments(input) {
   return false;
 }
 
+// Given a 0-based character offset into `input`, returns the 1-based line
+// number, 1-based column number, and the (possibly truncated) text of that
+// line - used to turn a raw JSON.parse() error position into something a
+// developer can actually jump to.
+function describeJsonPosition(input, offset) {
+  const before = input.slice(0, offset);
+  const lastNewline = before.lastIndexOf('\n');
+  const line = (before.match(/\n/g) || []).length + 1;
+  const column = offset - lastNewline;
+  const lineEnd = input.indexOf('\n', offset);
+  const lineText = input.slice(lastNewline + 1, lineEnd === -1 ? input.length : lineEnd);
+  const truncated = lineText.length > 120 ? `${lineText.slice(0, 120)}...` : lineText;
+  return { line, column, lineText: truncated };
+}
+
 function parseJsonOrThrow(input) {
   if (input == null || input.trim() === '') {
     throw new Error('Input is empty. Enter some JSON.');
@@ -3183,6 +3198,12 @@ function parseJsonOrThrow(input) {
   } catch (err) {
     if (containsJsonComments(input)) {
       throw new Error('JSON does not support comments (// or /* */). Remove them and try again.');
+    }
+    const positionMatch = err.message.match(/position (\d+)/);
+    if (positionMatch) {
+      const offset = parseInt(positionMatch[1], 10);
+      const { line, column, lineText } = describeJsonPosition(input, offset);
+      throw new Error(`Invalid JSON at line ${line}, column ${column}: ${err.message} — ${lineText}`);
     }
     throw new Error(`Invalid JSON: ${err.message}`);
   }
