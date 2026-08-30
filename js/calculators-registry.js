@@ -752,6 +752,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute the network and broadcast addresses, subnet mask, usable host range, and host count for an IPv4 CIDR block.',
     keywords: ['cidr', 'subnet', 'subnet mask', 'ip address', 'ipv4', 'network address', 'broadcast address', 'developer'],
   },
+  {
+    id: 'ipv4-ipv6-converter',
+    name: 'IPv4 to IPv6 Converter',
+    category: 'Developer',
+    description: 'Convert an IPv4 address to its IPv4-mapped (or deprecated IPv4-compatible) IPv6 form, and back.',
+    keywords: ['ipv4', 'ipv6', 'ip address', 'ipv4-mapped', 'ipv4-compatible', 'network', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

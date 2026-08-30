@@ -197,6 +197,10 @@ const {
   parseIpv4,
   ipv4IntToString,
   subnetInfo,
+  parseIpv4Octets,
+  ipv4ToIpv6Mapped,
+  ipv4ToIpv6Compatible,
+  ipv6ToIpv4,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4708,5 +4712,115 @@ describe('subnetInfo', () => {
 
   test('rejects a non-integer prefix length', () => {
     expect(() => subnetInfo('192.168.1.0', 24.5)).toThrow();
+  });
+});
+describe('parseIpv4Octets', () => {
+  test('parses a normal address', () => {
+    expect(parseIpv4Octets('192.0.2.1')).toEqual([192, 0, 2, 1]);
+  });
+
+  test('parses all-zero and all-max addresses', () => {
+    expect(parseIpv4Octets('0.0.0.0')).toEqual([0, 0, 0, 0]);
+    expect(parseIpv4Octets('255.255.255.255')).toEqual([255, 255, 255, 255]);
+  });
+
+  test('rejects wrong segment count', () => {
+    expect(() => parseIpv4Octets('192.0.2')).toThrow();
+    expect(() => parseIpv4Octets('192.0.2.1.5')).toThrow();
+  });
+
+  test('rejects an out-of-range octet', () => {
+    expect(() => parseIpv4Octets('192.0.2.256')).toThrow();
+    expect(() => parseIpv4Octets('999.0.2.1')).toThrow();
+  });
+
+  test('rejects non-numeric segments', () => {
+    expect(() => parseIpv4Octets('192.0.2.abc')).toThrow();
+  });
+
+  test('rejects leading-zero segments', () => {
+    expect(() => parseIpv4Octets('192.0.2.01')).toThrow();
+  });
+});
+
+describe('ipv4ToIpv6Mapped', () => {
+  test('worked example: 192.0.2.1', () => {
+    expect(ipv4ToIpv6Mapped('192.0.2.1')).toEqual({
+      mixed: '::ffff:192.0.2.1',
+      hex: '::ffff:c000:0201',
+    });
+  });
+
+  test('handles 0.0.0.0', () => {
+    expect(ipv4ToIpv6Mapped('0.0.0.0')).toEqual({
+      mixed: '::ffff:0.0.0.0',
+      hex: '::ffff:0000:0000',
+    });
+  });
+
+  test('handles 255.255.255.255', () => {
+    expect(ipv4ToIpv6Mapped('255.255.255.255')).toEqual({
+      mixed: '::ffff:255.255.255.255',
+      hex: '::ffff:ffff:ffff',
+    });
+  });
+
+  test('throws on malformed IPv4 input', () => {
+    expect(() => ipv4ToIpv6Mapped('192.0.2.256')).toThrow();
+  });
+});
+
+describe('ipv4ToIpv6Compatible', () => {
+  test('builds the deprecated form without ffff', () => {
+    expect(ipv4ToIpv6Compatible('192.0.2.1')).toBe('::192.0.2.1');
+  });
+
+  test('throws on malformed IPv4 input', () => {
+    expect(() => ipv4ToIpv6Compatible('not.an.ip.addr')).toThrow();
+  });
+});
+
+describe('ipv6ToIpv4', () => {
+  test('worked example: ::ffff:192.0.2.1', () => {
+    expect(ipv6ToIpv4('::ffff:192.0.2.1')).toEqual({ ipv4: '192.0.2.1', deprecated: false });
+  });
+
+  test('worked example: ::ffff:c000:0201 matches the mixed form', () => {
+    expect(ipv6ToIpv4('::ffff:c000:0201')).toEqual({ ipv4: '192.0.2.1', deprecated: false });
+  });
+
+  test('is case-insensitive', () => {
+    expect(ipv6ToIpv4('::FFFF:192.0.2.1')).toEqual({ ipv4: '192.0.2.1', deprecated: false });
+    expect(ipv6ToIpv4('::ffff:C000:0201')).toEqual({ ipv4: '192.0.2.1', deprecated: false });
+  });
+
+  test('recognizes the deprecated ::a.b.c.d form and labels it', () => {
+    expect(ipv6ToIpv4('::192.0.2.1')).toEqual({ ipv4: '192.0.2.1', deprecated: true });
+  });
+
+  test('handles pure-hex groups without leading zeros', () => {
+    expect(ipv6ToIpv4('::ffff:c000:201')).toEqual({ ipv4: '192.0.2.1', deprecated: false });
+  });
+
+  test('rejects an address outside the mapped/compatible prefixes', () => {
+    expect(() => ipv6ToIpv4('2001:db8::1')).toThrow();
+  });
+
+  test('rejects malformed hex groups', () => {
+    expect(() => ipv6ToIpv4('::ffff:zzzz:0201')).toThrow();
+    expect(() => ipv6ToIpv4('::ffff:12345:0201')).toThrow();
+  });
+
+  test('rejects a mixed form with an invalid IPv4 part', () => {
+    expect(() => ipv6ToIpv4('::ffff:999.0.2.1')).toThrow();
+  });
+
+  test('rejects more than one :: compression', () => {
+    expect(() => ipv6ToIpv4('::ffff::192.0.2.1')).toThrow();
+  });
+
+  test('rejects an empty or unrelated string', () => {
+    expect(() => ipv6ToIpv4('')).toThrow();
+    expect(() => ipv6ToIpv4('not an ip')).toThrow();
   });
 });
