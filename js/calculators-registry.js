@@ -773,6 +773,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Compute an MD5, SHA-1, SHA-256, or SHA-512 hex digest of text for checksums or comparing values.',
     keywords: ['hash', 'md5', 'sha1', 'sha-1', 'sha256', 'sha-256', 'sha512', 'sha-512', 'checksum', 'digest', 'developer'],
   },
+  {
+    id: 'chmod-calculator',
+    name: 'Unix Permissions (chmod) Calculator',
+    category: 'Developer',
+    description: 'Convert Unix file permissions between symbolic form (rwxr-xr-x) and octal/numeric form (755), including setuid/setgid/sticky bits.',
+    keywords: ['chmod', 'unix permissions', 'symbolic', 'octal', 'setuid', 'setgid', 'sticky bit', 'file permissions', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

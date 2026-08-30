@@ -4102,6 +4102,118 @@ function sha256Hex(text) {
 function sha512Hex(text) {
   return digestHex('SHA-512', text);
 }
+// --- Unix Permissions (chmod) Calculator ---
+
+// Parses one read or write character ('r'/'w' or '-'), throwing on anything
+// else (including a special-bit letter used in the wrong slot).
+function parseChmodReadWriteChar(position, expectedChar, char) {
+  if (char === expectedChar) return true;
+  if (char === '-') return false;
+  throw new Error(`Unexpected character "${char}" at position ${position + 1}; expected "${expectedChar}" or "-".`);
+}
+
+// Parses one triad's execute character, which may carry a special bit
+// (setuid/setgid/sticky) folded into it: lowercase means the special bit AND
+// the execute bit are both set, uppercase means the special bit is set but
+// execute is not. wrongLetters are the *other* triads' special letters,
+// called out specifically since they're a common typo (e.g. sticky's "t" in
+// the owner slot instead of "s").
+function parseChmodExecChar(position, char, lowerSpecial, upperSpecial, wrongLetters, slotLabel) {
+  if (char === 'x') return { bit: true, special: false };
+  if (char === '-') return { bit: false, special: false };
+  if (char === lowerSpecial) return { bit: true, special: true };
+  if (char === upperSpecial) return { bit: false, special: true };
+  if (wrongLetters.includes(char)) {
+    throw new Error(`"${char}" is not valid at position ${position + 1}; that letter only belongs in the ${slotLabel} slot.`);
+  }
+  throw new Error(`Unexpected character "${char}" at position ${position + 1}.`);
+}
+
+// Symbolic (e.g. "rwxr-xr-x", or "rwsr-xr-x" with setuid folded in) -> numeric
+// mode string (e.g. "755", or "4755" when a special bit is set). Accepts an
+// optional single leading file-type character (as in a pasted `ls -l` line
+// like "drwxr-xr-x" or "lrwxrwxrwx") and strips it before parsing.
+function symbolicToOctal(symbolic) {
+  if (typeof symbolic !== 'string' || symbolic.trim() === '') {
+    throw new Error('Enter a symbolic permission string.');
+  }
+
+  let trimmed = symbolic.trim();
+  if (trimmed.length === 10) trimmed = trimmed.slice(1);
+
+  if (trimmed.length !== 9) {
+    throw new Error('Symbolic permissions must be exactly 9 characters (owner, group, other), optionally prefixed by a single file-type character.');
+  }
+
+  const chars = trimmed.split('');
+
+  const ownerRead = parseChmodReadWriteChar(0, 'r', chars[0]);
+  const ownerWrite = parseChmodReadWriteChar(1, 'w', chars[1]);
+  const ownerExec = parseChmodExecChar(2, chars[2], 's', 'S', ['t', 'T'], "owner's execute (setuid)");
+
+  const groupRead = parseChmodReadWriteChar(3, 'r', chars[3]);
+  const groupWrite = parseChmodReadWriteChar(4, 'w', chars[4]);
+  const groupExec = parseChmodExecChar(5, chars[5], 's', 'S', ['t', 'T'], "group's execute (setgid)");
+
+  const otherRead = parseChmodReadWriteChar(6, 'r', chars[6]);
+  const otherWrite = parseChmodReadWriteChar(7, 'w', chars[7]);
+  const otherExec = parseChmodExecChar(8, chars[8], 't', 'T', ['s', 'S'], "other's execute (sticky bit)");
+
+  const ownerDigit = (ownerRead ? 4 : 0) + (ownerWrite ? 2 : 0) + (ownerExec.bit ? 1 : 0);
+  const groupDigit = (groupRead ? 4 : 0) + (groupWrite ? 2 : 0) + (groupExec.bit ? 1 : 0);
+  const otherDigit = (otherRead ? 4 : 0) + (otherWrite ? 2 : 0) + (otherExec.bit ? 1 : 0);
+  const specialDigit = (ownerExec.special ? 4 : 0) + (groupExec.special ? 2 : 0) + (otherExec.special ? 1 : 0);
+
+  return specialDigit > 0
+    ? `${specialDigit}${ownerDigit}${groupDigit}${otherDigit}`
+    : `${ownerDigit}${groupDigit}${otherDigit}`;
+}
+
+// Builds one triad's 3-character symbolic form from its 0-7 digit, folding
+// in a special bit (setuid/setgid/sticky) as lowercase (execute also set) or
+// uppercase (execute not set) in the execute slot when that bit applies.
+function chmodTriadSymbolic(digit, specialOn, lowerSpecial, upperSpecial) {
+  const read = digit & 4 ? 'r' : '-';
+  const write = digit & 2 ? 'w' : '-';
+  const exec = !!(digit & 1);
+  const execChar = specialOn ? (exec ? lowerSpecial : upperSpecial) : (exec ? 'x' : '-');
+  return read + write + execChar;
+}
+
+// Numeric mode (1-4 octal digits, e.g. "755" or "4755") -> 9-character
+// symbolic form with any special bits folded into the owner/group/other
+// execute slots. A 1- or 2-digit mode is left-padded with zeros (e.g. "5" ->
+// "005"), matching standard chmod convention.
+function octalToSymbolic(octalStr) {
+  if (typeof octalStr !== 'string' || octalStr.trim() === '') {
+    throw new Error('Enter an octal permission mode.');
+  }
+
+  const trimmed = octalStr.trim();
+  if (!/^[0-9]+$/.test(trimmed)) {
+    throw new Error('Octal mode must contain only digits.');
+  }
+  if (trimmed.length > 4) {
+    throw new Error('Octal mode must be 1 to 4 digits.');
+  }
+  if (!/^[0-7]+$/.test(trimmed)) {
+    throw new Error('Octal mode digits must each be 0-7.');
+  }
+
+  const padded = trimmed.length <= 2 ? trimmed.padStart(3, '0') : trimmed;
+  const digits = padded.length === 4 ? padded.split('').map(Number) : [0, ...padded.split('').map(Number)];
+  const [specialDigit, ownerDigit, groupDigit, otherDigit] = digits;
+
+  const setuid = !!(specialDigit & 4);
+  const setgid = !!(specialDigit & 2);
+  const sticky = !!(specialDigit & 1);
+
+  return (
+    chmodTriadSymbolic(ownerDigit, setuid, 's', 'S') +
+    chmodTriadSymbolic(groupDigit, setgid, 's', 'S') +
+    chmodTriadSymbolic(otherDigit, sticky, 't', 'T')
+  );
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -4381,5 +4493,7 @@ if (typeof module !== 'undefined' && module.exports) {
     sha1Hex,
     sha256Hex,
     sha512Hex,
+    symbolicToOctal,
+    octalToSymbolic,
   };
 }

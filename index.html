@@ -3499,6 +3499,24 @@
     <button class="calc-btn" id="hash-calc">Calculate</button>
     <div class="result" id="hash-result"></div>
   </section>
+
+  <section id="chmod-calculator" class="view tab-panel">
+    <h2>Unix Permissions (chmod) Calculator</h2>
+    <p class="hint">Converts Unix file permissions between symbolic form (<code>rwxr-xr-x</code>) and octal/numeric form (<code>755</code>). A pasted full <code>ls -l</code> string (e.g. <code>drwxr-xr-x</code>) has its leading file-type character stripped automatically. Setuid/setgid/sticky bits are supported as an optional 4th leading octal digit (e.g. <code>4755</code>), or folded into the symbolic string's execute slots (<code>s</code>/<code>S</code> for owner/group, <code>t</code>/<code>T</code> for other). A 1- or 2-digit octal mode is treated as left-padded with zeros (e.g. <code>5</code> is read as <code>005</code>).</p>
+    <div class="field">
+      <label for="chmod-mode">Convert</label>
+      <select id="chmod-mode">
+        <option value="symbolic-to-octal">Symbolic to Octal</option>
+        <option value="octal-to-symbolic">Octal to Symbolic</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="chmod-input" id="chmod-input-label">Symbolic permissions</label>
+      <input type="text" id="chmod-input" placeholder="e.g. rwxr-xr-x">
+    </div>
+    <button class="calc-btn" id="chmod-calc">Calculate</button>
+    <div class="result" id="chmod-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

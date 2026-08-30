@@ -208,6 +208,8 @@ const {
   sha1Hex,
   sha256Hex,
   sha512Hex,
+  symbolicToOctal,
+  octalToSymbolic,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4971,5 +4973,106 @@ describe('sha512Hex', () => {
 
   test('produces a 128-character lowercase hex digest for the empty string', async () => {
     expect(await sha512Hex('')).toMatch(/^[0-9a-f]{128}$/);
+  });
+});
+describe('symbolicToOctal', () => {
+  test('converts the issue\'s worked examples', () => {
+    expect(symbolicToOctal('rwxr-xr-x')).toBe('755');
+    expect(symbolicToOctal('rwsr-xr-x')).toBe('4755');
+    expect(symbolicToOctal('rwxrwxrwt')).toBe('1777');
+  });
+
+  test('handles every permission off', () => {
+    expect(symbolicToOctal('---------')).toBe('000');
+  });
+
+  test('handles setgid alone', () => {
+    expect(symbolicToOctal('rwxr-sr-x')).toBe('2755');
+  });
+
+  test('handles setuid without owner execute (uppercase S)', () => {
+    expect(symbolicToOctal('rwSr-xr-x')).toBe('4655');
+  });
+
+  test('handles sticky bit without other execute (uppercase T)', () => {
+    expect(symbolicToOctal('rwxrwxrwT')).toBe('1776');
+  });
+
+  test('strips a leading file-type character from a full ls -l line', () => {
+    expect(symbolicToOctal('drwxr-xr-x')).toBe('755');
+    expect(symbolicToOctal('lrwxrwxrwx')).toBe('777');
+    expect(symbolicToOctal('-rw-r--r--')).toBe('644');
+  });
+
+  test('trims surrounding whitespace', () => {
+    expect(symbolicToOctal('  rwxr-xr-x  ')).toBe('755');
+  });
+
+  test('throws on empty input', () => {
+    expect(() => symbolicToOctal('')).toThrow();
+    expect(() => symbolicToOctal('   ')).toThrow();
+  });
+
+  test('throws when not 9 characters after stripping a type character', () => {
+    expect(() => symbolicToOctal('rwxr-xr')).toThrow();
+    expect(() => symbolicToOctal('rwxr-xr-xrwx')).toThrow();
+  });
+
+  test('throws on an invalid character', () => {
+    expect(() => symbolicToOctal('rwzr-xr-x')).toThrow();
+  });
+
+  test('throws when a special-bit letter appears in the wrong triad', () => {
+    expect(() => symbolicToOctal('rwtr-xr-x')).toThrow();
+    expect(() => symbolicToOctal('rwxrwtr-x')).toThrow();
+    expect(() => symbolicToOctal('rwxr-xrws')).toThrow();
+  });
+});
+
+describe('octalToSymbolic', () => {
+  test('converts the issue\'s worked examples', () => {
+    expect(octalToSymbolic('755')).toBe('rwxr-xr-x');
+    expect(octalToSymbolic('4755')).toBe('rwsr-xr-x');
+    expect(octalToSymbolic('1777')).toBe('rwxrwxrwt');
+  });
+
+  test('handles every permission off', () => {
+    expect(octalToSymbolic('000')).toBe('---------');
+  });
+
+  test('handles setgid alone', () => {
+    expect(octalToSymbolic('2755')).toBe('rwxr-sr-x');
+  });
+
+  test('handles setuid without owner execute (uppercase S)', () => {
+    expect(octalToSymbolic('4655')).toBe('rwSr-xr-x');
+  });
+
+  test('left-pads a 1- or 2-digit mode with zeros', () => {
+    expect(octalToSymbolic('5')).toBe('------r-x');
+    expect(octalToSymbolic('75')).toBe('---rwxr-x');
+  });
+
+  test('round-trips with symbolicToOctal', () => {
+    expect(symbolicToOctal(octalToSymbolic('4755'))).toBe('4755');
+    expect(octalToSymbolic(symbolicToOctal('rwxrwxrwt'))).toBe('rwxrwxrwt');
+  });
+
+  test('throws on empty input', () => {
+    expect(() => octalToSymbolic('')).toThrow();
+    expect(() => octalToSymbolic('   ')).toThrow();
+  });
+
+  test('throws on digits outside 0-7', () => {
+    expect(() => octalToSymbolic('855')).toThrow();
+    expect(() => octalToSymbolic('799')).toThrow();
+  });
+
+  test('throws on non-digit characters', () => {
+    expect(() => octalToSymbolic('75x')).toThrow();
+  });
+
+  test('throws on more than 4 digits', () => {
+    expect(() => octalToSymbolic('47551')).toThrow();
   });
 });
