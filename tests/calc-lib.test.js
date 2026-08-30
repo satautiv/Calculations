@@ -4199,6 +4199,30 @@ describe('generateUuids', () => {
     const uuids = generateUuids('v4', 200, false);
     expect(new Set(uuids).size).toBe(200);
   });
+
+  test('defaults to hyphenated format', () => {
+    const [uuid] = generateUuids('v4', 1, false);
+    expect(uuid).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+  });
+
+  test('strips hyphens for the "none" format', () => {
+    const [uuid] = generateUuids('v4', 1, false, 'none');
+    expect(uuid).toMatch(/^[0-9a-f]{32}$/);
+  });
+
+  test('wraps in braces for the "braced" format', () => {
+    const [uuid] = generateUuids('v4', 1, false, 'braced');
+    expect(uuid).toMatch(/^\{[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\}$/);
+  });
+
+  test('applies uppercase before formatting', () => {
+    const [uuid] = generateUuids('v4', 1, true, 'braced');
+    expect(uuid).toBe(`{${uuid.slice(1, -1).toUpperCase()}}`);
+  });
+
+  test('rejects an unknown format', () => {
+    expect(() => generateUuids('v4', 1, false, 'weird')).toThrow();
+  });
 });
 // --- JSON Formatter, Minifier & YAML Converter ---
 
