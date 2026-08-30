@@ -164,6 +164,10 @@ const {
   railFenceCalculation,
   INSULATION_FACTOR_PRESETS,
   heatingCost,
+  detectTimestampUnit,
+  timestampToDate,
+  formatDateInTimeZone,
+  dateFieldsToEpoch,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3494,5 +3498,126 @@ describe('heatingCost', () => {
   test('rejects a non-positive energy price', () => {
     expect(() => heatingCost(100, 1.0, 2200, 0.9, 0)).toThrow();
     expect(() => heatingCost(100, 1.0, 2200, 0.9, -0.1)).toThrow();
+  });
+});
+// --- Unix timestamp converter ---
+
+describe('detectTimestampUnit', () => {
+  test('a plausible seconds value near the present is detected as seconds', () => {
+    expect(detectTimestampUnit(1735689600)).toBe('seconds');
+  });
+
+  test('the same instant in milliseconds is detected as milliseconds', () => {
+    expect(detectTimestampUnit(1735689600000)).toBe('milliseconds');
+  });
+
+  test('values just below the 1e12 boundary are seconds', () => {
+    expect(detectTimestampUnit(999999999999)).toBe('seconds');
+  });
+
+  test('values at or above the 1e12 boundary are milliseconds', () => {
+    expect(detectTimestampUnit(1e12)).toBe('milliseconds');
+  });
+
+  test('negative (pre-1970) values use the same magnitude heuristic', () => {
+    expect(detectTimestampUnit(-1735689600)).toBe('seconds');
+    expect(detectTimestampUnit(-1735689600000)).toBe('milliseconds');
+  });
+});
+
+describe('timestampToDate', () => {
+  test('worked example: seconds timestamp decodes to the expected UTC instant', () => {
+    expect(timestampToDate(1735689600, 'seconds').toISOString()).toBe('2025-01-01T00:00:00.000Z');
+  });
+
+  test('worked example: milliseconds timestamp decodes to the same instant', () => {
+    expect(timestampToDate(1735689600000, 'milliseconds').toISOString()).toBe('2025-01-01T00:00:00.000Z');
+  });
+
+  test('negative timestamps (before 1970) render correctly rather than being rejected', () => {
+    expect(timestampToDate(-86400, 'seconds').toISOString()).toBe('1969-12-31T00:00:00.000Z');
+  });
+
+  test('fractional (sub-second) seconds are preserved, not treated as an error', () => {
+    expect(timestampToDate(4.5, 'seconds').toISOString()).toBe('1970-01-01T00:00:04.500Z');
+  });
+
+  test('defaults to seconds when no unit is given', () => {
+    expect(timestampToDate(1735689600).toISOString()).toBe('2025-01-01T00:00:00.000Z');
+  });
+
+  test('rejects a value so large it overflows the representable Date range', () => {
+    expect(() => timestampToDate(1e21, 'seconds')).toThrow();
+  });
+
+  test('rejects a non-numeric or empty value', () => {
+    expect(() => timestampToDate(NaN, 'seconds')).toThrow();
+    expect(() => timestampToDate(undefined, 'seconds')).toThrow();
+  });
+});
+
+describe('formatDateInTimeZone', () => {
+  const instant = new Date('2025-01-01T00:00:00Z');
+
+  test('formats in UTC', () => {
+    expect(formatDateInTimeZone(instant, 'UTC')).toBe('Wednesday, January 1, 2025 at 12:00:00 AM UTC');
+  });
+
+  test('formats the same instant differently in another IANA zone', () => {
+    expect(formatDateInTimeZone(instant, 'America/New_York')).toBe('Tuesday, December 31, 2024 at 7:00:00 PM EST');
+  });
+
+  test('rejects an unrecognized timezone name', () => {
+    expect(() => formatDateInTimeZone(instant, 'Not/AZone')).toThrow();
+  });
+});
+
+describe('dateFieldsToEpoch', () => {
+  test('worked example: 2025-01-01 00:00:00 UTC is epoch 1735689600', () => {
+    const { epochMs, epochSeconds } = dateFieldsToEpoch(
+      { year: 2025, month: 1, day: 1, hour: 0, minute: 0, second: 0 },
+      'UTC',
+    );
+    expect(epochSeconds).toBe(1735689600);
+    expect(epochMs).toBe(1735689600000);
+  });
+
+  test('defaults to UTC when no zone is given', () => {
+    expect(dateFieldsToEpoch({ year: 2025, month: 1, day: 1, hour: 0, minute: 0, second: 0 }).epochSeconds).toBe(1735689600);
+  });
+
+  test('defaults hour/minute/second to zero', () => {
+    expect(dateFieldsToEpoch({ year: 2025, month: 1, day: 1 }, 'UTC').epochSeconds).toBe(1735689600);
+  });
+
+  test('"local" zone matches the plain JS Date constructor for the same fields', () => {
+    const fields = { year: 2025, month: 6, day: 15, hour: 9, minute: 30, second: 0 };
+    const expectedMs = new Date(2025, 5, 15, 9, 30, 0).getTime();
+    expect(dateFieldsToEpoch(fields, 'local').epochMs).toBe(expectedMs);
+  });
+
+  test('rejects an invalid calendar date (February 30) instead of silently rolling over', () => {
+    expect(() => dateFieldsToEpoch({ year: 2025, month: 2, day: 30, hour: 0, minute: 0, second: 0 }, 'UTC')).toThrow();
+  });
+
+  test('rejects an invalid month (13) instead of silently rolling over', () => {
+    expect(() => dateFieldsToEpoch({ year: 2025, month: 13, day: 1, hour: 0, minute: 0, second: 0 }, 'UTC')).toThrow();
+  });
+
+  test('rejects an invalid hour (24) instead of silently rolling over', () => {
+    expect(() => dateFieldsToEpoch({ year: 2025, month: 1, day: 1, hour: 24, minute: 0, second: 0 }, 'UTC')).toThrow();
+  });
+
+  test('rejects a timezone other than UTC or local', () => {
+    expect(() => dateFieldsToEpoch({ year: 2025, month: 1, day: 1, hour: 0, minute: 0, second: 0 }, 'Europe/Paris')).toThrow();
+  });
+
+  test('rejects non-numeric fields', () => {
+    expect(() => dateFieldsToEpoch({ year: 2025, month: 1, day: NaN, hour: 0, minute: 0, second: 0 }, 'UTC')).toThrow();
+  });
+
+  test('accepts a date before 1970 (negative epoch)', () => {
+    const { epochSeconds } = dateFieldsToEpoch({ year: 1969, month: 12, day: 31, hour: 0, minute: 0, second: 0 }, 'UTC');
+    expect(epochSeconds).toBe(-86400);
   });
 });
