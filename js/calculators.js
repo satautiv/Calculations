@@ -3214,10 +3214,12 @@ document.getElementById('avgw-calc').addEventListener('click', () => {
 
     const average = simpleAverage(values);
     const sum = values.reduce((total, v) => total + v, 0);
+    const stats = descriptiveStats(values);
 
     document.getElementById('avgw-result').innerHTML = `
       <div class="headline">Average of ${values.length} value${values.length === 1 ? '' : 's'} = ${formatAvgwValue(average)}</div>
       <div>Sum ${formatAvgwValue(sum)} &divide; ${values.length} = ${formatAvgwValue(average)}</div>
+      <div class="hint">Median ${formatAvgwValue(stats.median)} &middot; Min ${formatAvgwValue(stats.min)} &middot; Max ${formatAvgwValue(stats.max)} &middot; Range ${formatAvgwValue(stats.range)}</div>
     `;
   } else {
     const valueTokens = parseAvgwTokens(document.getElementById('avgw-weighted-values').value);

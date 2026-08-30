@@ -43,6 +43,7 @@ const {
   doughWaterForHydration,
   simpleAverage,
   weightedAverage,
+  descriptiveStats,
   calculateProgressiveTax,
   salaryAfterTax,
   convertSalary,
@@ -1758,6 +1759,48 @@ describe('Average / Weighted Average calculator', () => {
 
     test('a single value/weight pair averages to that value regardless of weight', () => {
       expect(weightedAverage([55], [7])).toBe(55);
+    });
+  });
+
+  describe('descriptiveStats', () => {
+    test('matches the worked example for an odd-length list: 4, 8, 6, 10, 2', () => {
+      expect(descriptiveStats([4, 8, 6, 10, 2])).toEqual({
+        mean: 6,
+        median: 6,
+        min: 2,
+        max: 10,
+        range: 8,
+      });
+    });
+
+    test('averages the two middle values for an even-length list', () => {
+      expect(descriptiveStats([4, 8, 6, 10])).toEqual({
+        mean: 7,
+        median: 7,
+        min: 4,
+        max: 10,
+        range: 6,
+      });
+    });
+
+    test('is unaffected by input order', () => {
+      expect(descriptiveStats([10, 2, 8, 4, 6])).toEqual(
+        descriptiveStats([4, 8, 6, 10, 2])
+      );
+    });
+
+    test('a single-value list has that value as mean, median, min, and max, with a range of zero', () => {
+      expect(descriptiveStats([42])).toEqual({
+        mean: 42,
+        median: 42,
+        min: 42,
+        max: 42,
+        range: 0,
+      });
+    });
+
+    test('throws on an empty list', () => {
+      expect(() => descriptiveStats([])).toThrow();
     });
   });
 });

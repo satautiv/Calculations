@@ -1305,6 +1305,28 @@ function weightedAverage(values, weights) {
   return weightedSum / totalWeight;
 }
 
+// Descriptive stats (mean, median, min, max, range) for a list of numbers.
+// Assumes the DOM layer has already validated that values is non-empty.
+function descriptiveStats(values) {
+  if (values.length === 0) {
+    throw new Error('descriptiveStats requires at least one value.');
+  }
+
+  const mean = simpleAverage(values);
+
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  const median = sorted.length % 2 === 0
+    ? (sorted[mid - 1] + sorted[mid]) / 2
+    : sorted[mid];
+
+  const min = sorted[0];
+  const max = sorted[sorted.length - 1];
+  const range = max - min;
+
+  return { mean, median, min, max, range };
+}
+
 // --- Age calculator ---
 
 // Number of days in `month` (0-indexed) of `year`, via UTC calendar
@@ -4807,6 +4829,7 @@ if (typeof module !== 'undefined' && module.exports) {
     luggageWeightCheck,
     simpleAverage,
     weightedAverage,
+    descriptiveStats,
     ageBreakdown,
     dayOfYear,
     sunriseSunset,
