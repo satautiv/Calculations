@@ -1373,6 +1373,36 @@ function ageBreakdown(birthDate, asOfDate) {
   return { years, months, days, totalDays, totalWeeks, remainderDays };
 }
 
+// Finds the next occurrence of birthDate's month/day on or after
+// asOfDate (both UTC-midnight-normalized), rolling to next year if this
+// year's birthday has already passed. A Feb 29 birthday falls back to
+// Feb 28 in a non-leap target year. Returns the next birthday date, the
+// whole number of days until it, and the age turned that day (0 when
+// asOfDate is itself the birthday, consistent with ageBreakdown treating
+// the exact birthday as the year the new age is reached).
+function nextBirthdayCountdown(birthDate, asOfDate) {
+  const birthMonth = birthDate.getUTCMonth();
+  const birthDay = birthDate.getUTCDate();
+
+  const birthdayInYear = (year) => {
+    const day = Math.min(birthDay, daysInUtcMonth(year, birthMonth));
+    return new Date(Date.UTC(year, birthMonth, day));
+  };
+
+  let targetYear = asOfDate.getUTCFullYear();
+  let nextBirthdayDate = birthdayInYear(targetYear);
+  if (nextBirthdayDate < asOfDate) {
+    targetYear += 1;
+    nextBirthdayDate = birthdayInYear(targetYear);
+  }
+
+  const msPerDay = 24 * 60 * 60 * 1000;
+  const daysUntil = Math.round((nextBirthdayDate - asOfDate) / msPerDay);
+  const turningAge = targetYear - birthDate.getUTCFullYear();
+
+  return { nextBirthdayDate, daysUntil, turningAge };
+}
+
 // --- Sunrise/Sunset & Daylight calculator ---
 
 // Day-of-year (1-365/366) for a calendar date, via UTC date math so it's
@@ -4852,6 +4882,7 @@ if (typeof module !== 'undefined' && module.exports) {
     weightedAverage,
     descriptiveStats,
     ageBreakdown,
+    nextBirthdayCountdown,
     dayOfYear,
     sunriseSunset,
     formatMinutesAsLocalTime,

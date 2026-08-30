@@ -3312,11 +3312,14 @@ document.getElementById('age-calc').addEventListener('click', () => {
 
   try {
     const { years, months, days, totalDays, totalWeeks, remainderDays } = ageBreakdown(birthDate, asOfDate);
+    const { nextBirthdayDate, daysUntil, turningAge } = nextBirthdayCountdown(birthDate, asOfDate);
+    const nextBirthdayStr = nextBirthdayDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC' });
 
     document.getElementById('age-result').innerHTML = `
       <div class="headline">${years} year${years === 1 ? '' : 's'}, ${months} month${months === 1 ? '' : 's'}, ${days} day${days === 1 ? '' : 's'}</div>
       <div>Total days lived: ${totalDays.toLocaleString()}</div>
       <div class="hint">Total weeks lived: ${totalWeeks.toLocaleString()} week${totalWeeks === 1 ? '' : 's'} and ${remainderDays} day${remainderDays === 1 ? '' : 's'}</div>
+      <div>${daysUntil} day${daysUntil === 1 ? '' : 's'} until your next birthday (turning ${turningAge}) on ${nextBirthdayStr}</div>
     `;
   } catch (err) {
     showError('age-result', err.message);
