@@ -698,6 +698,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Percent-encode or decode text for safe use in URLs, query parameters, and links (RFC 3986).',
     keywords: ['url encode', 'url decode', 'percent encoding', 'uri', 'encodeuricomponent', 'developer'],
+    id: 'jwt-decoder',
+    name: 'JWT Decoder',
+    category: 'Developer',
+    description: 'Decode a JSON Web Token\'s header and payload to inspect its claims, without verifying the signature.',
+    keywords: ['jwt', 'json web token', 'decode', 'base64url', 'auth token', 'claims', 'developer'],
   },
 ];
 
