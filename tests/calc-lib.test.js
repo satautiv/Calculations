@@ -184,6 +184,11 @@ const {
   generateUuidV4,
   generateUuidV7,
   generateUuids,
+  formatJson,
+  minifyJson,
+  validateJson,
+  jsonToYaml,
+  yamlToJson,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4167,5 +4172,197 @@ describe('generateUuids', () => {
   test('a batch of UUIDs has no duplicates for a reasonably sized sample', () => {
     const uuids = generateUuids('v4', 200, false);
     expect(new Set(uuids).size).toBe(200);
+  });
+});
+// --- JSON Formatter, Minifier & YAML Converter ---
+
+describe('formatJson', () => {
+  test('pretty-prints minified JSON with the requested indent width', () => {
+    expect(formatJson('{"a":1,"b":[1,2]}', 2)).toBe('{\n  "a": 1,\n  "b": [\n    1,\n    2\n  ]\n}');
+  });
+
+  test('defaults to 2-space indent', () => {
+    expect(formatJson('{"a":1}')).toBe('{\n  "a": 1\n}');
+  });
+
+  test('supports 4-space indent', () => {
+    expect(formatJson('{"a":1}', 4)).toBe('{\n    "a": 1\n}');
+  });
+
+  test('rejects empty input', () => {
+    expect(() => formatJson('')).toThrow('empty');
+    expect(() => formatJson('   ')).toThrow('empty');
+  });
+
+  test('rejects trailing commas', () => {
+    expect(() => formatJson('{"a":1,}')).toThrow();
+  });
+
+  test('gives a clear message for // comments', () => {
+    expect(() => formatJson('{"a":1} // comment')).toThrow(/comment/i);
+  });
+
+  test('gives a clear message for /* */ comments', () => {
+    expect(() => formatJson('{\n/* c */\n"a":1}')).toThrow(/comment/i);
+  });
+
+  test('does not false-positive on a string containing "//"', () => {
+    expect(formatJson('{"url":"http://example.com"}')).toBe('{\n  "url": "http://example.com"\n}');
+  });
+});
+
+describe('minifyJson', () => {
+  test('collapses formatted JSON to one compact line', () => {
+    expect(minifyJson('{\n  "a": 1,\n  "b": [1, 2, 3]\n}')).toBe('{"a":1,"b":[1,2,3]}');
+  });
+
+  test('surfaces a useful error for invalid JSON', () => {
+    expect(() => minifyJson('{a:1}')).toThrow();
+  });
+});
+
+describe('validateJson', () => {
+  test('returns { valid: true } for well-formed JSON', () => {
+    expect(validateJson('{"a":1}')).toEqual({ valid: true });
+  });
+
+  test('throws with the underlying error for malformed JSON', () => {
+    expect(() => validateJson('{"a":1,}')).toThrow();
+  });
+
+  test('does not corrupt precision beyond what JSON.parse already loses', () => {
+    const input = '9007199254740993';
+    expect(formatJson(input)).toBe(String(JSON.parse(input)));
+  });
+});
+
+describe('jsonToYaml', () => {
+  test('worked example from the issue', () => {
+    expect(jsonToYaml('{"name":"Ada","tags":["math","cs"]}')).toBe('name: Ada\ntags:\n  - math\n  - cs\n');
+  });
+
+  test('emits nested objects and arrays of objects', () => {
+    const yaml = jsonToYaml(JSON.stringify({ items: [{ a: 1, b: 2 }, { a: 3 }] }));
+    expect(yaml).toBe('items:\n  - a: 1\n    b: 2\n  - a: 3\n');
+  });
+
+  test('quotes strings that would otherwise look like another type', () => {
+    const yaml = jsonToYaml(JSON.stringify({ a: 'true', b: '42', c: '', d: 'null' }));
+    expect(yaml).toBe('a: "true"\nb: "42"\nc: ""\nd: "null"\n');
+  });
+
+  test('quotes strings containing YAML-significant characters', () => {
+    const yaml = jsonToYaml(JSON.stringify({ a: 'x: y', b: '#tag', c: '-dash', d: '*star' }));
+    expect(yaml).toBe('a: "x: y"\nb: "#tag"\nc: "-dash"\nd: "*star"\n');
+  });
+
+  test('escapes internal quotes and backslashes when a string needs quoting', () => {
+    const yaml = jsonToYaml(JSON.stringify({ a: 'say "hi": \\ ok' }));
+    expect(yaml).toBe('a: "say \\"hi\\": \\\\ ok"\n');
+  });
+
+  test('leaves an unquotable-looking plain scalar bare (no ambiguity to escape)', () => {
+    const yaml = jsonToYaml(JSON.stringify({ a: 'say "hi" \\ ok' }));
+    expect(yaml).toBe('a: say "hi" \\ ok\n');
+  });
+
+  test('renders empty arrays and objects inline', () => {
+    const yaml = jsonToYaml(JSON.stringify({ a: [], b: {} }));
+    expect(yaml).toBe('a: []\nb: {}\n');
+  });
+
+  test('renders null, booleans, and numbers bare', () => {
+    const yaml = jsonToYaml(JSON.stringify({ a: null, b: true, c: false, d: 3.14, e: -5 }));
+    expect(yaml).toBe('a: null\nb: true\nc: false\nd: 3.14\ne: -5\n');
+  });
+
+  test('handles a few hundred levels of nesting without blowing the stack', () => {
+    let deep = 1;
+    for (let i = 0; i < 300; i++) deep = { n: deep };
+    expect(() => jsonToYaml(JSON.stringify(deep))).not.toThrow();
+  });
+
+  test('rejects invalid JSON input', () => {
+    expect(() => jsonToYaml('{a:1}')).toThrow();
+  });
+});
+
+describe('yamlToJson', () => {
+  test('worked example from the issue (reverse of jsonToYaml example)', () => {
+    expect(yamlToJson('name: Ada\ntags:\n  - math\n  - cs\n')).toBe('{"name":"Ada","tags":["math","cs"]}');
+  });
+
+  test('parses nested mappings and sequences of mappings', () => {
+    const json = yamlToJson('items:\n  - a: 1\n    b: 2\n  - a: 3\n');
+    expect(JSON.parse(json)).toEqual({ items: [{ a: 1, b: 2 }, { a: 3 }] });
+  });
+
+  test('parses quoted strings (single and double)', () => {
+    const json = yamlToJson('a: "hello world"\nb: \'it\'\'s fine\'\n');
+    expect(JSON.parse(json)).toEqual({ a: 'hello world', b: "it's fine" });
+  });
+
+  test('parses bare scalars: true/false/null/numbers/plain strings', () => {
+    const json = yamlToJson('a: true\nb: false\nc: null\nd: 5\ne: 3.5\nf: hello\n');
+    expect(JSON.parse(json)).toEqual({ a: true, b: false, c: null, d: 5, e: 3.5, f: 'hello' });
+  });
+
+  test('strips # comments outside of quoted strings', () => {
+    const json = yamlToJson('# leading comment\na: 1 # trailing comment\nb: "value # not a comment"\n');
+    expect(JSON.parse(json)).toEqual({ a: 1, b: 'value # not a comment' });
+  });
+
+  test('round-trips a value produced by jsonToYaml', () => {
+    const original = {
+      items: [{ a: 1, b: 2 }, { a: 3 }],
+      nested: { x: { y: 'hello world', z: null } },
+      emptyArr: [],
+      emptyObj: {},
+      numStr: '42',
+      special: 'a: b',
+      bools: [true, false],
+      neg: -5,
+      flt: 3.14,
+    };
+    const yaml = jsonToYaml(JSON.stringify(original));
+    expect(JSON.parse(yamlToJson(yaml))).toEqual(original);
+  });
+
+  test('handles a few hundred levels of nesting without blowing the stack', () => {
+    let deep = 1;
+    for (let i = 0; i < 300; i++) deep = { n: deep };
+    const deepJson = JSON.stringify(deep);
+    expect(yamlToJson(jsonToYaml(deepJson))).toBe(deepJson);
+  });
+
+  test('rejects empty input', () => {
+    expect(() => yamlToJson('')).toThrow('empty');
+    expect(() => yamlToJson('   ')).toThrow('empty');
+  });
+
+  test('rejects tabs used for indentation', () => {
+    expect(() => yamlToJson('a:\n\tb: 1\n')).toThrow(/tab/i);
+  });
+
+  test('rejects anchors', () => {
+    expect(() => yamlToJson('a: &anchor 1\nb: *anchor\n')).toThrow(/anchor/i);
+  });
+
+  test('rejects aliases', () => {
+    expect(() => yamlToJson('a: *anchor\n')).toThrow(/alias/i);
+  });
+
+  test('rejects flow-style mappings and sequences', () => {
+    expect(() => yamlToJson('a: {b: 1}\n')).toThrow(/flow style/i);
+    expect(() => yamlToJson('a: [1, 2, 3]\n')).toThrow(/flow style/i);
+  });
+
+  test('rejects multi-line block scalars', () => {
+    expect(() => yamlToJson('a: |\n  line1\n  line2\n')).toThrow(/block scalar/i);
+    expect(() => yamlToJson('a: >\n  folded text\n')).toThrow(/block scalar/i);
+  });
+
+  test('rejects tags', () => {
+    expect(() => yamlToJson('a: !!str 123\n')).toThrow(/tag/i);
   });
 });

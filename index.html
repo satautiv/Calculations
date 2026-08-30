@@ -3287,6 +3287,34 @@
     <button class="calc-btn" id="uuid-generator-calc">Generate</button>
     <div class="result" id="uuid-generator-result"></div>
   </section>
+
+  <section id="json-yaml-formatter" class="view tab-panel">
+    <h2>JSON Formatter, Minifier &amp; YAML Converter</h2>
+    <p class="hint">Pretty-print or minify JSON, check that it's valid, or convert between JSON and YAML. The YAML support is a hand-written parser covering a common subset (block mappings/sequences, quoted and bare scalars, comments) &mdash; not the full spec: anchors, flow style (<code>{a: 1}</code> / <code>[1, 2]</code>), multi-line block scalars (<code>|</code> / <code>&gt;</code>), tag directives, and tab indentation are all rejected with an error rather than silently mis-parsed.</p>
+    <div class="field">
+      <label for="json-yaml-mode">Mode</label>
+      <select id="json-yaml-mode">
+        <option value="format">Format (pretty-print JSON)</option>
+        <option value="minify">Minify JSON</option>
+        <option value="validate">Validate JSON</option>
+        <option value="json-to-yaml">JSON &rarr; YAML</option>
+        <option value="yaml-to-json">YAML &rarr; JSON</option>
+      </select>
+    </div>
+    <div class="field" id="json-yaml-indent-field">
+      <label for="json-yaml-indent">Indent width (Format mode)</label>
+      <select id="json-yaml-indent">
+        <option value="2">2 spaces</option>
+        <option value="4">4 spaces</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="json-yaml-input">Source (JSON or YAML, depending on mode)</label>
+      <textarea id="json-yaml-input" rows="10" placeholder='e.g.&#10;{"name":"Ada","tags":["math","cs"]}'></textarea>
+    </div>
+    <button class="calc-btn" id="json-yaml-calc">Calculate</button>
+    <div class="result" id="json-yaml-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
