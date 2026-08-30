@@ -2741,6 +2741,35 @@ function base64Decode(base64Str) {
   }
   return new TextDecoder().decode(bytes);
 }
+// --- Regex tester ---
+
+const REGEX_MATCH_DISPLAY_CAP = 500;
+
+// Always scans with a 'g' flag internally (forced on even if the user's own
+// 'g' checkbox is unchecked) since every output this calculator shows -
+// match count, highlighted text, results table - is inherently an "all
+// matches" view. The user's 'g' checkbox therefore documents/enables the
+// semantic they intend rather than gating how many matches get found;
+// matchAll's built-in zero-length-match advancement means we don't need to
+// hand-roll an exec() loop either way.
+function findRegexMatches(pattern, flags, text) {
+  if (!pattern) throw new Error('Enter a regex pattern.');
+
+  const scanFlags = flags.includes('g') ? flags : `${flags}g`;
+  let regex;
+  try {
+    regex = new RegExp(pattern, scanFlags);
+  } catch (err) {
+    throw new Error(`Invalid regular expression: ${err.message}`);
+  }
+
+  return [...text.matchAll(regex)].map((match) => ({
+    match: match[0],
+    index: match.index,
+    groups: match.slice(1),
+    namedGroups: match.groups ? { ...match.groups } : {},
+  }));
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -2978,5 +3007,7 @@ if (typeof module !== 'undefined' && module.exports) {
     dateFieldsToEpoch,
     base64Encode,
     base64Decode,
+    REGEX_MATCH_DISPLAY_CAP,
+    findRegexMatches,
   };
 }

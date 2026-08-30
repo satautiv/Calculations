@@ -3121,6 +3121,31 @@
     <button class="calc-btn" id="base64-calc">Calculate</button>
     <div class="result" id="base64-result"></div>
   </section>
+
+  <section id="regex-tester" class="view tab-panel">
+    <h2>Regex Tester</h2>
+    <p class="hint">Test a JavaScript regular expression against sample text: see every match highlighted inline, plus each match's capture groups. Matches are always found and listed in full regardless of the "g" flag below, since that's inherent to this tool's match-list/highlight view - the "g" checkbox mirrors the semantics you intend for your own use of the pattern elsewhere.</p>
+    <div class="field">
+      <label for="regex-pattern">Regex pattern (without enclosing slashes)</label>
+      <input type="text" id="regex-pattern" placeholder="e.g. (\w+)@(\w+)\.com">
+    </div>
+    <div class="field regex-flags">
+      <label>Flags</label>
+      <div class="regex-flags-row">
+        <label class="regex-flag-checkbox"><input type="checkbox" id="regex-flag-g"> g (global)</label>
+        <label class="regex-flag-checkbox"><input type="checkbox" id="regex-flag-i"> i (ignore case)</label>
+        <label class="regex-flag-checkbox"><input type="checkbox" id="regex-flag-m"> m (multiline)</label>
+        <label class="regex-flag-checkbox"><input type="checkbox" id="regex-flag-s"> s (dotAll)</label>
+        <label class="regex-flag-checkbox"><input type="checkbox" id="regex-flag-u"> u (unicode)</label>
+      </div>
+    </div>
+    <div class="field">
+      <label for="regex-text">Sample text</label>
+      <textarea id="regex-text" rows="6" placeholder="e.g.&#10;contact: alice@example.com or bob@test.com"></textarea>
+    </div>
+    <button class="calc-btn" id="regex-calc">Calculate</button>
+    <div class="result" id="regex-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

@@ -673,6 +673,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Convert plain text to Base64 and back, with correct handling of UTF-8 and URL-safe variants.',
     keywords: ['base64', 'encode', 'decode', 'developer', 'utf-8', 'url-safe', 'basic auth'],
+    id: 'regex-tester',
+    name: 'Regex Tester',
+    category: 'Developer',
+    description: 'Test a regular expression against sample text, with match highlighting, capture groups, and flag toggles.',
+    keywords: ['regex', 'regular expression', 'pattern matching', 'capture groups', 'regexp', 'developer'],
   },
 ];
 
