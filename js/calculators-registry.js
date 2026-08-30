@@ -647,6 +647,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Calculate how many deck boards and screws you need, based on deck size, board dimensions, board gap, and joist spacing.',
     keywords: ['decking', 'deck boards', 'joist spacing', 'deck screws', 'home', 'diy'],
   },
+  {
+    id: 'staircase-calculator',
+    name: 'Staircase Calculator',
+    category: 'Home & DIY',
+    description: 'Work out how many steps a staircase needs and check the resulting rise and run against code-recommended comfort ranges.',
+    keywords: ['staircase', 'stairs', 'steps', 'riser', 'tread', 'rise and run', 'stringer', 'home', 'diy'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

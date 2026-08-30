@@ -2520,6 +2520,56 @@ function deckingMaterialsNeeded(
   };
 }
 
+// --- Staircase calculator ---
+
+const STAIRCASE_CODE_MAX_RISER_MM = 196;
+const STAIRCASE_COMFORT_RISER_MIN_MM = 170;
+const STAIRCASE_COMFORT_RISER_MAX_MM = 200;
+const STAIRCASE_CODE_MIN_TREAD_MM = 254;
+const STAIRCASE_COMFORT_TREAD_MIN_MM = 250;
+const STAIRCASE_COMFORT_TREAD_MAX_MM = 355;
+const STAIRCASE_DEFAULT_TARGET_RISER_MM = 190;
+const STAIRCASE_2R_PLUS_T_MIN_MM = 600;
+const STAIRCASE_2R_PLUS_T_MAX_MM = 650;
+
+// A staircase with N risers has N-1 treads when it lands flush with the
+// floor above (that top floor itself serves as the final "tread"), so the
+// riser count divides the total rise while the tread count is one fewer.
+// Using ceil (rather than round) on the target riser height guarantees the
+// actual riser height never comes out above what the user asked for.
+function staircasePlan(totalHeightMm, availableRunMm, targetRiserHeightMm = STAIRCASE_DEFAULT_TARGET_RISER_MM) {
+  if (!totalHeightMm || totalHeightMm <= 0) throw new Error('Total height must be greater than zero.');
+  if (!availableRunMm || availableRunMm <= 0) throw new Error('Available run must be greater than zero.');
+  if (!targetRiserHeightMm || targetRiserHeightMm <= 0) throw new Error('Target riser height must be greater than zero.');
+
+  const numberOfSteps = Math.ceil(totalHeightMm / targetRiserHeightMm);
+  const numberOfTreads = numberOfSteps - 1;
+  const riserHeightMm = totalHeightMm / numberOfSteps;
+  const treadDepthMm = numberOfTreads > 0 ? availableRunMm / numberOfTreads : null;
+
+  const riserWithinComfort = riserHeightMm >= STAIRCASE_COMFORT_RISER_MIN_MM && riserHeightMm <= STAIRCASE_COMFORT_RISER_MAX_MM;
+  const riserExceedsCodeMax = riserHeightMm > STAIRCASE_CODE_MAX_RISER_MM;
+
+  const treadWithinComfort = treadDepthMm !== null && treadDepthMm >= STAIRCASE_COMFORT_TREAD_MIN_MM && treadDepthMm <= STAIRCASE_COMFORT_TREAD_MAX_MM;
+  const treadBelowCodeMin = treadDepthMm !== null && treadDepthMm < STAIRCASE_CODE_MIN_TREAD_MM;
+
+  const twoRPlusTMm = treadDepthMm !== null ? 2 * riserHeightMm + treadDepthMm : null;
+  const twoRPlusTWithinComfort = twoRPlusTMm !== null && twoRPlusTMm >= STAIRCASE_2R_PLUS_T_MIN_MM && twoRPlusTMm <= STAIRCASE_2R_PLUS_T_MAX_MM;
+
+  return {
+    numberOfSteps,
+    numberOfTreads,
+    riserHeightMm,
+    treadDepthMm,
+    riserWithinComfort,
+    riserExceedsCodeMax,
+    treadWithinComfort,
+    treadBelowCodeMin,
+    twoRPlusTMm,
+    twoRPlusTWithinComfort,
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     epleyOneRepMax,
@@ -2735,5 +2785,15 @@ if (typeof module !== 'undefined' && module.exports) {
     earthRotationSpeedKmh,
     earthTravelDistance,
     deckingMaterialsNeeded,
+    STAIRCASE_CODE_MAX_RISER_MM,
+    STAIRCASE_COMFORT_RISER_MIN_MM,
+    STAIRCASE_COMFORT_RISER_MAX_MM,
+    STAIRCASE_CODE_MIN_TREAD_MM,
+    STAIRCASE_COMFORT_TREAD_MIN_MM,
+    STAIRCASE_COMFORT_TREAD_MAX_MM,
+    STAIRCASE_DEFAULT_TARGET_RISER_MM,
+    STAIRCASE_2R_PLUS_T_MIN_MM,
+    STAIRCASE_2R_PLUS_T_MAX_MM,
+    staircasePlan,
   };
 }
