@@ -770,8 +770,8 @@ const CALCULATOR_REGISTRY = [
     id: 'hash-generator',
     name: 'Hash Generator',
     category: 'Developer',
-    description: 'Compute an MD5, SHA-1, SHA-256, or SHA-512 hex digest of text for checksums or comparing values.',
-    keywords: ['hash', 'md5', 'sha1', 'sha-1', 'sha256', 'sha-256', 'sha512', 'sha-512', 'checksum', 'digest', 'developer'],
+    description: 'Compute an MD5, SHA-1, SHA-256, or SHA-512 hex digest of text or a local file for checksums or comparing values.',
+    keywords: ['hash', 'md5', 'sha1', 'sha-1', 'sha256', 'sha-256', 'sha512', 'sha-512', 'checksum', 'digest', 'developer', 'file'],
   },
   {
     id: 'chmod-calculator',

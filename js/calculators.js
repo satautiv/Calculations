@@ -5666,16 +5666,39 @@ document.getElementById('wchi-calc').addEventListener('click', () => {
   }
 });
 // --- Hash generator ---
+document.getElementById('hash-input-mode').addEventListener('change', (e) => {
+  const isFile = e.target.value === 'file';
+  document.getElementById('hash-text-field').hidden = isFile;
+  document.getElementById('hash-file-field').hidden = !isFile;
+});
+
 document.getElementById('hash-calc').addEventListener('click', async () => {
   const algorithm = document.getElementById('hash-algorithm').value;
-  const text = document.getElementById('hash-text').value;
+  const inputMode = document.getElementById('hash-input-mode').value;
 
   try {
-    const digest = algorithm === 'MD5' ? md5Hex(text) : await ({
-      'SHA-1': sha1Hex,
-      'SHA-256': sha256Hex,
-      'SHA-512': sha512Hex,
-    }[algorithm](text));
+    let digest;
+    if (inputMode === 'file') {
+      const fileInput = document.getElementById('hash-file-input');
+      const file = fileInput.files[0];
+      if (!file) {
+        showError('hash-result', 'Choose a file to hash.');
+        return;
+      }
+      const bytes = new Uint8Array(await file.arrayBuffer());
+      digest = algorithm === 'MD5' ? md5FromBytes(bytes) : await ({
+        'SHA-1': sha1FromBytes,
+        'SHA-256': sha256FromBytes,
+        'SHA-512': sha512FromBytes,
+      }[algorithm](bytes));
+    } else {
+      const text = document.getElementById('hash-text').value;
+      digest = algorithm === 'MD5' ? md5Hex(text) : await ({
+        'SHA-1': sha1Hex,
+        'SHA-256': sha256Hex,
+        'SHA-512': sha512Hex,
+      }[algorithm](text));
+    }
 
     const warning = (algorithm === 'MD5' || algorithm === 'SHA-1')
       ? '<div class="hint">This algorithm is cryptographically broken - only use it for checksums or legacy compatibility, never for passwords or security-sensitive verification.</div>'

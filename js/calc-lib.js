@@ -4180,8 +4180,7 @@ for (let i = 0; i < 64; i++) {
 // RFC 1321 MD5 - no Web Crypto equivalent exists, so this is a hand-rolled
 // Merkle-Damgard construction operating on typed arrays (not string
 // concatenation) so it stays linear-time on large inputs.
-function md5Hex(text) {
-  const message = new TextEncoder().encode(text);
+function md5FromBytes(message) {
   const originalLengthBits = message.length * 8;
 
   let paddedLength = message.length + 1;
@@ -4254,10 +4253,19 @@ function md5Hex(text) {
   return bytesToHex(digest);
 }
 
-async function digestHex(algorithm, text) {
-  const bytes = new TextEncoder().encode(text);
+// Text entry point: encode to UTF-8 bytes, then run the byte-array algorithm.
+function md5Hex(text) {
+  return md5FromBytes(new TextEncoder().encode(text));
+}
+
+async function digestHexFromBytes(algorithm, bytes) {
   const digestBuffer = await crypto.subtle.digest(algorithm, bytes);
   return bytesToHex(new Uint8Array(digestBuffer));
+}
+
+async function digestHex(algorithm, text) {
+  const bytes = new TextEncoder().encode(text);
+  return digestHexFromBytes(algorithm, bytes);
 }
 
 function sha1Hex(text) {
@@ -4270,6 +4278,19 @@ function sha256Hex(text) {
 
 function sha512Hex(text) {
   return digestHex('SHA-512', text);
+}
+
+// Byte-array entry points (used to hash raw file contents rather than text).
+function sha1FromBytes(bytes) {
+  return digestHexFromBytes('SHA-1', bytes);
+}
+
+function sha256FromBytes(bytes) {
+  return digestHexFromBytes('SHA-256', bytes);
+}
+
+function sha512FromBytes(bytes) {
+  return digestHexFromBytes('SHA-512', bytes);
 }
 // --- Unix Permissions (chmod) Calculator ---
 
@@ -5142,9 +5163,13 @@ if (typeof module !== 'undefined' && module.exports) {
     heatIndexFahrenheit,
     bytesToHex,
     md5Hex,
+    md5FromBytes,
     sha1Hex,
     sha256Hex,
     sha512Hex,
+    sha1FromBytes,
+    sha256FromBytes,
+    sha512FromBytes,
     symbolicToOctal,
     octalToSymbolic,
     convertCssUnits,
