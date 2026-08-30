@@ -86,6 +86,13 @@ function showError(elId, message) {
   document.getElementById(elId).innerHTML = `<span class="error">${message}</span>`;
 }
 
+// Escapes arbitrary user-controlled text before interpolating into innerHTML.
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 // --- One-Rep Max (multi-formula estimator) ---
 document.getElementById('orm-calc').addEventListener('click', () => {
   const weight = parseFloat(document.getElementById('orm-weight').value);
@@ -5011,5 +5018,28 @@ document.getElementById('unix-calc').addEventListener('click', () => {
     `;
   } catch (err) {
     showError('unix-result', err.message);
+  }
+});
+// --- Base64 encoder/decoder ---
+document.getElementById('base64-mode').addEventListener('change', (e) => {
+  const isDecode = e.target.value === 'decode';
+  document.getElementById('base64-input-label').textContent = isDecode ? 'Base64 text' : 'Text';
+  document.getElementById('base64-input').placeholder = isDecode ? 'e.g. SGVsbG8sIHdvcmxkIQ==' : 'e.g. Hello, world!';
+});
+
+document.getElementById('base64-calc').addEventListener('click', () => {
+  const mode = document.getElementById('base64-mode').value;
+  const input = document.getElementById('base64-input').value;
+
+  try {
+    const output = mode === 'decode' ? base64Decode(input) : base64Encode(input);
+    const label = mode === 'decode' ? 'Decoded text' : 'Base64 output';
+
+    document.getElementById('base64-result').innerHTML = `
+      <div class="headline">${label}</div>
+      <div><textarea rows="5" readonly>${escapeHtml(output)}</textarea></div>
+    `;
+  } catch (err) {
+    showError('base64-result', err.message);
   }
 });

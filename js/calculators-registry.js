@@ -668,6 +668,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Convert a Unix timestamp (seconds or milliseconds) into a human-readable date, or a date/time back into an epoch timestamp.',
     keywords: ['unix timestamp', 'epoch', 'timestamp converter', 'developer', 'date to epoch', 'utc'],
+    id: 'base64-encoder-decoder',
+    name: 'Base64 Encoder/Decoder',
+    category: 'Developer',
+    description: 'Convert plain text to Base64 and back, with correct handling of UTF-8 and URL-safe variants.',
+    keywords: ['base64', 'encode', 'decode', 'developer', 'utf-8', 'url-safe', 'basic auth'],
   },
 ];
 
