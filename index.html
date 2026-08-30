@@ -3401,6 +3401,35 @@
     <button class="calc-btn" id="cidr-calc">Calculate</button>
     <div class="result" id="cidr-result"></div>
   </section>
+
+  <section id="ipv4-ipv6-converter" class="view tab-panel">
+    <h2>IPv4 to IPv6 Converter</h2>
+    <p class="hint">Converts between an IPv4 address and its IPv4-mapped IPv6 form (RFC 4291 &sect;2.5.5.2, <code>::ffff:a.b.c.d</code>) - the form used when an IPv6-only stack represents an IPv4 address. The deprecated IPv4-compatible form (<code>::a.b.c.d</code>, no <code>ffff</code>) is also supported.</p>
+    <div class="field">
+      <label for="ipconv-mode">Mode</label>
+      <select id="ipconv-mode">
+        <option value="to-ipv6">IPv4 &rarr; IPv6</option>
+        <option value="to-ipv4">IPv6 &rarr; IPv4</option>
+      </select>
+    </div>
+
+    <div id="ipconv-to-ipv6-fields">
+      <div class="field">
+        <label for="ipconv-ipv4-input">IPv4 address</label>
+        <input type="text" id="ipconv-ipv4-input" placeholder="e.g. 192.0.2.1">
+      </div>
+    </div>
+
+    <div id="ipconv-to-ipv4-fields" hidden>
+      <div class="field">
+        <label for="ipconv-ipv6-input">IPv6 address</label>
+        <input type="text" id="ipconv-ipv6-input" placeholder="e.g. ::ffff:192.0.2.1 or ::ffff:c000:0201">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="ipconv-calc">Calculate</button>
+    <div class="result" id="ipconv-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>

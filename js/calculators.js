@@ -5505,3 +5505,51 @@ document.getElementById('cidr-calc').addEventListener('click', () => {
     showError('cidr-result', err.message);
   }
 });
+// --- IPv4 to IPv6 converter ---
+document.getElementById('ipconv-mode').addEventListener('change', (e) => {
+  const isToIpv4 = e.target.value === 'to-ipv4';
+  document.getElementById('ipconv-to-ipv6-fields').hidden = isToIpv4;
+  document.getElementById('ipconv-to-ipv4-fields').hidden = !isToIpv4;
+});
+
+document.getElementById('ipconv-calc').addEventListener('click', () => {
+  const mode = document.getElementById('ipconv-mode').value;
+
+  try {
+    if (mode === 'to-ipv4') {
+      const ipv6Input = document.getElementById('ipconv-ipv6-input').value.trim();
+      if (!ipv6Input) {
+        showError('ipconv-result', 'Enter an IPv6 address to convert.');
+        return;
+      }
+
+      const { ipv4, deprecated } = ipv6ToIpv4(ipv6Input);
+      const hint = deprecated
+        ? 'Recognized as the deprecated IPv4-compatible form (::a.b.c.d, no ffff group).'
+        : 'Recognized as an IPv4-mapped IPv6 address (::ffff:0:0/96).';
+
+      document.getElementById('ipconv-result').innerHTML = `
+        <div class="headline">${escapeHtml(ipv4)}</div>
+        <div class="hint">${hint}</div>
+      `;
+      return;
+    }
+
+    const ipv4Input = document.getElementById('ipconv-ipv4-input').value.trim();
+    if (!ipv4Input) {
+      showError('ipconv-result', 'Enter an IPv4 address to convert.');
+      return;
+    }
+
+    const { mixed, hex } = ipv4ToIpv6Mapped(ipv4Input);
+    const compatible = ipv4ToIpv6Compatible(ipv4Input);
+
+    document.getElementById('ipconv-result').innerHTML = `
+      <div class="headline">${escapeHtml(mixed)}</div>
+      <div>Pure hex notation: ${escapeHtml(hex)}</div>
+      <div class="hint">Deprecated IPv4-compatible form: ${escapeHtml(compatible)} (RFC 4291 &sect;2.5.5.1 - avoid in new uses, kept here for reference only).</div>
+    `;
+  } catch (err) {
+    showError('ipconv-result', err.message);
+  }
+});

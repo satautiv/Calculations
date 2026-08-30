@@ -1057,6 +1057,95 @@ function roofBoxFuelPenalty(baseConsumption, penaltyPercent, distanceKm, fuelPri
   return { newConsumption, extraConsumption, extraFuel, extraCost };
 }
 
+// --- IPv4 <-> IPv6 converter ---
+
+// Parses a dotted-quad IPv4 string into 4 octets (0-255). Rejects anything
+// that isn't exactly 4 decimal segments, leading-zero segments (ambiguous
+// with octal in some parsers), or a segment outside 0-255.
+function parseIpv4Octets(str) {
+  const trimmed = (str || '').trim();
+  const segments = trimmed.split('.');
+
+  if (segments.length !== 4) {
+    throw new Error(`Invalid IPv4 address: "${str}" must have exactly 4 dot-separated segments.`);
+  }
+
+  return segments.map(segment => {
+    if (!/^\d{1,3}$/.test(segment) || (segment.length > 1 && segment[0] === '0')) {
+      throw new Error(`Invalid IPv4 address: "${str}" contains an invalid segment "${segment}".`);
+    }
+
+    const value = parseInt(segment, 10);
+    if (value < 0 || value > 255) {
+      throw new Error(`Invalid IPv4 address: "${str}" contains an out-of-range segment "${segment}" (must be 0-255).`);
+    }
+
+    return value;
+  });
+}
+
+function ipv4OctetsToHexGroups([a, b, c, d]) {
+  const high = ((a << 8) | b).toString(16).padStart(4, '0');
+  const low = ((c << 8) | d).toString(16).padStart(4, '0');
+  return { high, low };
+}
+
+// Builds both the mixed-notation and pure-hex-notation IPv4-mapped IPv6
+// address (RFC 4291 §2.5.5.2) for a given IPv4 string.
+function ipv4ToIpv6Mapped(ipv4String) {
+  const octets = parseIpv4Octets(ipv4String);
+  const { high, low } = ipv4OctetsToHexGroups(octets);
+
+  return {
+    mixed: `::ffff:${octets.join('.')}`,
+    hex: `::ffff:${high}:${low}`,
+  };
+}
+
+// Builds the deprecated IPv4-compatible IPv6 address (RFC 4291 §2.5.5.1)
+// for a given IPv4 string - same idea, without the ffff group.
+function ipv4ToIpv6Compatible(ipv4String) {
+  const octets = parseIpv4Octets(ipv4String);
+  return `::${octets.join('.')}`;
+}
+
+// Recognizes only the specific IPv4-mapped/compatible IPv6 forms this tool
+// cares about - not a general-purpose IPv6 parser. Accepted forms (all
+// case-insensitive):
+//   ::ffff:a.b.c.d        (mapped, mixed notation)
+//   ::ffff:XXXX:YYYY      (mapped, pure hex notation)
+//   ::a.b.c.d             (deprecated compatible, mixed notation)
+// Anything else is rejected as "not a recognized" form.
+function ipv6ToIpv4(ipv6String) {
+  const trimmed = (ipv6String || '').trim().toLowerCase();
+
+  const mappedMixed = /^::ffff:(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(trimmed);
+  if (mappedMixed) {
+    const octets = parseIpv4Octets(mappedMixed[1]);
+    return { ipv4: octets.join('.'), deprecated: false };
+  }
+
+  const mappedHex = /^::ffff:([0-9a-f]{1,4}):([0-9a-f]{1,4})$/.exec(trimmed);
+  if (mappedHex) {
+    const high = parseInt(mappedHex[1], 16);
+    const low = parseInt(mappedHex[2], 16);
+    if (high > 0xffff || low > 0xffff) {
+      throw new Error(`Invalid IPv6 address: "${ipv6String}" contains a hex group out of range.`);
+    }
+
+    const octets = [(high >> 8) & 0xff, high & 0xff, (low >> 8) & 0xff, low & 0xff];
+    return { ipv4: octets.join('.'), deprecated: false };
+  }
+
+  const compatibleMixed = /^::(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/.exec(trimmed);
+  if (compatibleMixed) {
+    const octets = parseIpv4Octets(compatibleMixed[1]);
+    return { ipv4: octets.join('.'), deprecated: true };
+  }
+
+  throw new Error(`"${ipv6String}" is not a recognized IPv4-mapped/compatible IPv6 form (expected ::ffff:a.b.c.d, ::ffff:XXXX:YYYY, or the deprecated ::a.b.c.d).`);
+}
+
 // --- Percentage calculator ---
 function percentOf(percent, base) {
   return (percent / 100) * base;
@@ -4122,5 +4211,9 @@ if (typeof module !== 'undefined' && module.exports) {
     parseIpv4,
     ipv4IntToString,
     subnetInfo,
+    parseIpv4Octets,
+    ipv4ToIpv6Mapped,
+    ipv4ToIpv6Compatible,
+    ipv6ToIpv4,
   };
 }
