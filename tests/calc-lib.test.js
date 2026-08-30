@@ -4243,6 +4243,21 @@ describe('decodeJwt', () => {
     expect(result.payload).toEqual(payload);
   });
 
+  test('flags an "alg: none" token as insecure', () => {
+    const token = makeJwt({ alg: 'none', typ: 'JWT' }, { sub: 'abc' }, null);
+    expect(decodeJwt(token).claims.hasNoneAlg).toBe(true);
+  });
+
+  test('does not flag a normally-signed token as "alg: none"', () => {
+    const token = makeJwt({ alg: 'HS256', typ: 'JWT' }, { sub: 'abc' });
+    expect(decodeJwt(token).claims.hasNoneAlg).toBe(false);
+  });
+
+  test('flags "alg: none" case-insensitively', () => {
+    expect(decodeJwt(makeJwt({ alg: 'None' }, { sub: 'abc' }, null)).claims.hasNoneAlg).toBe(true);
+    expect(decodeJwt(makeJwt({ alg: 'NONE' }, { sub: 'abc' }, null)).claims.hasNoneAlg).toBe(true);
+  });
+
   test('strips a Bearer prefix and surrounding whitespace', () => {
     const token = makeJwt({ alg: 'HS256' }, { sub: 'abc' });
     const result = decodeJwt(`  Bearer ${token}  `);

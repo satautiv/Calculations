@@ -5338,6 +5338,9 @@ document.getElementById('jwt-calc').addEventListener('click', () => {
     const summaryHtml = summaryParts.length ? `<div>${summaryParts.join(' &middot; ')}</div>` : '';
 
     const statusFlags = [];
+    if (claims.hasNoneAlg) {
+      statusFlags.push('<span class="error">"alg: none" - this token has no signature and provides no integrity protection</span>');
+    }
     if (claims.isExpired) statusFlags.push('<span class="error">Expired</span>');
     if (claims.isNotYetValid) statusFlags.push('<span class="error">Not yet valid</span>');
     const statusHtml = statusFlags.length ? `<div>${statusFlags.join(' ')}</div>` : '';
