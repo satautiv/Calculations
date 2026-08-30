@@ -3542,7 +3542,7 @@
 
   <section id="hash-generator" class="view tab-panel">
     <h2>Hash Generator</h2>
-    <p class="hint">Computes a hex digest of text for checksums, integrity checks, or comparing values without exposing the original content. Everything runs locally in your browser - nothing is sent anywhere. <strong>MD5 and SHA-1 are cryptographically broken and deprecated for security purposes</strong> (e.g. password storage, digital signatures) - use them here only for checksums or legacy compatibility, and prefer SHA-256 or SHA-512 otherwise.</p>
+    <p class="hint">Computes a hex digest of text or a local file for checksums, integrity checks, or comparing values without exposing the original content. Everything runs locally in your browser - nothing is sent anywhere, including the contents of a selected file. <strong>MD5 and SHA-1 are cryptographically broken and deprecated for security purposes</strong> (e.g. password storage, digital signatures) - use them here only for checksums or legacy compatibility, and prefer SHA-256 or SHA-512 otherwise.</p>
     <div class="field">
       <label for="hash-algorithm">Algorithm</label>
       <select id="hash-algorithm">
@@ -3553,9 +3553,23 @@
       </select>
     </div>
     <div class="field">
+      <label for="hash-input-mode">Input</label>
+      <select id="hash-input-mode">
+        <option value="text">Text</option>
+        <option value="file">File</option>
+      </select>
+    </div>
+
+    <div class="field" id="hash-text-field">
       <label for="hash-text">Text</label>
       <textarea id="hash-text" rows="6" placeholder="Enter text to hash"></textarea>
     </div>
+
+    <div class="field" id="hash-file-field" hidden>
+      <label for="hash-file-input">File</label>
+      <input type="file" id="hash-file-input">
+    </div>
+
     <button class="calc-btn" id="hash-calc">Calculate</button>
     <div class="result" id="hash-result"></div>
   </section>

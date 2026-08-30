@@ -216,9 +216,13 @@ const {
   heatIndexFahrenheit,
   bytesToHex,
   md5Hex,
+  md5FromBytes,
   sha1Hex,
   sha256Hex,
   sha512Hex,
+  sha1FromBytes,
+  sha256FromBytes,
+  sha512FromBytes,
   symbolicToOctal,
   octalToSymbolic,
   convertCssUnits,
@@ -5351,6 +5355,26 @@ describe('md5Hex', () => {
   });
 });
 
+describe('md5FromBytes', () => {
+  test('matches md5Hex of the equivalent UTF-8 text for "hello"', () => {
+    expect(md5FromBytes(Buffer.from('hello', 'utf8'))).toBe(md5Hex('hello'));
+    expect(md5FromBytes(Buffer.from('hello', 'utf8'))).toBe('5d41402abc4b2a76b9719d911017c592');
+  });
+
+  test('matches the known digest for an empty byte array', () => {
+    expect(md5FromBytes(new Uint8Array([]))).toBe('d41d8cd98f00b204e9800998ecf8427e');
+  });
+
+  test('matches md5Hex for multi-byte UTF-8 text encoded as bytes', () => {
+    expect(md5FromBytes(Buffer.from('héllo 世界', 'utf8'))).toBe(md5Hex('héllo 世界'));
+  });
+
+  test('accepts a plain Uint8Array (not just a Buffer)', () => {
+    const bytes = new Uint8Array(Buffer.from('hello', 'utf8'));
+    expect(md5FromBytes(bytes)).toBe('5d41402abc4b2a76b9719d911017c592');
+  });
+});
+
 describe('sha1Hex', () => {
   test('matches the known digest for "hello"', async () => {
     expect(await sha1Hex('hello')).toBe('aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
@@ -5393,6 +5417,40 @@ describe('sha512Hex', () => {
     expect(await sha512Hex('')).toMatch(/^[0-9a-f]{128}$/);
   });
 });
+
+describe('sha1FromBytes', () => {
+  test('matches sha1Hex of the equivalent UTF-8 text', async () => {
+    expect(await sha1FromBytes(Buffer.from('hello', 'utf8'))).toBe(await sha1Hex('hello'));
+    expect(await sha1FromBytes(Buffer.from('hello', 'utf8'))).toBe('aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d');
+  });
+
+  test('matches the known digest for an empty byte array', async () => {
+    expect(await sha1FromBytes(new Uint8Array([]))).toBe('da39a3ee5e6b4b0d3255bfef95601890afd80709');
+  });
+});
+
+describe('sha256FromBytes', () => {
+  test('matches sha256Hex of the equivalent UTF-8 text', async () => {
+    expect(await sha256FromBytes(Buffer.from('hello', 'utf8'))).toBe(await sha256Hex('hello'));
+    expect(await sha256FromBytes(Buffer.from('hello', 'utf8'))).toBe('2cf24dba5fb0a30e26e83b2ac5b9e29e1b161e5c1fa7425e73043362938b9824');
+  });
+
+  test('matches the known digest for an empty byte array', async () => {
+    expect(await sha256FromBytes(new Uint8Array([]))).toBe('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855');
+  });
+});
+
+describe('sha512FromBytes', () => {
+  test('matches sha512Hex of the equivalent UTF-8 text', async () => {
+    expect(await sha512FromBytes(Buffer.from('hello', 'utf8'))).toBe(await sha512Hex('hello'));
+    expect(await sha512FromBytes(Buffer.from('hello', 'utf8'))).toBe('9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca72323c3d99ba5c11d7c7acc6e14b8c5da0c4663475c2e5c3adef46f73bcdec043');
+  });
+
+  test('produces a 128-character lowercase hex digest for an empty byte array', async () => {
+    expect(await sha512FromBytes(new Uint8Array([]))).toMatch(/^[0-9a-f]{128}$/);
+  });
+});
+
 describe('symbolicToOctal', () => {
   test('converts the issue\'s worked examples', () => {
     expect(symbolicToOctal('rwxr-xr-x')).toBe('755');
