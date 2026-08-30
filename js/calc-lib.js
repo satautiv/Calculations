@@ -1818,6 +1818,22 @@ function convertUnit(category, value, fromUnit, toUnit) {
   return convertLinearUnit(category, value, fromUnit, toUnit);
 }
 
+// Converts a value from fromUnit into every unit of the given category,
+// reusing convertLinearUnit/convertTemperature for each pair rather than
+// reimplementing the conversion math. Temperature isn't listed in
+// UNIT_CONVERSION_CATEGORIES (it's affine, not a factor table), so its unit
+// set is hardcoded here to match convertTemperature.
+function convertToAllUnits(category, value, fromUnit) {
+  if (category === 'temperature') {
+    return ['C', 'F', 'K'].map(unit => ({ unit, value: convertTemperature(value, fromUnit, unit) }));
+  }
+
+  const table = UNIT_CONVERSION_CATEGORIES[category];
+  if (!table) throw new Error(`Unknown category: ${category}`);
+
+  return Object.keys(table).map(unit => ({ unit, value: convertLinearUnit(category, value, fromUnit, unit) }));
+}
+
 // --- FFMI (Fat-Free Mass Index) calculator ---
 
 // Computes fat-free mass, raw FFMI, and height-normalized FFMI (scaled to an
@@ -5029,6 +5045,7 @@ if (typeof module !== 'undefined' && module.exports) {
     convertLinearUnit,
     convertTemperature,
     convertUnit,
+    convertToAllUnits,
     ffmi,
     ffmiCategory,
     leanBodyMassFromBodyFat,
