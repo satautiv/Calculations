@@ -2954,7 +2954,7 @@ document.getElementById('pct-calc').addEventListener('click', () => {
 
     document.getElementById('pct-result').innerHTML = `
       <div class="headline">${result.toFixed(2)}</div>
-      <div>A ${percent}% ${verb} to ${result.toFixed(2)} gives ${finalValue}</div>
+      <div>A ${percent}% ${verb} from ${result.toFixed(2)} gives ${finalValue}</div>
     `;
   }
 });
