@@ -3779,6 +3779,18 @@ describe('base64Encode', () => {
     const encoded = base64Encode(text);
     expect(base64Decode(encoded)).toBe(text);
   });
+
+  test('defaults to standard alphabet (+ / =) when urlSafe is omitted', () => {
+    expect(base64Encode('>>>???a')).toBe('Pj4+Pz8/YQ==');
+  });
+
+  test('urlSafe=false explicitly still produces the exact standard output', () => {
+    expect(base64Encode('>>>???a', false)).toBe('Pj4+Pz8/YQ==');
+  });
+
+  test('urlSafe=true swaps + and / and strips padding', () => {
+    expect(base64Encode('>>>???a', true)).toBe('Pj4-Pz8_YQ');
+  });
 });
 
 describe('base64Decode', () => {
