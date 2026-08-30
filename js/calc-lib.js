@@ -2836,6 +2836,32 @@ function solarPaybackPeriod(dailyOutputPerPanelKwh, numberOfPanels, systemCost, 
 
   return { annualProductionKwh, annualSavings, paybackYears };
 }
+// --- Projectile motion and fall time calculator ---
+
+// Time of flight, max height, and range for a launch at `speed` and
+// `angleDeg` from horizontal, starting `initialHeight` above the landing
+// surface. Ignores air resistance and assumes flat, level ground and
+// constant gravity. Setting angleDeg (and thus vy) to 0 with speed 0
+// reduces this to the pure free-fall case; with speed 0, initialHeight 0
+// too, there's nothing to fall, so time of flight is legitimately 0.
+function projectileMotion(speed, angleDeg, initialHeight, gravity = 9.81) {
+  if (speed < 0) throw new Error('Speed must be zero or greater.');
+  if (angleDeg < 0 || angleDeg > 90) throw new Error('Angle must be between 0 and 90 degrees.');
+  if (initialHeight < 0) throw new Error('Initial height must be zero or greater.');
+
+  const angleRad = angleDeg * Math.PI / 180;
+  const vx = speed * Math.cos(angleRad);
+  const vy = speed * Math.sin(angleRad);
+
+  const timeOfFlight = (vy === 0 && initialHeight === 0)
+    ? 0
+    : (vy + Math.sqrt(vy * vy + 2 * gravity * initialHeight)) / gravity;
+
+  const maxHeight = initialHeight + (vy * vy) / (2 * gravity);
+  const range = vx * timeOfFlight;
+
+  return { timeOfFlight, maxHeight, range, vx, vy };
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -3079,5 +3105,6 @@ if (typeof module !== 'undefined' && module.exports) {
     horizonDistance,
     solarPanelSizing,
     solarPaybackPeriod,
+    projectileMotion,
   };
 }

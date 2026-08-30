@@ -5207,3 +5207,39 @@ document.getElementById('solar-calc').addEventListener('click', () => {
     showError('solar-result', err.message);
   }
 });
+
+// --- Projectile motion and fall time calculator ---
+document.getElementById('projectile-calc').addEventListener('click', () => {
+  const speed = parseFloat(document.getElementById('projectile-speed').value);
+  const angle = parseFloat(document.getElementById('projectile-angle').value);
+  const heightInput = document.getElementById('projectile-height').value;
+  const height = heightInput === '' ? 0 : parseFloat(heightInput);
+
+  if (isNaN(speed)) {
+    showError('projectile-result', 'Enter a valid launch speed.');
+    return;
+  }
+
+  if (isNaN(angle)) {
+    showError('projectile-result', 'Enter a valid launch angle.');
+    return;
+  }
+
+  if (isNaN(height)) {
+    showError('projectile-result', 'Enter a valid initial height.');
+    return;
+  }
+
+  try {
+    const { timeOfFlight, maxHeight, range } = projectileMotion(speed, angle, height);
+
+    document.getElementById('projectile-result').innerHTML = `
+      <div class="headline">${timeOfFlight.toFixed(2)} s flight time</div>
+      <div>Maximum height: ${maxHeight.toFixed(2)} m</div>
+      <div>Horizontal range: ${range.toFixed(2)} m</div>
+      <div class="hint">Assumes no air resistance, flat and level ground, and constant gravity (9.81 m/s²) - a simplified physics model, not accounting for wind, spin, or drag.</div>
+    `;
+  } catch (err) {
+    showError('projectile-result', err.message);
+  }
+});

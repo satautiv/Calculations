@@ -174,6 +174,7 @@ const {
   horizonDistance,
   solarPanelSizing,
   solarPaybackPeriod,
+  projectileMotion,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3847,5 +3848,58 @@ describe('solarPaybackPeriod', () => {
     const { paybackYears } = solarPaybackPeriod(0.5, 1, 1000000, 0.10);
     expect(paybackYears).toBeGreaterThan(1000);
     expect(Number.isFinite(paybackYears)).toBe(true);
+  });
+});
+// --- Projectile motion and fall time calculator ---
+
+describe('projectileMotion', () => {
+  test('worked example: 20 m/s at 45 degrees from ground level', () => {
+    const { timeOfFlight, maxHeight, range, vx, vy } = projectileMotion(20, 45, 0);
+    expect(vx).toBeCloseTo(14.14, 2);
+    expect(vy).toBeCloseTo(14.14, 2);
+    expect(timeOfFlight).toBeCloseTo(2.88, 2);
+    expect(maxHeight).toBeCloseTo(10.2, 1);
+    expect(range).toBeCloseTo(40.77, 1);
+  });
+
+  test('worked example: pure fall from 20 m with zero speed', () => {
+    const { timeOfFlight, maxHeight, range } = projectileMotion(0, 0, 20);
+    expect(timeOfFlight).toBeCloseTo(2.02, 2);
+    expect(maxHeight).toBe(20);
+    expect(range).toBe(0);
+  });
+
+  test('zero speed and zero height resolves to a valid zero result, not an error', () => {
+    const { timeOfFlight, maxHeight, range } = projectileMotion(0, 0, 0);
+    expect(timeOfFlight).toBe(0);
+    expect(maxHeight).toBe(0);
+    expect(range).toBe(0);
+  });
+
+  test('horizontal launch from a height combines drop time with horizontal travel', () => {
+    const { timeOfFlight, maxHeight, range, vy } = projectileMotion(10, 0, 5);
+    expect(vy).toBe(0);
+    expect(timeOfFlight).toBeCloseTo(1.01, 2);
+    expect(maxHeight).toBe(5);
+    expect(range).toBeCloseTo(10.1, 1);
+  });
+
+  test('straight-up launch (90 degrees) has negligible range', () => {
+    const { range, maxHeight } = projectileMotion(10, 90, 0);
+    expect(range).toBeCloseTo(0, 9);
+    expect(maxHeight).toBeCloseTo(5.1, 1);
+  });
+
+  test('rejects a negative speed', () => {
+    expect(() => projectileMotion(-1, 45, 0)).toThrow();
+  });
+
+  test('rejects an out-of-range angle', () => {
+    expect(() => projectileMotion(10, -1, 0)).toThrow();
+    expect(() => projectileMotion(10, 91, 0)).toThrow();
+  });
+
+  test('rejects a negative initial height', () => {
+    expect(() => projectileMotion(10, 45, -1)).toThrow();
   });
 });
