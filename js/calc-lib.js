@@ -2923,17 +2923,26 @@ const BASE64_ALPHABET_REGEX = /^[A-Za-z0-9+/]*={0,2}$/;
 // Uses Buffer (Node/Jest) when available, falling back to TextEncoder +
 // btoa (browser) - btoa alone only handles one-byte-per-char binary strings
 // and mangles/throws on multi-byte UTF-8 text, so bytes must be encoded first.
-function base64Encode(text) {
+// When urlSafe is true, swaps in the URL-safe alphabet (+ -> -, / -> _) and
+// strips trailing '=' padding, matching the alphabet base64Decode already
+// accepts on input.
+function base64Encode(text, urlSafe = false) {
   if (text === '') return '';
+  let encoded;
   if (typeof Buffer !== 'undefined') {
-    return Buffer.from(text, 'utf8').toString('base64');
+    encoded = Buffer.from(text, 'utf8').toString('base64');
+  } else {
+    const bytes = new TextEncoder().encode(text);
+    let binary = '';
+    bytes.forEach((byte) => {
+      binary += String.fromCharCode(byte);
+    });
+    encoded = btoa(binary);
   }
-  const bytes = new TextEncoder().encode(text);
-  let binary = '';
-  bytes.forEach((byte) => {
-    binary += String.fromCharCode(byte);
-  });
-  return btoa(binary);
+  if (urlSafe) {
+    return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  return encoded;
 }
 
 function base64Decode(base64Str) {

@@ -3147,12 +3147,19 @@
 
   <section id="base64-encoder-decoder" class="view tab-panel">
     <h2>Base64 Encoder/Decoder</h2>
-    <p class="hint">Converts plain text to Base64 and back - useful for inspecting Basic Auth headers, data URIs, or encoded tokens. UTF-8 text is fully supported. Decoding accepts both standard (<code>+</code>/<code>/</code>) and URL-safe (<code>-</code>/<code>_</code>) Base64 alphabets; whitespace/newlines in the input are stripped automatically.</p>
+    <p class="hint">Converts plain text to Base64 and back - useful for inspecting Basic Auth headers, data URIs, or encoded tokens. UTF-8 text is fully supported. Choose URL-safe below to encode using <code>-</code>/<code>_</code> with padding stripped, instead of the standard <code>+</code>/<code>/</code>/<code>=</code> alphabet. Decoding accepts both alphabets regardless of this setting; whitespace/newlines in the input are stripped automatically.</p>
     <div class="field">
       <label for="base64-mode">Mode</label>
       <select id="base64-mode">
         <option value="encode">Encode (text to Base64)</option>
         <option value="decode">Decode (Base64 to text)</option>
+      </select>
+    </div>
+    <div class="field">
+      <label for="base64-alphabet">Alphabet</label>
+      <select id="base64-alphabet">
+        <option value="standard">Standard (+ / =)</option>
+        <option value="urlsafe">URL-safe (- _, unpadded)</option>
       </select>
     </div>
     <div class="field">

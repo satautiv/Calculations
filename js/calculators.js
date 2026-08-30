@@ -5111,10 +5111,11 @@ document.getElementById('base64-mode').addEventListener('change', (e) => {
 
 document.getElementById('base64-calc').addEventListener('click', () => {
   const mode = document.getElementById('base64-mode').value;
+  const urlSafe = document.getElementById('base64-alphabet').value === 'urlsafe';
   const input = document.getElementById('base64-input').value;
 
   try {
-    const output = mode === 'decode' ? base64Decode(input) : base64Encode(input);
+    const output = mode === 'decode' ? base64Decode(input) : base64Encode(input, urlSafe);
     const label = mode === 'decode' ? 'Decoded text' : 'Base64 output';
 
     document.getElementById('base64-result').innerHTML = `
