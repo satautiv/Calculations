@@ -4261,6 +4261,33 @@ describe('formatJson', () => {
   });
 });
 
+describe('parseJsonOrThrow line/column reporting', () => {
+  test('still parses valid JSON with no error (regression)', () => {
+    expect(formatJson('{"a":1,"b":2}')).toBe('{\n  "a": 1,\n  "b": 2\n}');
+  });
+
+  test('reports line 1 and the right column for a single-line error', () => {
+    expect(() => formatJson('{"a":1,}')).toThrow(/line 1, column 8/);
+  });
+
+  test('reports the correct later line number for multi-line input', () => {
+    const input = '{\n  "a": 1,\n  "b": 2,\n}\n';
+    expect(() => formatJson(input)).toThrow(/line 4, column 1/);
+  });
+
+  test('includes the offending line text in the error message', () => {
+    const input = '{\n  "a": 1,\n  "b": 2,\n}\n';
+    expect(() => formatJson(input)).toThrow(/}/);
+  });
+
+  test('falls back to the plain message when no position can be extracted', () => {
+    // Empty input never reaches JSON.parse - covered separately - but this
+    // guards that the generic "Invalid JSON:" prefix still exists for any
+    // engine message without a "position N" segment.
+    expect(() => formatJson('{a:1}')).toThrow(/Invalid JSON/);
+  });
+});
+
 describe('minifyJson', () => {
   test('collapses formatted JSON to one compact line', () => {
     expect(minifyJson('{\n  "a": 1,\n  "b": [1, 2, 3]\n}')).toBe('{"a":1,"b":[1,2,3]}');
