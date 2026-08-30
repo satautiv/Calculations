@@ -745,6 +745,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Build a cron expression from friendly form controls, or paste one in to get a plain-English description of when it runs.',
     keywords: ['cron', 'crontab', 'cron expression', 'cron job', 'scheduler', 'developer'],
   },
+  {
+    id: 'cidr-subnet-calculator',
+    name: 'CIDR/Subnet Calculator',
+    category: 'Developer',
+    description: 'Compute the network and broadcast addresses, subnet mask, usable host range, and host count for an IPv4 CIDR block.',
+    keywords: ['cidr', 'subnet', 'subnet mask', 'ip address', 'ipv4', 'network address', 'broadcast address', 'developer'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -194,6 +194,9 @@ const {
   describeCron,
   buildCronExpression,
   expandCronMacro,
+  parseIpv4,
+  ipv4IntToString,
+  subnetInfo,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -4592,5 +4595,118 @@ describe('expandCronMacro', () => {
 
   test('throws for an unrecognized macro', () => {
     expect(() => expandCronMacro('@fortnightly')).toThrow();
+  });
+});
+
+describe('parseIpv4', () => {
+  test('parses a standard address', () => {
+    expect(parseIpv4('192.168.1.10')).toBe(0xC0A8010A);
+  });
+
+  test('parses 0.0.0.0', () => {
+    expect(parseIpv4('0.0.0.0')).toBe(0);
+  });
+
+  test('parses 255.255.255.255', () => {
+    expect(parseIpv4('255.255.255.255')).toBe(0xFFFFFFFF >>> 0);
+  });
+
+  test('parses leading zeros as decimal, not octal', () => {
+    expect(parseIpv4('192.168.001.010')).toBe(parseIpv4('192.168.1.10'));
+  });
+
+  test('rejects wrong number of octets', () => {
+    expect(() => parseIpv4('192.168.1')).toThrow();
+    expect(() => parseIpv4('192.168.1.1.1')).toThrow();
+  });
+
+  test('rejects an out-of-range octet', () => {
+    expect(() => parseIpv4('192.168.1.256')).toThrow();
+    expect(() => parseIpv4('192.168.-1.1')).toThrow();
+  });
+
+  test('rejects a non-numeric octet', () => {
+    expect(() => parseIpv4('192.168.a.1')).toThrow();
+  });
+});
+
+describe('ipv4IntToString', () => {
+  test('converts a 32-bit int back to dotted-quad', () => {
+    expect(ipv4IntToString(parseIpv4('192.168.1.10'))).toBe('192.168.1.10');
+  });
+
+  test('round-trips 255.255.255.255', () => {
+    expect(ipv4IntToString(parseIpv4('255.255.255.255'))).toBe('255.255.255.255');
+  });
+
+  test('round-trips 0.0.0.0', () => {
+    expect(ipv4IntToString(0)).toBe('0.0.0.0');
+  });
+});
+
+describe('subnetInfo', () => {
+  test('computes the worked example, 192.168.1.10/26', () => {
+    const info = subnetInfo('192.168.1.10', 26);
+    expect(info.networkAddress).toBe('192.168.1.0');
+    expect(info.broadcastAddress).toBe('192.168.1.63');
+    expect(info.subnetMask).toBe('255.255.255.192');
+    expect(info.firstUsable).toBe('192.168.1.1');
+    expect(info.lastUsable).toBe('192.168.1.62');
+    expect(info.usableHostCount).toBe(62);
+    expect(info.totalAddresses).toBe(64);
+  });
+
+  test('computes network/broadcast for a /24 with host bits set', () => {
+    const info = subnetInfo('192.168.1.10', 24);
+    expect(info.networkAddress).toBe('192.168.1.0');
+    expect(info.broadcastAddress).toBe('192.168.1.255');
+    expect(info.subnetMask).toBe('255.255.255.0');
+    expect(info.firstUsable).toBe('192.168.1.1');
+    expect(info.lastUsable).toBe('192.168.1.254');
+    expect(info.usableHostCount).toBe(254);
+    expect(info.totalAddresses).toBe(256);
+  });
+
+  test('handles /0', () => {
+    const info = subnetInfo('10.20.30.40', 0);
+    expect(info.networkAddress).toBe('0.0.0.0');
+    expect(info.broadcastAddress).toBe('255.255.255.255');
+    expect(info.subnetMask).toBe('0.0.0.0');
+    expect(info.usableHostCount).toBe(Math.pow(2, 32) - 2);
+    expect(info.totalAddresses).toBe(Math.pow(2, 32));
+  });
+
+  test('special-cases /31 as a two-address point-to-point link (RFC 3021)', () => {
+    const info = subnetInfo('192.168.1.0', 31);
+    expect(info.networkAddress).toBe('192.168.1.0');
+    expect(info.broadcastAddress).toBe('192.168.1.1');
+    expect(info.firstUsable).toBe('192.168.1.0');
+    expect(info.lastUsable).toBe('192.168.1.1');
+    expect(info.usableHostCount).toBe(2);
+    expect(info.totalAddresses).toBe(2);
+  });
+
+  test('special-cases /32 as a single host route', () => {
+    const info = subnetInfo('192.168.1.5', 32);
+    expect(info.networkAddress).toBe('192.168.1.5');
+    expect(info.broadcastAddress).toBe('192.168.1.5');
+    expect(info.firstUsable).toBe('192.168.1.5');
+    expect(info.lastUsable).toBe('192.168.1.5');
+    expect(info.usableHostCount).toBe(1);
+    expect(info.totalAddresses).toBe(1);
+  });
+
+  test('rejects a malformed IP address', () => {
+    expect(() => subnetInfo('192.168.1.256', 24)).toThrow();
+    expect(() => subnetInfo('not.an.ip.addr', 24)).toThrow();
+  });
+
+  test('rejects an out-of-range prefix length', () => {
+    expect(() => subnetInfo('192.168.1.0', -1)).toThrow();
+    expect(() => subnetInfo('192.168.1.0', 33)).toThrow();
+  });
+
+  test('rejects a non-integer prefix length', () => {
+    expect(() => subnetInfo('192.168.1.0', 24.5)).toThrow();
   });
 });
