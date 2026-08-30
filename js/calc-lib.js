@@ -3430,6 +3430,371 @@ function yamlToJson(input) {
   }
   return JSON.stringify(parseYamlDocument(input));
 }
+// --- Cron expression generator & translator ---
+
+const CRON_MONTH_NAMES = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+const CRON_MONTH_FULL_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+// Only 7 names because day-of-week runs 0-7 with both 0 and 7 meaning Sunday;
+// values are normalized to 0 before ever being looked up here.
+const CRON_DOW_NAMES = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+const CRON_DOW_FULL_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+const CRON_MACROS = {
+  '@yearly': '0 0 1 1 *',
+  '@annually': '0 0 1 1 *',
+  '@monthly': '0 0 1 * *',
+  '@weekly': '0 0 * * 0',
+  '@daily': '0 0 * * *',
+  '@midnight': '0 0 * * *',
+  '@hourly': '0 * * * *',
+};
+
+// Macros with no 5-field equivalent - flagged separately so the UI can
+// explain why translation can't reduce them to a builder-editable schedule.
+const CRON_UNSUPPORTED_MACROS = {
+  '@reboot': 'Runs once at system startup. This is a nonstandard macro with no 5-field cron equivalent, and is not supported by every cron implementation.',
+};
+
+// Resolves a single range/list token (a bare number or a name like "MON")
+// to its numeric value, validating it against [min, max].
+function parseCronNamedOrNumber(token, min, max, names) {
+  if (/^\d+$/.test(token)) {
+    const value = parseInt(token, 10);
+    if (value < min || value > max) {
+      throw new Error(`"${value}" is out of range (expected ${min}-${max}).`);
+    }
+    return value;
+  }
+  if (names) {
+    const idx = names.indexOf(token.toUpperCase());
+    if (idx !== -1) return idx + min;
+  }
+  throw new Error(`"${token}" is not a valid value.`);
+}
+
+// Expands one cron field (e.g. "*/15", "1,15,30", "9-17", "MON-FRI") into a
+// sorted array of the distinct numeric values it matches. Throws on any
+// malformed syntax or out-of-range value.
+function parseCronField(fieldStr, min, max, names) {
+  if (typeof fieldStr !== 'string' || fieldStr.trim() === '') {
+    throw new Error('Field is empty.');
+  }
+  if (/\s/.test(fieldStr)) {
+    throw new Error(`"${fieldStr}" must not contain spaces.`);
+  }
+
+  // Day-of-week is the only field where two different numbers (0 and 7)
+  // mean the same day, so it's the only one that needs post-hoc folding.
+  const isDayOfWeek = min === 0 && max === 7;
+  const parts = fieldStr.split(',');
+  const values = new Set();
+
+  for (const part of parts) {
+    if (part === '') {
+      throw new Error(`"${fieldStr}" has an empty value (check for a stray or doubled comma).`);
+    }
+
+    let base = part;
+    let step = null;
+    if (part.includes('/')) {
+      const slashPieces = part.split('/');
+      if (slashPieces.length !== 2 || slashPieces[0] === '' || slashPieces[1] === '') {
+        throw new Error(`"${part}" is not a valid step expression.`);
+      }
+      [base] = slashPieces;
+      const stepStr = slashPieces[1];
+      if (!/^\d+$/.test(stepStr) || parseInt(stepStr, 10) === 0) {
+        throw new Error(`Step "${stepStr}" in "${part}" must be a whole number greater than zero.`);
+      }
+      step = parseInt(stepStr, 10);
+    }
+
+    let rangeStart;
+    let rangeEnd;
+    if (base === '*') {
+      rangeStart = min;
+      rangeEnd = max;
+    } else if (base.includes('-')) {
+      const dashPieces = base.split('-');
+      if (dashPieces.length !== 2 || dashPieces[0] === '' || dashPieces[1] === '') {
+        throw new Error(`"${base}" is not a valid range.`);
+      }
+      rangeStart = parseCronNamedOrNumber(dashPieces[0], min, max, names);
+      rangeEnd = parseCronNamedOrNumber(dashPieces[1], min, max, names);
+      if (rangeStart > rangeEnd) {
+        throw new Error(`"${base}" is a reversed range (start must not be greater than end).`);
+      }
+    } else {
+      const single = parseCronNamedOrNumber(base, min, max, names);
+      rangeStart = single;
+      rangeEnd = step !== null ? max : single;
+    }
+
+    const effectiveStep = step === null ? 1 : step;
+    for (let v = rangeStart; v <= rangeEnd; v += effectiveStep) {
+      values.add(isDayOfWeek && v === 7 ? 0 : v);
+    }
+  }
+
+  return [...values].sort((a, b) => a - b);
+}
+
+function parseCronFieldOrThrow(label, fieldStr, min, max, names) {
+  try {
+    return parseCronField(fieldStr, min, max, names);
+  } catch (err) {
+    throw new Error(`Invalid ${label} field "${fieldStr}": ${err.message}`);
+  }
+}
+
+// Classifies a field's raw syntax (not its expanded values) so the
+// description logic can phrase steps/ranges/lists differently.
+function classifyCronField(fieldStr) {
+  if (fieldStr.includes('/')) {
+    const [base, stepStr] = fieldStr.split('/');
+    return { type: 'step', base, step: parseInt(stepStr, 10) };
+  }
+  if (fieldStr === '*') return { type: 'all' };
+  if (fieldStr.includes(',')) return { type: 'list' };
+  if (fieldStr.includes('-')) {
+    const [start, end] = fieldStr.split('-');
+    return { type: 'range', start, end };
+  }
+  return { type: 'single', value: fieldStr };
+}
+
+function formatEnglishList(items) {
+  if (items.length === 1) return `${items[0]}`;
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(', ')}, and ${items[items.length - 1]}`;
+}
+
+function describeCronMinuteRepeat(minuteStr, minuteClass) {
+  if (minuteClass.type === 'all') return 'Every minute';
+  if (minuteClass.type === 'step') {
+    if (minuteClass.base === '*') return `Every ${minuteClass.step} minutes`;
+    if (minuteClass.base.includes('-')) {
+      const [s, e] = minuteClass.base.split('-');
+      return `Every ${minuteClass.step} minutes, from minute ${s} through ${e}`;
+    }
+    return `Every ${minuteClass.step} minutes, starting at minute ${minuteClass.base}`;
+  }
+  if (minuteClass.type === 'range') {
+    return `Every minute from ${minuteClass.start} through ${minuteClass.end}`;
+  }
+  const values = parseCronField(minuteStr, 0, 59);
+  return `At minutes ${formatEnglishList(values)}`;
+}
+
+// The minute and hour fields are described jointly ("At 09:00", "Every 15
+// minutes, between 09:00 and 17:59") rather than as two independent
+// sentences, since that's how these schedules actually read in English.
+function describeCronTime(minuteStr, hourStr) {
+  const pad2 = (n) => String(n).padStart(2, '0');
+  const minuteClass = classifyCronField(minuteStr);
+  const hourClass = classifyCronField(hourStr);
+
+  if (minuteClass.type === 'single' && hourClass.type === 'single') {
+    const minute = parseCronNamedOrNumber(minuteClass.value, 0, 59);
+    const hour = parseCronNamedOrNumber(hourClass.value, 0, 23);
+    return `At ${pad2(hour)}:${pad2(minute)}`;
+  }
+
+  if (minuteClass.type === 'single' && hourClass.type !== 'single') {
+    const minute = parseCronNamedOrNumber(minuteClass.value, 0, 59);
+    if (hourClass.type === 'all') {
+      return `At minute ${minute} past every hour`;
+    }
+    const hourValues = parseCronField(hourStr, 0, 23);
+    return `At minute ${minute} past hours ${formatEnglishList(hourValues)}`;
+  }
+
+  const minuteDesc = describeCronMinuteRepeat(minuteStr, minuteClass);
+
+  if (hourClass.type === 'all') {
+    return minuteDesc;
+  }
+
+  const hourValues = parseCronField(hourStr, 0, 23);
+  const hourMin = Math.min(...hourValues);
+  const hourMax = Math.max(...hourValues);
+  return `${minuteDesc}, between ${pad2(hourMin)}:00 and ${pad2(hourMax)}:59`;
+}
+
+function describeCronDayOfMonth(domStr) {
+  const cls = classifyCronField(domStr);
+  if (cls.type === 'all') return { core: 'every day of the month' };
+  if (cls.type === 'single') return { core: `day ${cls.value} of the month` };
+  if (cls.type === 'range') return { core: `days ${cls.start} through ${cls.end} of the month` };
+  if (cls.type === 'list') {
+    const values = parseCronField(domStr, 1, 31);
+    return { core: `days ${formatEnglishList(values)} of the month` };
+  }
+  if (cls.base === '*') return { core: `every ${cls.step} days of the month` };
+  if (cls.base.includes('-')) {
+    const [s, e] = cls.base.split('-');
+    return { core: `every ${cls.step} days of the month, from day ${s} through day ${e}` };
+  }
+  return { core: `every ${cls.step} days of the month, starting on day ${cls.base}` };
+}
+
+// Cron doesn't validate that a day-of-month value actually exists in every
+// month (e.g. 31 in a schedule that also runs in February), so we describe
+// that accurately instead of rejecting it.
+function domHighDayNote(values) {
+  if (values.includes(31)) return 'day 31 does not occur in every month';
+  if (values.includes(30)) return 'day 30 does not occur in February';
+  if (values.includes(29)) return 'day 29 only occurs in February during leap years';
+  return null;
+}
+
+function describeCronMonth(monthStr) {
+  const cls = classifyCronField(monthStr);
+  const toName = (tok) => CRON_MONTH_FULL_NAMES[parseCronNamedOrNumber(tok, 1, 12, CRON_MONTH_NAMES) - 1];
+  if (cls.type === 'all') return { core: 'every month' };
+  if (cls.type === 'single') return { core: toName(cls.value) };
+  if (cls.type === 'range') return { core: `${toName(cls.start)} through ${toName(cls.end)}` };
+  if (cls.type === 'list') {
+    const values = parseCronField(monthStr, 1, 12, CRON_MONTH_NAMES);
+    return { core: formatEnglishList(values.map((v) => CRON_MONTH_FULL_NAMES[v - 1])) };
+  }
+  if (cls.base === '*') return { core: `every ${cls.step} months` };
+  if (cls.base.includes('-')) {
+    const [s, e] = cls.base.split('-');
+    return { core: `every ${cls.step} months, from ${toName(s)} through ${toName(e)}` };
+  }
+  return { core: `every ${cls.step} months, starting in ${toName(cls.base)}` };
+}
+
+// `needsOn` distinguishes phrasing like "on Monday, Wednesday, and Friday"
+// (a list/single day) from "Monday through Friday" (a range), which reads
+// naturally without a leading "on".
+function describeCronDayOfWeek(dowStr) {
+  const cls = classifyCronField(dowStr);
+  const toName = (tok) => {
+    let v = parseCronNamedOrNumber(tok, 0, 7, CRON_DOW_NAMES);
+    if (v === 7) v = 0;
+    return CRON_DOW_FULL_NAMES[v];
+  };
+  if (cls.type === 'all') return { core: 'every day of the week', needsOn: false };
+  if (cls.type === 'single') return { core: toName(cls.value), needsOn: true };
+  if (cls.type === 'range') return { core: `${toName(cls.start)} through ${toName(cls.end)}`, needsOn: false };
+  if (cls.type === 'list') {
+    const values = parseCronField(dowStr, 0, 7, CRON_DOW_NAMES);
+    return { core: formatEnglishList(values.map((v) => CRON_DOW_FULL_NAMES[v])), needsOn: true };
+  }
+  if (cls.base === '*') return { core: `every ${cls.step} days of the week`, needsOn: true };
+  if (cls.base.includes('-')) {
+    const [s, e] = cls.base.split('-');
+    return { core: `every ${cls.step} days of the week, from ${toName(s)} through ${toName(e)}`, needsOn: true };
+  }
+  return { core: `every ${cls.step} days of the week, starting on ${toName(cls.base)}`, needsOn: true };
+}
+
+// Thin dispatcher matching the field-by-field shape other consumers expect;
+// the minute/hour fields are described jointly via describeCronTime instead,
+// since they read as one clause ("At 09:00") rather than two.
+function describeCronField(fieldStr, kind) {
+  switch (kind) {
+    case 'minute':
+      return describeCronMinuteRepeat(fieldStr, classifyCronField(fieldStr));
+    case 'dayOfMonth':
+      return describeCronDayOfMonth(fieldStr).core;
+    case 'month':
+      return describeCronMonth(fieldStr).core;
+    case 'dayOfWeek':
+      return describeCronDayOfWeek(fieldStr).core;
+    default:
+      throw new Error(`Unknown cron field kind "${kind}".`);
+  }
+}
+
+// Expands a recognized @macro to its 5-field form. Returns the (trimmed)
+// input unchanged if it isn't a macro, and null for macros like @reboot that
+// have no 5-field equivalent. Throws for an unrecognized @macro.
+function expandCronMacro(cronString) {
+  if (typeof cronString !== 'string') throw new Error('Enter a cron expression.');
+  const trimmed = cronString.trim();
+  if (!trimmed.startsWith('@')) return trimmed;
+  const key = trimmed.toLowerCase();
+  if (CRON_UNSUPPORTED_MACROS[key]) return null;
+  if (CRON_MACROS[key]) return CRON_MACROS[key];
+  throw new Error(`"${trimmed}" is not a recognized cron macro.`);
+}
+
+// Parses and validates a 5-field cron expression (or @macro) and composes a
+// plain-English description. When both day-of-month and day-of-week are
+// restricted, cron fires on EITHER match (OR semantics), which is called
+// out explicitly since it's a common point of confusion.
+function describeCron(cronString) {
+  if (typeof cronString !== 'string' || cronString.trim() === '') {
+    throw new Error('Enter a cron expression.');
+  }
+  const trimmed = cronString.trim();
+
+  if (trimmed.startsWith('@')) {
+    const key = trimmed.toLowerCase();
+    if (CRON_UNSUPPORTED_MACROS[key]) return CRON_UNSUPPORTED_MACROS[key];
+    if (!CRON_MACROS[key]) {
+      throw new Error(`"${trimmed}" is not a recognized cron macro.`);
+    }
+    return describeCron(CRON_MACROS[key]);
+  }
+
+  const fields = trimmed.split(/\s+/);
+  if (fields.length !== 5) {
+    throw new Error(`A cron expression needs exactly 5 space-separated fields (minute hour day-of-month month day-of-week), or a recognized @macro; got ${fields.length}.`);
+  }
+
+  const [minuteStr, hourStr, domStr, monthStr, dowStr] = fields;
+
+  parseCronFieldOrThrow('minute', minuteStr, 0, 59);
+  parseCronFieldOrThrow('hour', hourStr, 0, 23);
+  const domValues = parseCronFieldOrThrow('day-of-month', domStr, 1, 31);
+  parseCronFieldOrThrow('month', monthStr, 1, 12, CRON_MONTH_NAMES);
+  parseCronFieldOrThrow('day-of-week', dowStr, 0, 7, CRON_DOW_NAMES);
+
+  const domRestricted = domStr !== '*';
+  const dowRestricted = dowStr !== '*';
+
+  const fragments = [describeCronTime(minuteStr, hourStr)];
+
+  if (domRestricted && dowRestricted) {
+    const domInfo = describeCronDayOfMonth(domStr);
+    const dowInfo = describeCronDayOfWeek(dowStr);
+    fragments.push(`on ${domInfo.core}, or on ${dowInfo.core}`);
+  } else if (domRestricted) {
+    fragments.push(`on ${describeCronDayOfMonth(domStr).core}`);
+  } else if (dowRestricted) {
+    const dowInfo = describeCronDayOfWeek(dowStr);
+    fragments.push(dowInfo.needsOn ? `on ${dowInfo.core}` : dowInfo.core);
+  }
+
+  if (monthStr !== '*') {
+    fragments.push(`only in ${describeCronMonth(monthStr).core}`);
+  }
+
+  let sentence = fragments.filter(Boolean).join(', ');
+
+  if (domRestricted) {
+    const note = domHighDayNote(domValues);
+    if (note) sentence += ` (${note})`;
+  }
+
+  return sentence;
+}
+
+// Builder mode just validates and joins the 5 fields - reuse describeCron()
+// on the result to get its description, so both modes share one description
+// engine instead of two.
+function buildCronExpression({ minute, hour, dayOfMonth, month, dayOfWeek }) {
+  parseCronFieldOrThrow('minute', minute, 0, 59);
+  parseCronFieldOrThrow('hour', hour, 0, 23);
+  parseCronFieldOrThrow('day-of-month', dayOfMonth, 1, 31);
+  parseCronFieldOrThrow('month', month, 1, 12, CRON_MONTH_NAMES);
+  parseCronFieldOrThrow('day-of-week', dayOfWeek, 0, 7, CRON_DOW_NAMES);
+  return [minute, hour, dayOfMonth, month, dayOfWeek].join(' ');
+}
 
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -3688,5 +4053,12 @@ if (typeof module !== 'undefined' && module.exports) {
     validateJson,
     jsonToYaml,
     yamlToJson,
+    CRON_MACROS,
+    CRON_UNSUPPORTED_MACROS,
+    parseCronField,
+    describeCronField,
+    describeCron,
+    buildCronExpression,
+    expandCronMacro,
   };
 }

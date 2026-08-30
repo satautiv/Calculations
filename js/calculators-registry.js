@@ -713,6 +713,11 @@ const CALCULATOR_REGISTRY = [
     category: 'Developer',
     description: 'Pretty-print, minify, or validate JSON, and convert between JSON and YAML.',
     keywords: ['json', 'yaml', 'format', 'minify', 'validate', 'pretty print', 'converter', 'developer'],
+    id: 'cron-expression-calculator',
+    name: 'Cron Expression Generator & Translator',
+    category: 'Developer',
+    description: 'Build a cron expression from friendly form controls, or paste one in to get a plain-English description of when it runs.',
+    keywords: ['cron', 'crontab', 'cron expression', 'cron job', 'scheduler', 'developer'],
   },
 ];
 

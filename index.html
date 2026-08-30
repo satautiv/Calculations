@@ -3315,6 +3315,81 @@
     <button class="calc-btn" id="json-yaml-calc">Calculate</button>
     <div class="result" id="json-yaml-result"></div>
   </section>
+
+  <section id="cron-expression-calculator" class="view tab-panel">
+    <h2>Cron Expression Generator &amp; Translator</h2>
+    <p class="hint">Build a standard 5-field (Vixie/POSIX-style) cron expression from plain fields, or paste one in &mdash; including <code>@yearly</code>-style macros &mdash; to get a plain-English description of when it runs.</p>
+    <div class="field">
+      <label for="cron-mode">Mode</label>
+      <select id="cron-mode">
+        <option value="builder">Build a cron expression</option>
+        <option value="translator">Translate an existing expression</option>
+      </select>
+    </div>
+
+    <div id="cron-builder-fields">
+      <div class="field">
+        <label for="cron-preset">Quick preset</label>
+        <select id="cron-preset">
+          <option value="custom">Custom (edit the fields below)</option>
+          <option value="every-n-minutes">Every N minutes</option>
+          <option value="daily-time">Specific time, every day</option>
+          <option value="weekly-day">Specific day of the week</option>
+          <option value="monthly-day">Specific day of the month</option>
+        </select>
+      </div>
+      <div class="field" id="cron-preset-n-field" hidden>
+        <label for="cron-preset-n">Every how many minutes (1-59)</label>
+        <input type="number" id="cron-preset-n" min="1" max="59" step="1" placeholder="e.g. 15">
+      </div>
+      <div class="field" id="cron-preset-weekday-field" hidden>
+        <label for="cron-preset-weekday">Day of the week</label>
+        <select id="cron-preset-weekday">
+          <option value="0">Sunday</option>
+          <option value="1">Monday</option>
+          <option value="2">Tuesday</option>
+          <option value="3">Wednesday</option>
+          <option value="4">Thursday</option>
+          <option value="5">Friday</option>
+          <option value="6">Saturday</option>
+        </select>
+      </div>
+      <div class="field" id="cron-preset-day-field" hidden>
+        <label for="cron-preset-day">Day of the month (1-31)</label>
+        <input type="number" id="cron-preset-day" min="1" max="31" step="1" placeholder="e.g. 1">
+      </div>
+      <div class="field">
+        <label for="cron-minute">Minute (0-59)</label>
+        <input type="text" id="cron-minute" value="0" placeholder="e.g. 0, */15, 1-30">
+      </div>
+      <div class="field">
+        <label for="cron-hour">Hour (0-23)</label>
+        <input type="text" id="cron-hour" value="0" placeholder="e.g. 9, 9-17, */2">
+      </div>
+      <div class="field">
+        <label for="cron-dom">Day of month (1-31)</label>
+        <input type="text" id="cron-dom" value="*" placeholder="e.g. *, 1, 15,30">
+      </div>
+      <div class="field">
+        <label for="cron-month">Month (1-12 or JAN-DEC)</label>
+        <input type="text" id="cron-month" value="*" placeholder="e.g. *, 1, JAN-MAR">
+      </div>
+      <div class="field">
+        <label for="cron-dow">Day of week (0-7 or SUN-SAT, both 0 and 7 are Sunday)</label>
+        <input type="text" id="cron-dow" value="*" placeholder="e.g. *, 1-5, MON,WED,FRI">
+      </div>
+    </div>
+
+    <div id="cron-translator-fields" hidden>
+      <div class="field">
+        <label for="cron-translate-input">Cron expression or @macro</label>
+        <input type="text" id="cron-translate-input" placeholder="e.g. */15 9-17 * * 1-5 or @daily">
+      </div>
+    </div>
+
+    <button class="calc-btn" id="cron-calc">Calculate</button>
+    <div class="result" id="cron-result"></div>
+  </section>
 </main>
 
 <script src="js/calc-lib.js"></script>
