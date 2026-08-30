@@ -170,6 +170,7 @@ const {
   dateFieldsToEpoch,
   base64Encode,
   base64Decode,
+  findRegexMatches,
 } = require('../js/calc-lib');
 
 describe('epleyOneRepMax', () => {
@@ -3669,5 +3670,60 @@ describe('base64Decode', () => {
 
   test('rejects invalid padding placement', () => {
     expect(() => base64Decode('SGVs=G8=')).toThrow();
+  });
+});
+// --- Regex tester ---
+
+describe('findRegexMatches', () => {
+  test('worked example: email pattern with numbered capture groups', () => {
+    const matches = findRegexMatches('(\\w+)@(\\w+)\\.com', 'g', 'contact: alice@example.com or bob@test.com');
+
+    expect(matches).toHaveLength(2);
+
+    expect(matches[0].match).toBe('alice@example.com');
+    expect(matches[0].index).toBe(9);
+    expect(matches[0].groups).toEqual(['alice', 'example']);
+
+    expect(matches[1].match).toBe('bob@test.com');
+    expect(matches[1].groups).toEqual(['bob', 'test']);
+  });
+
+  test('always finds every match even without the g flag checked', () => {
+    const matches = findRegexMatches('\\d+', '', 'a1 b22 c333');
+    expect(matches.map((m) => m.match)).toEqual(['1', '22', '333']);
+  });
+
+  test('captures named groups alongside numbered groups', () => {
+    const matches = findRegexMatches('(?<user>\\w+)@(?<domain>\\w+)\\.com', 'g', 'alice@example.com');
+    expect(matches[0].namedGroups).toEqual({ user: 'alice', domain: 'example' });
+    expect(matches[0].groups).toEqual(['alice', 'example']);
+  });
+
+  test('reports undefined for a capture group that did not participate', () => {
+    const matches = findRegexMatches('(a)|(b)', 'g', 'b');
+    expect(matches[0].groups).toEqual([undefined, 'b']);
+  });
+
+  test('the i flag makes matching case-insensitive', () => {
+    expect(findRegexMatches('hello', '', 'HELLO')).toHaveLength(0);
+    expect(findRegexMatches('hello', 'i', 'HELLO')).toHaveLength(1);
+  });
+
+  test('handles a pattern that can match an empty string without hanging', () => {
+    const matches = findRegexMatches('a*', 'g', 'baab');
+    expect(matches.length).toBeGreaterThan(0);
+    expect(matches.map((m) => m.match)).toContain('aa');
+  });
+
+  test('returns no matches against empty sample text when the pattern requires a character', () => {
+    expect(findRegexMatches('a', 'g', '')).toEqual([]);
+  });
+
+  test('rejects an empty pattern', () => {
+    expect(() => findRegexMatches('', 'g', 'some text')).toThrow();
+  });
+
+  test('rejects malformed regex syntax', () => {
+    expect(() => findRegexMatches('(unclosed', 'g', 'some text')).toThrow();
   });
 });

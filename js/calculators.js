@@ -88,9 +88,12 @@ function showError(elId, message) {
 
 // Escapes arbitrary user-controlled text before interpolating into innerHTML.
 function escapeHtml(str) {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
 
 // --- One-Rep Max (multi-formula estimator) ---
@@ -5041,5 +5044,86 @@ document.getElementById('base64-calc').addEventListener('click', () => {
     `;
   } catch (err) {
     showError('base64-result', err.message);
+  }
+});
+// --- Regex tester ---
+document.getElementById('regex-calc').addEventListener('click', () => {
+  const pattern = document.getElementById('regex-pattern').value;
+  const flags = ['g', 'i', 'm', 's', 'u']
+    .filter((flag) => document.getElementById(`regex-flag-${flag}`).checked)
+    .join('');
+  const text = document.getElementById('regex-text').value;
+
+  try {
+    const matches = findRegexMatches(pattern, flags, text);
+    const shownMatches = matches.slice(0, REGEX_MATCH_DISPLAY_CAP);
+
+    // Highlighting is only built from the (already capped) shownMatches list
+    // too, alongside the table cap below - a pathological pattern/text combo
+    // producing tens of thousands of matches shouldn't force building and
+    // rendering a proportionally huge highlighted-HTML string either.
+    let highlighted = '';
+    let lastIndex = 0;
+    shownMatches.forEach((m) => {
+      const start = m.index;
+      const end = start + m.match.length;
+      highlighted += escapeHtml(text.slice(lastIndex, start));
+      highlighted += `<mark>${escapeHtml(m.match)}</mark>`;
+      lastIndex = end;
+    });
+    highlighted += escapeHtml(text.slice(lastIndex));
+
+    const formatGroupValue = (value) => (value === undefined ? '<em>undefined</em>' : escapeHtml(value));
+
+    const rows = shownMatches.map((m, i) => {
+      const numberedGroups = m.groups.length
+        ? m.groups.map((g, gi) => `#${gi + 1}: ${formatGroupValue(g)}`).join('<br>')
+        : '<span class="hint">none</span>';
+      const namedGroups = Object.keys(m.namedGroups).length
+        ? Object.entries(m.namedGroups).map(([name, value]) => `${escapeHtml(name)}: ${formatGroupValue(value)}`).join('<br>')
+        : '<span class="hint">none</span>';
+
+      return `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${escapeHtml(m.match)}</td>
+          <td>${m.index}</td>
+          <td>${numberedGroups}</td>
+          <td>${namedGroups}</td>
+        </tr>
+      `;
+    }).join('');
+
+    const cappedNote = matches.length > REGEX_MATCH_DISPLAY_CAP
+      ? `<div class="hint">Showing the first ${REGEX_MATCH_DISPLAY_CAP} of ${matches.length} matches.</div>`
+      : '';
+
+    const tableSection = matches.length ? `
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Match</th>
+              <th>Index</th>
+              <th>Groups</th>
+              <th>Named groups</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+      ${cappedNote}
+    ` : '';
+
+    document.getElementById('regex-result').innerHTML = `
+      <div class="headline">${matches.length} match${matches.length === 1 ? '' : 'es'}</div>
+      <div class="regex-highlight">${highlighted || '<span class="hint">(empty sample text)</span>'}</div>
+      ${tableSection}
+    `;
+  } catch (err) {
+    showError('regex-result', err.message);
   }
 });
