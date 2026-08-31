@@ -59,6 +59,7 @@ const {
   evRange,
   evTripCost,
   evCostPer100km,
+  evChargingTimeHours,
   fireCalculator,
   petrolDieselBreakEven,
   ruleOf72,
@@ -1133,6 +1134,18 @@ describe('evTripCost / evCostPer100km', () => {
     const { energyUsed, cost } = evTripCost(100, 16, 0.30);
     expect(energyUsed).toBe(16);
     expect(cost).toBeCloseTo(4.8, 5);
+  });
+});
+
+describe('evChargingTimeHours', () => {
+  test('divides energy needed by charger power', () => {
+    expect(evChargingTimeHours(66.6667, 7.4)).toBeCloseTo(9.009, 3);
+    expect(evChargingTimeHours(50, 50)).toBe(1);
+  });
+
+  test('throws for non-positive charger power', () => {
+    expect(() => evChargingTimeHours(50, 0)).toThrow();
+    expect(() => evChargingTimeHours(50, -1)).toThrow();
   });
 });
 
