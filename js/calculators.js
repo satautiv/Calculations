@@ -4958,6 +4958,14 @@ document.getElementById('bac-calc').addEventListener('click', () => {
 // --- Cycling FTP calculator ---
 document.getElementById('ftp-calc').addEventListener('click', () => {
   const power = parseFloat(document.getElementById('ftp-power').value);
+  const bodyweightRaw = document.getElementById('ftp-bodyweight').value;
+  const bodyweight = bodyweightRaw === '' ? null : parseFloat(bodyweightRaw);
+  const bodyweightUnit = document.getElementById('ftp-bodyweight-unit').value;
+
+  if (bodyweight !== null && bodyweight <= 0) {
+    showError('ftp-result', 'Bodyweight, if provided, must be greater than zero.');
+    return;
+  }
 
   try {
     const ftp = estimateFTP(power);
@@ -4971,8 +4979,15 @@ document.getElementById('ftp-calc').addEventListener('click', () => {
       ? '<div class="hint">This power output is outside the typical range for most riders; treat the estimate accordingly.</div>'
       : '';
 
+    const wkgHtml = bodyweight !== null ? (() => {
+      const bodyweightKg = bodyweightUnit === 'lb' ? bodyweight * 0.45359237 : bodyweight;
+      const { wattsPerKg, category } = ftpPowerToWeight(ftp, bodyweightKg);
+      return `<div>${wattsPerKg.toFixed(2)} W/kg &mdash; <strong>${category}</strong> <span class="hint">(a rough category, not a precise claim)</span></div>`;
+    })() : '';
+
     document.getElementById('ftp-result').innerHTML = `
       <div class="headline">FTP: ${Math.round(ftp)} W</div>
+      ${wkgHtml}
       <table>
         <thead><tr><th>Zone</th><th>Power range</th></tr></thead>
         <tbody>${rows}</tbody>

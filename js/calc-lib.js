@@ -2505,6 +2505,30 @@ function ftpPowerZones(ftp) {
   }));
 }
 
+// Rough FTP power-to-weight fitness categories (W/kg), in the spirit of the
+// widely-cited (Coggan-style) cycling power profile charts. Approximate —
+// riders vary by discipline, effort duration, and body composition, so this
+// is framed as a rough band, not a precise claim.
+const FTP_WKG_CATEGORIES = [
+  { maxWattsPerKg: 2.5, label: 'Untrained' },
+  { maxWattsPerKg: 3.1, label: 'Fair (Cat 5)' },
+  { maxWattsPerKg: 3.7, label: 'Moderate (Cat 4)' },
+  { maxWattsPerKg: 4.4, label: 'Good (Cat 3)' },
+  { maxWattsPerKg: 4.9, label: 'Very good (Cat 2)' },
+  { maxWattsPerKg: 5.5, label: 'Excellent (Cat 1)' },
+  { maxWattsPerKg: 6.1, label: 'Exceptional (domestic pro)' },
+];
+
+function ftpPowerToWeight(ftp, bodyweightKg) {
+  if (!ftp || ftp <= 0) throw new Error('FTP must be greater than zero.');
+  if (!bodyweightKg || bodyweightKg <= 0) throw new Error('Bodyweight must be greater than zero.');
+
+  const wattsPerKg = ftp / bodyweightKg;
+  const band = FTP_WKG_CATEGORIES.find((b) => wattsPerKg < b.maxWattsPerKg);
+
+  return { wattsPerKg, category: band ? band.label : 'World class (pro/elite)' };
+}
+
 // --- Mulch/Soil calculator ---
 
 // area and depth in consistent length units (e.g. m and m, giving m³);
@@ -5303,6 +5327,7 @@ if (typeof module !== 'undefined' && module.exports) {
     FTP_ZONES,
     estimateFTP,
     ftpPowerZones,
+    ftpPowerToWeight,
     mulchVolumeNeeded,
     roofPitchMultiplier,
     roofArea,
