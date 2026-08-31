@@ -1924,6 +1924,8 @@ document.getElementById('ev-calc').addEventListener('click', () => {
   const chargingEfficiency = parseFloat(document.getElementById('ev-charging-efficiency').value);
   const distanceRaw = document.getElementById('ev-distance').value;
   const distance = distanceRaw === '' ? null : parseFloat(distanceRaw);
+  const chargerPowerRaw = document.getElementById('ev-charger-power').value;
+  const chargerPower = chargerPowerRaw === '' ? null : parseFloat(chargerPowerRaw);
 
   if (!battery || battery <= 0) {
     showError('ev-result', 'Enter a valid battery capacity greater than zero.');
@@ -1950,7 +1952,12 @@ document.getElementById('ev-calc').addEventListener('click', () => {
     return;
   }
 
-  const { cost: fullChargeCost } = evFullChargeCost(battery, price, chargingEfficiency);
+  if (chargerPower !== null && chargerPower <= 0) {
+    showError('ev-result', 'Charger power, if provided, must be greater than zero.');
+    return;
+  }
+
+  const { cost: fullChargeCost, energyFromWall } = evFullChargeCost(battery, price, chargingEfficiency);
   const range = evRange(battery, efficiency);
   const costPer100km = evCostPer100km(efficiency, price);
 
@@ -1958,11 +1965,24 @@ document.getElementById('ev-calc').addEventListener('click', () => {
     <div class="hint">Cost for a ${distance} km trip: ${formatMoney(evTripCost(distance, efficiency, price).cost)}</div>
   ` : '';
 
+  let chargingTimeHtml = '';
+  if (chargerPower !== null) {
+    const fullChargeTime = formatHM(hoursToHoursMinutes(evChargingTimeHours(energyFromWall, chargerPower)));
+    chargingTimeHtml = `<div class="hint">Time to fully charge at this charger's rate: &asymp;${fullChargeTime}</div>`;
+
+    if (distance !== null) {
+      const tripEnergyFromWall = evTripCost(distance, efficiency, price).energyUsed / (chargingEfficiency / 100);
+      const tripChargeTime = formatHM(hoursToHoursMinutes(evChargingTimeHours(tripEnergyFromWall, chargerPower)));
+      chargingTimeHtml += `<div class="hint">Time to charge enough for a ${distance} km trip: &asymp;${tripChargeTime}</div>`;
+    }
+  }
+
   document.getElementById('ev-result').innerHTML = `
     <div class="headline">${formatMoney(fullChargeCost)} to fully charge</div>
     <div>Estimated range on a full charge: ${range.toFixed(0)} km</div>
     <div class="hint">Cost per 100 km: ${formatMoney(costPer100km)}</div>
     ${tripHtml}
+    ${chargingTimeHtml}
   `;
 });
 

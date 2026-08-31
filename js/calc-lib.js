@@ -760,6 +760,13 @@ function evCostPer100km(efficiencyKWhPer100km, pricePerKWh) {
   return efficiencyKWhPer100km * pricePerKWh;
 }
 
+// Time to charge, in hours, given the energy to draw from the wall and the
+// charger's power output.
+function evChargingTimeHours(energyFromWallKWh, chargerPowerKW) {
+  if (!chargerPowerKW || chargerPowerKW <= 0) throw new Error('Charger power must be greater than zero.');
+  return energyFromWallKWh / chargerPowerKW;
+}
+
 // FIRE (Financial Independence, Retire Early): the FI target is the "25x
 // expenses" rule generalized to any safe withdrawal rate (FI_Target =
 // AnnualExpenses / SafeWithdrawalRate, i.e. AnnualExpenses * (1/rate)).
@@ -5104,6 +5111,7 @@ if (typeof module !== 'undefined' && module.exports) {
     evRange,
     evTripCost,
     evCostPer100km,
+    evChargingTimeHours,
     fireCalculator,
     petrolDieselBreakEven,
     ruleOf72,
