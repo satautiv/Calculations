@@ -1383,9 +1383,24 @@ document.getElementById('inflation-calc').addEventListener('click', () => {
       <div>${formatMoney(amount)} received in ${years} year${years === 1 ? '' : 's'} would have this much buying power in today's terms</div>
     `;
 
+  const chartPoints = Array.from({ length: 21 }, (_, idx) => (years / 20) * idx).map((t) => ({
+    x: t,
+    y: direction === 'futureCost' ? inflationImpact(amount, rate, t).futureCost : inflationImpact(amount, rate, t).realValue,
+  }));
+  const chartHtml = renderLineChartSvg({
+    series: [{
+      label: direction === 'futureCost' ? 'Future cost' : 'Real (today\'s) value',
+      color: 'var(--accent)',
+      points: chartPoints,
+    }],
+    xTickFormat: (x) => `Yr ${x.toFixed(0)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+
   document.getElementById('inflation-result').innerHTML = `
     ${resultHtml}
     <div class="hint">Purchasing power lost over the period: ${percentPurchasingPowerLost.toFixed(1)}%</div>
+    ${chartHtml}
   `;
 });
 
