@@ -1895,11 +1895,24 @@ document.getElementById('jetlag-calc').addEventListener('click', () => {
   }
 
   const recoveryDays = jetLagRecoveryDays(zonesCrossed, direction);
+  const schedule = jetLagDailySchedule(zonesCrossed, direction, recoveryDays);
+
+  const scheduleRows = schedule.map(({ day, cumulativeShiftHours }) => `
+    <tr>
+      <td>Day ${day}</td>
+      <td>${cumulativeShiftHours > 0 ? '+' : ''}${cumulativeShiftHours.toFixed(1)}h</td>
+    </tr>
+  `).join('');
 
   document.getElementById('jetlag-result').innerHTML = `
     <div class="headline">${recoveryDays} day${recoveryDays === 1 ? '' : 's'} to recover</div>
     <div>${zonesCrossed} time zone${zonesCrossed === 1 ? '' : 's'} crossed ${direction === 'east' ? 'eastward' : 'westward'}</div>
     <div class="hint">Eastward jet lag tends to be worse than westward for the same number of zones.</div>
+    <table>
+      <thead><tr><th>Day</th><th>Shift bedtime/wake time by</th></tr></thead>
+      <tbody>${scheduleRows}</tbody>
+    </table>
+    <div class="hint">Shift ${direction === 'east' ? 'earlier' : 'later'} each day, cumulative from today, toward destination local time.</div>
   `;
 });
 
