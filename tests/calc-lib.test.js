@@ -1398,6 +1398,43 @@ describe('tripBudget', () => {
     expect(result.totalTripCost).toBe(2960);
     expect(result.averageCostPerDay).toBeCloseTo(422.86, 2);
   });
+
+  test('per-category breakdown sums to the total trip cost and reports correct percentages', () => {
+    const result = tripBudget({
+      days: 7,
+      accommodationPerDay: 80,
+      foodPerDay: 40,
+      activitiesPerDay: 25,
+      transportPerDay: 10,
+      flights: 350,
+      insurance: 45,
+      travelers: 2,
+    });
+
+    const accommodation = result.categories.find((c) => c.label === 'Accommodation');
+    expect(accommodation.amount).toBe(1120); // 80 * 7 * 2
+    expect(accommodation.percentOfTotal).toBeCloseTo((1120 / 2960) * 100, 5);
+
+    const flights = result.categories.find((c) => c.label === 'Flights');
+    expect(flights.amount).toBe(700); // 350 * 2
+
+    const sumOfCategories = result.categories.reduce((sum, c) => sum + c.amount, 0);
+    expect(sumOfCategories).toBeCloseTo(result.totalTripCost, 8);
+  });
+
+  test('categories default to zero percent when total trip cost is zero', () => {
+    const result = tripBudget({
+      days: 3,
+      accommodationPerDay: 0,
+      foodPerDay: 0,
+      activitiesPerDay: 0,
+      transportPerDay: 0,
+      flights: 0,
+      insurance: 0,
+    });
+
+    expect(result.categories.every((c) => c.amount === 0 && c.percentOfTotal === 0)).toBe(true);
+  });
 });
 
 describe('car loan/lease payment', () => {

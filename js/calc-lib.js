@@ -948,7 +948,20 @@ function tripBudget({
   const totalTripCost = (variableCost + fixedCost) * travelers;
   const averageCostPerDay = totalTripCost / days;
 
-  return { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay };
+  const categories = [
+    { label: 'Accommodation', amount: accommodationPerDay * days * travelers },
+    { label: 'Food', amount: foodPerDay * days * travelers },
+    { label: 'Activities', amount: activitiesPerDay * days * travelers },
+    { label: 'Transport', amount: transportPerDay * days * travelers },
+    { label: 'Flights', amount: flights * travelers },
+    { label: 'Insurance', amount: insurance * travelers },
+    { label: 'Other fixed costs', amount: otherFixed * travelers },
+  ].map((category) => ({
+    ...category,
+    percentOfTotal: totalTripCost > 0 ? (category.amount / totalTripCost) * 100 : 0,
+  }));
+
+  return { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay, categories };
 }
 
 // Engine power conversion, HP <-> kW, using the standard mechanical-horsepower
