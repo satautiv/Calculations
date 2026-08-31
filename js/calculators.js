@@ -4241,6 +4241,13 @@ document.getElementById('floor-calc').addEventListener('click', () => {
 });
 
 // --- Race time predictor calculator ---
+const RACE_STANDARD_DISTANCES = [
+  { label: '5K', km: 5 },
+  { label: '10K', km: 10 },
+  { label: 'Half marathon', km: 21.0975 },
+  { label: 'Marathon', km: 42.195 },
+];
+
 document.getElementById('race-known-distance').addEventListener('change', (e) => {
   document.getElementById('race-known-custom-field').hidden = e.target.value !== 'custom';
 });
@@ -4271,10 +4278,26 @@ document.getElementById('race-calc').addEventListener('click', () => {
       ? '<div class="hint">This is a large distance ratio; the Riegel model loses accuracy far outside the known distance\'s neighborhood, so treat this as a rough estimate.</div>'
       : '';
 
+    const comparisonRows = RACE_STANDARD_DISTANCES.map(({ label, km }) => {
+      const seconds = riegelPredictedTime(knownTimeSeconds, knownDistanceKm, km);
+      const pace = paceFromDistanceTime(km, seconds);
+      return `
+        <tr>
+          <td>${label}</td>
+          <td>${formatHMS(secondsToHMS(seconds))}</td>
+          <td>${formatPace(pace)} min/km</td>
+        </tr>
+      `;
+    }).join('');
+
     document.getElementById('race-result').innerHTML = `
       <div class="headline">${formatHMS(secondsToHMS(predictedSeconds))}</div>
       <div>Predicted pace: ${formatPace(predictedPaceSecPerKm)} min/km</div>
       ${extremeNote}
+      <table>
+        <thead><tr><th>Distance</th><th>Predicted time</th><th>Pace</th></tr></thead>
+        <tbody>${comparisonRows}</tbody>
+      </table>
     `;
   } catch (err) {
     showError('race-result', err.message);
