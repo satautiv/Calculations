@@ -933,11 +933,31 @@ document.getElementById('loan-calc').addEventListener('click', () => {
     <div class="hint">Overpaying ${formatMoney(extraPayment)}/month saves ${formatMoney(base.totalInterest - withExtra.totalInterest)} in interest and pays off the loan ${monthsSaved} month${monthsSaved === 1 ? '' : 's'} sooner (${withExtra.monthsToPayoff} vs ${base.monthsToPayoff} months).</div>
   ` : '';
 
+  const sampleBalanceCurve = (schedule, maxPoints = 30) => {
+    const step = Math.max(1, Math.ceil(schedule.length / maxPoints));
+    const points = [{ x: 0, y: principal }];
+    for (let i = 0; i < schedule.length; i += step) points.push({ x: schedule[i].month, y: schedule[i].balance });
+    const last = schedule[schedule.length - 1];
+    if (points[points.length - 1].x !== last.month) points.push({ x: last.month, y: last.balance });
+    return points;
+  };
+
+  const chartSeries = [{ label: 'Balance', color: 'var(--accent)', points: sampleBalanceCurve(base.schedule) }];
+  if (withExtra) {
+    chartSeries.push({ label: 'Balance with extra payment', color: 'var(--danger)', points: sampleBalanceCurve(withExtra.schedule) });
+  }
+  const chartHtml = renderLineChartSvg({
+    series: chartSeries,
+    xTickFormat: (x) => `Month ${Math.round(x)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+
   document.getElementById('loan-result').innerHTML = `
     <div class="headline">${formatMoney(base.monthlyPayment)} / month</div>
     <div>Fixed monthly payment over ${years} year${years === 1 ? '' : 's'} (${termMonths} months)</div>
     <div class="hint">Total paid: ${formatMoney(active.totalPaid)} &middot; Total interest: ${formatMoney(active.totalInterest)}</div>
     ${savingsHtml}
+    ${chartHtml}
     <div class="hint">Full ${active.schedule.length}-month amortization schedule below &mdash; it can get long for longer terms.</div>
     <div class="table-scroll">
       <table>
