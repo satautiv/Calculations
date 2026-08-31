@@ -1570,17 +1570,22 @@
 
   <section id="luggage-weight-checker" class="view tab-panel">
     <h2>Luggage Weight Checker</h2>
-    <p class="hint">Enter your airline's weight allowance and list your packed items to see if you're within limit.</p>
+    <p class="hint">Enter your airline's weight allowance(s) and list your packed items to see if each bag is within limit.</p>
     <div class="field">
-      <label for="luggage-allowance">Weight allowance (kg)</label>
-      <input type="number" id="luggage-allowance" min="0" step="0.1" placeholder="e.g. 23">
+      <label>Bags</label>
+      <div class="luggage-bag-grid" id="luggage-bag-list">
+        <div class="luggage-bag-row luggage-bag-header">
+          <span>Bag name</span><span>Allowance (kg)</span><span></span>
+        </div>
+      </div>
+      <button type="button" class="calc-btn secondary-btn" id="luggage-add-bag">+ Add bag</button>
     </div>
 
     <div class="field">
       <label>Items</label>
       <div class="luggage-item-grid" id="luggage-item-list">
         <div class="luggage-item-row luggage-item-header">
-          <span>Name</span><span>Weight (kg)</span><span></span>
+          <span>Name</span><span>Weight (kg)</span><span>Bag</span><span></span>
         </div>
       </div>
       <button type="button" class="calc-btn secondary-btn" id="luggage-add-item">+ Add item</button>
