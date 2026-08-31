@@ -54,6 +54,7 @@ const {
   retirementProjection,
   jetLagRecoveryDays,
   jetLagDirectionFromOffsets,
+  jetLagDailySchedule,
   evFullChargeCost,
   evRange,
   evTripCost,
@@ -1085,6 +1086,32 @@ describe('jetLagDirectionFromOffsets', () => {
     const { direction, zonesCrossed } = jetLagDirectionFromOffsets(-10, 11);
     expect(direction).toBe('west');
     expect(zonesCrossed).toBe(3);
+  });
+});
+
+describe('jetLagDailySchedule', () => {
+  test('spreads 6 zones eastward evenly across 6 recovery days, shifting earlier each day', () => {
+    const schedule = jetLagDailySchedule(6, 'east', 6);
+    expect(schedule).toHaveLength(6);
+    expect(schedule[0]).toEqual({ day: 1, dailyShiftHours: -1, cumulativeShiftHours: -1 });
+    expect(schedule[5]).toEqual({ day: 6, dailyShiftHours: -1, cumulativeShiftHours: -6 });
+  });
+
+  test('spreads 6 zones westward evenly across 3 recovery days, shifting later each day', () => {
+    const schedule = jetLagDailySchedule(6, 'west', 3);
+    expect(schedule).toHaveLength(3);
+    expect(schedule[0]).toEqual({ day: 1, dailyShiftHours: 2, cumulativeShiftHours: 2 });
+    expect(schedule[2]).toEqual({ day: 3, dailyShiftHours: 2, cumulativeShiftHours: 6 });
+  });
+
+  test('cumulative shift on the final day equals the total zones crossed', () => {
+    const schedule = jetLagDailySchedule(9, 'west', 5);
+    expect(schedule[schedule.length - 1].cumulativeShiftHours).toBeCloseTo(9, 10);
+  });
+
+  test('throws for non-positive zones or recovery days', () => {
+    expect(() => jetLagDailySchedule(0, 'east', 6)).toThrow();
+    expect(() => jetLagDailySchedule(6, 'east', 0)).toThrow();
   });
 });
 

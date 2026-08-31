@@ -716,6 +716,27 @@ function jetLagDirectionFromOffsets(originOffsetHours, destOffsetHours) {
   return { direction: normalized > 0 ? 'east' : 'west', zonesCrossed: Math.abs(normalized) };
 }
 
+// Spreads the total time-zone shift evenly across the recovery days, so a
+// traveler gets a concrete daily target rather than just a total duration.
+// Returns one entry per day with that day's incremental and cumulative
+// shift (in hours, signed: positive = shift bedtime later, i.e. westward;
+// negative = shift bedtime earlier, i.e. eastward).
+function jetLagDailySchedule(zonesCrossed, direction, recoveryDays) {
+  if (!zonesCrossed || zonesCrossed <= 0) throw new Error('Zones crossed must be greater than zero.');
+  if (!recoveryDays || recoveryDays <= 0) throw new Error('Recovery days must be greater than zero.');
+
+  const sign = direction === 'east' ? -1 : 1;
+  const perDay = (zonesCrossed / recoveryDays) * sign;
+
+  const schedule = [];
+  let cumulative = 0;
+  for (let day = 1; day <= recoveryDays; day++) {
+    cumulative += perDay;
+    schedule.push({ day, dailyShiftHours: perDay, cumulativeShiftHours: cumulative });
+  }
+  return schedule;
+}
+
 // Cost to fully charge an EV battery, accounting for charging losses
 // (AC/DC conversion, battery heat) via a charging-efficiency factor.
 function evFullChargeCost(batteryCapacityKWh, pricePerKWh, chargingEfficiencyPercent) {
@@ -5078,6 +5099,7 @@ if (typeof module !== 'undefined' && module.exports) {
     retirementProjection,
     jetLagRecoveryDays,
     jetLagDirectionFromOffsets,
+    jetLagDailySchedule,
     evFullChargeCost,
     evRange,
     evTripCost,
