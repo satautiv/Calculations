@@ -3717,7 +3717,20 @@ function readHMSFields(hoursId, minutesId, secondsId) {
 }
 
 function formatHMS({ hours, minutes, seconds }) {
-  return `${hours}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  let roundedSeconds = Math.round(seconds);
+  let displayMinutes = minutes;
+  let displayHours = hours;
+
+  if (roundedSeconds === 60) {
+    roundedSeconds = 0;
+    displayMinutes += 1;
+    if (displayMinutes === 60) {
+      displayMinutes = 0;
+      displayHours += 1;
+    }
+  }
+
+  return `${displayHours}:${String(displayMinutes).padStart(2, '0')}:${String(roundedSeconds).padStart(2, '0')}`;
 }
 
 document.getElementById('duration-calc').addEventListener('click', () => {
