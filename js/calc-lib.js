@@ -2330,6 +2330,42 @@ function cooperVO2max(distanceMeters) {
   return (distanceMeters - 504.9) / 44.73;
 }
 
+// Approximate age/sex-banded VO2max normative ranges (mL/kg/min), in the
+// spirit of the widely-cited Cooper Institute fitness-category tables.
+// Ages are clamped to the covered 20-69 range, so under-20/over-69 users
+// get the nearest band as a rough approximation rather than an error.
+const VO2MAX_NORMS = {
+  male: [
+    { maxAge: 29, poor: 33, fair: 37, good: 42, excellent: 46 },
+    { maxAge: 39, poor: 31.5, fair: 35.5, good: 41, excellent: 45 },
+    { maxAge: 49, poor: 30.2, fair: 33.6, good: 39, excellent: 43.8 },
+    { maxAge: 59, poor: 26.1, fair: 31, good: 35.8, excellent: 41 },
+    { maxAge: 69, poor: 20.5, fair: 26.1, good: 32.3, excellent: 36.5 },
+  ],
+  female: [
+    { maxAge: 29, poor: 28, fair: 31.5, good: 35.7, excellent: 40.1 },
+    { maxAge: 39, poor: 27, fair: 30.7, good: 34.6, excellent: 38.6 },
+    { maxAge: 49, poor: 24.5, fair: 29, good: 32.9, excellent: 36.9 },
+    { maxAge: 59, poor: 21, fair: 24.5, good: 29, excellent: 32.9 },
+    { maxAge: 69, poor: 18, fair: 21, good: 24.5, excellent: 30.3 },
+  ],
+};
+
+function vo2maxCategory(vo2max, age, sex) {
+  const bands = VO2MAX_NORMS[sex];
+  if (!bands) throw new Error('Sex must be "male" or "female" to classify against normative bands.');
+  if (!age || age <= 0) throw new Error('Age must be greater than zero.');
+
+  const clampedAge = Math.min(Math.max(age, 20), 69);
+  const band = bands.find((b) => clampedAge <= b.maxAge);
+
+  if (vo2max < band.poor) return 'Poor';
+  if (vo2max < band.fair) return 'Fair';
+  if (vo2max < band.good) return 'Good';
+  if (vo2max < band.excellent) return 'Excellent';
+  return 'Superior';
+}
+
 // --- Daily water intake calculator ---
 
 const WATER_ML_PER_KG = 35;
@@ -5231,6 +5267,7 @@ if (typeof module !== 'undefined' && module.exports) {
     bedtimesForWakeTime,
     wakeTimesForBedtime,
     cooperVO2max,
+    vo2maxCategory,
     WATER_ML_PER_KG,
     WATER_ACTIVITY_BONUS_ML,
     WATER_CLIMATE_BONUS_ML,

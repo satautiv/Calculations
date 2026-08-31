@@ -144,6 +144,7 @@ const {
   bedtimesForWakeTime,
   wakeTimesForBedtime,
   cooperVO2max,
+  vo2maxCategory,
   dailyWaterIntake,
   caffeineRemaining,
   gravelNeeded,
@@ -3066,6 +3067,38 @@ describe('cooperVO2max', () => {
   test('accepts an unrealistically high distance rather than rejecting it', () => {
     expect(() => cooperVO2max(4500)).not.toThrow();
     expect(cooperVO2max(4500)).toBeGreaterThan(0);
+  });
+});
+
+describe('vo2maxCategory', () => {
+  test('classifies a 25-year-old male across the band thresholds', () => {
+    expect(vo2maxCategory(30, 25, 'male')).toBe('Poor');
+    expect(vo2maxCategory(35, 25, 'male')).toBe('Fair');
+    expect(vo2maxCategory(40, 25, 'male')).toBe('Good');
+    expect(vo2maxCategory(44, 25, 'male')).toBe('Excellent');
+    expect(vo2maxCategory(50, 25, 'male')).toBe('Superior');
+  });
+
+  test('classifies a 25-year-old female across the band thresholds', () => {
+    expect(vo2maxCategory(25, 25, 'female')).toBe('Poor');
+    expect(vo2maxCategory(30, 25, 'female')).toBe('Fair');
+    expect(vo2maxCategory(38, 25, 'female')).toBe('Excellent');
+    expect(vo2maxCategory(41, 25, 'female')).toBe('Superior');
+  });
+
+  test('uses an older age band for a 55-year-old', () => {
+    expect(vo2maxCategory(36, 55, 'male')).toBe('Excellent');
+    expect(vo2maxCategory(33, 55, 'male')).toBe('Good');
+  });
+
+  test('clamps ages outside the covered 20-69 range to the nearest band', () => {
+    expect(vo2maxCategory(30, 10, 'male')).toBe(vo2maxCategory(30, 20, 'male'));
+    expect(vo2maxCategory(30, 90, 'male')).toBe(vo2maxCategory(30, 69, 'male'));
+  });
+
+  test('rejects an invalid sex or non-positive age', () => {
+    expect(() => vo2maxCategory(40, 25, 'other')).toThrow();
+    expect(() => vo2maxCategory(40, 0, 'male')).toThrow();
   });
 });
 
