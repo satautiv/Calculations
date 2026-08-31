@@ -1841,7 +1841,7 @@ document.getElementById('rvb-calc').addEventListener('click', () => {
     return;
   }
 
-  const { netCostBuy, netCostRent, difference } = rentVsBuyComparison({
+  const { netCostBuy, netCostRent, difference, yearly } = rentVsBuyComparison({
     homePrice, downPayment, closingCosts, mortgageRatePercent, mortgageTermYears,
     annualOwnershipCostPercent, appreciationRatePercent, monthlyRent,
     rentGrowthRatePercent, investmentReturnRatePercent, horizonYears,
@@ -1851,9 +1851,42 @@ document.getElementById('rvb-calc').addEventListener('click', () => {
     ? `Buying is cheaper by ${formatMoney(Math.abs(difference))} over ${horizonYears} years`
     : `Renting is cheaper by ${formatMoney(Math.abs(difference))} over ${horizonYears} years`;
 
+  const initialSign = Math.sign(yearly[0].cumulativeNetCostBuy - yearly[0].cumulativeNetCostRent);
+  let breakevenYear = null;
+  for (let i = 1; i < yearly.length; i++) {
+    const sign = Math.sign(yearly[i].cumulativeNetCostBuy - yearly[i].cumulativeNetCostRent);
+    if (sign !== 0 && sign !== initialSign) {
+      breakevenYear = yearly[i];
+      break;
+    }
+  }
+
+  const chartHtml = renderLineChartSvg({
+    series: [
+      {
+        label: 'Net cost of buying',
+        color: 'var(--accent)',
+        points: [{ x: 0, y: 0 }, ...yearly.map((y) => ({ x: y.year, y: y.cumulativeNetCostBuy }))],
+      },
+      {
+        label: 'Net cost of renting',
+        color: 'var(--danger)',
+        points: [{ x: 0, y: 0 }, ...yearly.map((y) => ({ x: y.year, y: y.cumulativeNetCostRent }))],
+      },
+    ],
+    markers: breakevenYear ? [{ x: breakevenYear.year, y: breakevenYear.cumulativeNetCostBuy, label: `Breakeven: year ${breakevenYear.year}` }] : [],
+    xTickFormat: (x) => `Yr ${x.toFixed(0)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+  const breakevenHint = breakevenYear
+    ? `<div class="hint">Estimated breakeven: year ${breakevenYear.year}, where the cheaper option switches.</div>`
+    : `<div class="hint">Buying and renting don't cross over within this ${horizonYears}-year horizon.</div>`;
+
   document.getElementById('rvb-result').innerHTML = `
     <div class="headline">${verdict}</div>
     <div class="hint">Net cost of buying: ${formatMoney(netCostBuy)} &middot; Net cost of renting: ${formatMoney(netCostRent)}</div>
+    ${breakevenHint}
+    ${chartHtml}
   `;
 });
 

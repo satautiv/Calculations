@@ -1074,6 +1074,15 @@ describe('rentVsBuyComparison', () => {
     expect(longHorizon.equity).toBeGreaterThan(shortHorizon.equity);
   });
 
+  test('yearly breakdown has one entry per year, ending at the horizon totals', () => {
+    const result = rentVsBuyComparison(RENT_VS_BUY_BASE);
+    expect(result.yearly).toHaveLength(10);
+    expect(result.yearly[0].year).toBe(1);
+    expect(result.yearly[9].year).toBe(10);
+    expect(result.yearly[9].cumulativeNetCostBuy).toBeCloseTo(result.netCostBuy, 5);
+    expect(result.yearly[9].cumulativeNetCostRent).toBeCloseTo(result.netCostRent, 5);
+  });
+
   test('0% mortgage rate does not throw (division-by-zero guard in the underlying amortization)', () => {
     const { netCostBuy } = rentVsBuyComparison({ ...RENT_VS_BUY_BASE, mortgageRatePercent: 0 });
     expect(Number.isFinite(netCostBuy)).toBe(true);

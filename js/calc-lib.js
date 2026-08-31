@@ -651,22 +651,35 @@ function rentVsBuyComparison({
     : 0;
 
   let totalOwnershipCosts = 0;
+  let totalRent = 0;
+  let rent = monthlyRent;
+  const yearly = [];
+
   for (let year = 1; year <= horizonYears; year++) {
+    const monthsSoFar = Math.min(year * 12, amortization.schedule.length);
+    const cumulativeMortgagePayments = amortization.schedule
+      .slice(0, monthsSoFar)
+      .reduce((sum, row) => sum + row.payment, 0);
+    const remainingBalanceThatYear = year * 12 < amortization.schedule.length
+      ? amortization.schedule[year * 12 - 1].balance
+      : 0;
+
     const homeValueThatYear = homePrice * Math.pow(1 + appreciationRatePercent / 100, year);
     totalOwnershipCosts += (annualOwnershipCostPercent / 100) * homeValueThatYear;
+    const equityThatYear = homeValueThatYear - remainingBalanceThatYear;
+    const cumulativeNetCostBuy = downPayment + closingCosts + cumulativeMortgagePayments + totalOwnershipCosts - equityThatYear;
+
+    totalRent += rent * 12;
+    rent *= 1 + rentGrowthRatePercent / 100;
+    const opportunityInvestmentValueThatYear = downPayment * Math.pow(1 + investmentReturnRatePercent / 100, year);
+    const cumulativeNetCostRent = totalRent - (opportunityInvestmentValueThatYear - downPayment);
+
+    yearly.push({ year, cumulativeNetCostBuy, cumulativeNetCostRent });
   }
 
   const homeValueAtHorizon = homePrice * Math.pow(1 + appreciationRatePercent / 100, horizonYears);
   const equity = homeValueAtHorizon - remainingLoanBalance;
   const netCostBuy = downPayment + closingCosts + totalMortgagePayments + totalOwnershipCosts - equity;
-
-  let totalRent = 0;
-  let rent = monthlyRent;
-  for (let year = 1; year <= horizonYears; year++) {
-    totalRent += rent * 12;
-    rent *= 1 + rentGrowthRatePercent / 100;
-  }
-
   const opportunityInvestmentValue = downPayment * Math.pow(1 + investmentReturnRatePercent / 100, horizonYears);
   const netCostRent = totalRent - (opportunityInvestmentValue - downPayment);
 
@@ -681,6 +694,7 @@ function rentVsBuyComparison({
     totalRent,
     opportunityInvestmentValue,
     remainingLoanBalance,
+    yearly,
   };
 }
 
