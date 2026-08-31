@@ -721,10 +721,29 @@ document.getElementById('invest-calc').addEventListener('click', () => {
     </tr>
   `).join('');
 
+  const chartHtml = renderLineChartSvg({
+    series: [
+      {
+        label: 'Contributed',
+        color: 'var(--accent)',
+        fill: true,
+        points: [{ x: 0, y: lumpSum }, ...yearly.map((y) => ({ x: y.year, y: y.cumulativeContributions }))],
+      },
+      {
+        label: 'Balance (incl. growth)',
+        color: 'var(--danger)',
+        points: [{ x: 0, y: lumpSum }, ...yearly.map((y) => ({ x: y.year, y: y.endingBalance }))],
+      },
+    ],
+    xTickFormat: (x) => `Year ${Math.round(x)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+
   document.getElementById('invest-result').innerHTML = `
     <div class="headline">${formatMoney(futureValue)}</div>
     <div>Projected balance after ${years} year${years === 1 ? '' : 's'}</div>
     <div class="hint">Contributed: ${formatMoney(totalContributed)} &middot; Growth: ${formatMoney(totalGrowth)}</div>
+    ${chartHtml}
     <table>
       <thead><tr><th>Year</th><th>Balance</th><th>Contributed</th><th>Growth</th></tr></thead>
       <tbody>${rows}</tbody>
@@ -2097,7 +2116,13 @@ function renderLineChartSvg({ width = 480, height = 220, series, markers = [], x
 
   const seriesHtml = series.map((s) => {
     const d = s.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${scaleX(p.x).toFixed(1)} ${scaleY(p.y).toFixed(1)}`).join(' ');
-    return `<path d="${d}" style="fill:none;stroke:${s.color};stroke-width:2"></path>`;
+    const areaHtml = s.fill ? (() => {
+      const baselineY = scaleY(0).toFixed(1);
+      const firstX = scaleX(s.points[0].x).toFixed(1);
+      const lastX = scaleX(s.points[s.points.length - 1].x).toFixed(1);
+      return `<path d="${d} L ${lastX} ${baselineY} L ${firstX} ${baselineY} Z" style="fill:${s.color};opacity:0.18;stroke:none"></path>`;
+    })() : '';
+    return `${areaHtml}<path d="${d}" style="fill:none;stroke:${s.color};stroke-width:2"></path>`;
   }).join('');
 
   const markerHtml = markers.map(({ x, y, label }) => `
