@@ -688,6 +688,13 @@ describe('creditCardPayoffFixed', () => {
     expect(faster.months).toBeLessThan(slower.months);
     expect(faster.totalInterest).toBeLessThan(slower.totalInterest);
   });
+
+  test('schedule has one entry per month, ending at a near-zero balance', () => {
+    const { months, schedule } = creditCardPayoffFixed(3000, 22, 150);
+    expect(schedule).toHaveLength(months);
+    expect(schedule[0].month).toBe(1);
+    expect(schedule[schedule.length - 1].balance).toBeCloseTo(0, 5);
+  });
 });
 
 describe('creditCardPayoffMinimum', () => {
@@ -704,6 +711,12 @@ describe('creditCardPayoffMinimum', () => {
     const defaultRate = creditCardPayoffMinimum(3000, 22);
     const higherRate = creditCardPayoffMinimum(3000, 22, 5, 25);
     expect(higherRate.months).toBeLessThan(defaultRate.months);
+  });
+
+  test('schedule has one entry per month, ending at a near-zero balance', () => {
+    const { months, schedule } = creditCardPayoffMinimum(3000, 22);
+    expect(schedule).toHaveLength(months);
+    expect(schedule[schedule.length - 1].balance).toBeCloseTo(0, 5);
   });
 });
 

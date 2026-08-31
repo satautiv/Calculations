@@ -332,6 +332,7 @@ function creditCardPayoffFixed(balance, aprPercent, payment, maxMonths = 1200) {
   let bal = balance;
   let months = 0;
   let totalInterest = 0;
+  const schedule = [];
 
   while (bal > 1e-8 && months < maxMonths) {
     months++;
@@ -340,9 +341,10 @@ function creditCardPayoffFixed(balance, aprPercent, payment, maxMonths = 1200) {
     if (principal > bal) principal = bal;
     bal -= principal;
     totalInterest += interest;
+    schedule.push({ month: months, balance: Math.max(bal, 0), interest, principal });
   }
 
-  return { months, totalInterest, totalPaid: balance + totalInterest };
+  return { months, totalInterest, totalPaid: balance + totalInterest, schedule };
 }
 
 // Same simulation, but the payment each month is a shrinking "minimum payment"
@@ -355,6 +357,7 @@ function creditCardPayoffMinimum(balance, aprPercent, minPercent = CREDIT_CARD_M
   let bal = balance;
   let months = 0;
   let totalInterest = 0;
+  const schedule = [];
 
   while (bal > 1e-8 && months < maxMonths) {
     const payment = Math.max(bal * (minPercent / 100), minFloor);
@@ -366,9 +369,10 @@ function creditCardPayoffMinimum(balance, aprPercent, minPercent = CREDIT_CARD_M
     if (principal > bal) principal = bal;
     bal -= principal;
     totalInterest += interest;
+    schedule.push({ month: months, balance: Math.max(bal, 0), interest, principal });
   }
 
-  return { months, totalInterest, totalPaid: balance + totalInterest };
+  return { months, totalInterest, totalPaid: balance + totalInterest, schedule };
 }
 
 // Required periodic contribution to reach a savings goal by a target date,

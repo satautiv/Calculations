@@ -1173,6 +1173,10 @@ document.getElementById('cc-calc').addEventListener('click', () => {
     return;
   }
 
+  let fixedResult = null;
+  let minimumResult = null;
+  let headlineHtml;
+
   if (mode === 'fixed') {
     const payment = parseFloat(document.getElementById('cc-payment').value);
 
@@ -1181,17 +1185,17 @@ document.getElementById('cc-calc').addEventListener('click', () => {
       return;
     }
 
-    const result = creditCardPayoffFixed(balance, apr, payment);
+    fixedResult = creditCardPayoffFixed(balance, apr, payment);
 
-    if (!result) {
+    if (!fixedResult) {
       showError('cc-result', 'This payment does not even cover the first month’s interest, so the balance will never be paid off. Enter a larger payment.');
       return;
     }
 
-    document.getElementById('cc-result').innerHTML = `
-      <div class="headline">${formatCcMonths(result.months)}</div>
+    headlineHtml = `
+      <div class="headline">${formatCcMonths(fixedResult.months)}</div>
       <div>Time to pay off the balance at ${formatMoney(payment)}/month</div>
-      <div class="hint">Total interest: ${formatMoney(result.totalInterest)} &middot; Total paid: ${formatMoney(result.totalPaid)}</div>
+      <div class="hint">Total interest: ${formatMoney(fixedResult.totalInterest)} &middot; Total paid: ${formatMoney(fixedResult.totalPaid)}</div>
     `;
   } else {
     const minPercent = parseFloat(document.getElementById('cc-min-percent').value);
@@ -1202,20 +1206,60 @@ document.getElementById('cc-calc').addEventListener('click', () => {
       return;
     }
 
-    const result = creditCardPayoffMinimum(balance, apr, minPercent, minFloor);
+    minimumResult = creditCardPayoffMinimum(balance, apr, minPercent, minFloor);
 
-    if (!result) {
+    if (!minimumResult) {
       showError('cc-result', 'This minimum payment does not even cover the first month’s interest, so the balance will never be paid off.');
       return;
     }
 
-    document.getElementById('cc-result').innerHTML = `
-      <div class="headline">${formatCcMonths(result.months)}</div>
+    headlineHtml = `
+      <div class="headline">${formatCcMonths(minimumResult.months)}</div>
       <div>Time to pay off the balance paying only the minimum (${minPercent}% of balance, ${formatMoney(minFloor)} floor)</div>
-      <div class="hint">Total interest: ${formatMoney(result.totalInterest)} &middot; Total paid: ${formatMoney(result.totalPaid)}</div>
+      <div class="hint">Total interest: ${formatMoney(minimumResult.totalInterest)} &middot; Total paid: ${formatMoney(minimumResult.totalPaid)}</div>
       <div class="hint">Paying only the minimum can take years and cost far more in interest than a fixed higher payment &mdash; try the fixed-payment mode to compare.</div>
     `;
   }
+
+  // Opportunistically compute the *other* mode's schedule too (using
+  // whatever's in its fields, even while hidden) so the chart can show
+  // both payoff trajectories side by side when there's enough to go on.
+  if (!fixedResult) {
+    const payment = parseFloat(document.getElementById('cc-payment').value);
+    if (payment > 0) fixedResult = creditCardPayoffFixed(balance, apr, payment);
+  }
+  if (!minimumResult) {
+    const minPercent = parseFloat(document.getElementById('cc-min-percent').value);
+    const minFloor = parseFloat(document.getElementById('cc-min-floor').value);
+    if (minPercent > 0 && minFloor > 0) minimumResult = creditCardPayoffMinimum(balance, apr, minPercent, minFloor);
+  }
+
+  const chartSeries = [];
+  if (fixedResult) {
+    chartSeries.push({
+      label: 'Fixed payment',
+      color: 'var(--accent)',
+      points: [{ x: 0, y: balance }, ...fixedResult.schedule.map((s) => ({ x: s.month, y: s.balance }))],
+    });
+  }
+  if (minimumResult) {
+    chartSeries.push({
+      label: 'Minimum payment',
+      color: 'var(--danger)',
+      points: [{ x: 0, y: balance }, ...minimumResult.schedule.map((s) => ({ x: s.month, y: s.balance }))],
+    });
+  }
+
+  const chartHtml = chartSeries.length > 0 ? renderLineChartSvg({
+    series: chartSeries,
+    xTickFormat: (x) => `Month ${Math.round(x)}`,
+    yTickFormat: (y) => formatMoney(y),
+  }) : '';
+
+  document.getElementById('cc-result').innerHTML = `
+    ${headlineHtml}
+    ${chartHtml}
+  `;
 });
 
 // --- Savings goal calculator ---
