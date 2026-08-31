@@ -2891,11 +2891,30 @@ document.getElementById('accel-calc').addEventListener('click', () => {
   const powerWatts = powerKw * 1000;
   const { timeSeconds } = accelerationTimeEstimate(mass, powerWatts, efficiency, targetSpeedKmh);
 
+  const curvePoints = Array.from({ length: 26 }, (_, i) => (targetSpeedKmh / 25) * i).map((speed) => ({
+    x: speed,
+    y: accelerationTimeEstimate(mass, powerWatts, efficiency, speed).timeSeconds,
+  }));
+  const splitMarkers = [60, 100]
+    .filter((speed) => speed <= targetSpeedKmh)
+    .map((speed) => ({
+      x: speed,
+      y: accelerationTimeEstimate(mass, powerWatts, efficiency, speed).timeSeconds,
+      label: `0-${speed}`,
+    }));
+  const chartHtml = renderLineChartSvg({
+    series: [{ label: 'Time to reach speed', color: 'var(--accent)', points: curvePoints }],
+    markers: splitMarkers,
+    xTickFormat: (x) => `${x.toFixed(0)} km/h`,
+    yTickFormat: (y) => `${y.toFixed(1)} s`,
+  });
+
   document.getElementById('accel-result').innerHTML = `
     <div class="headline">${timeSeconds.toFixed(2)} s</div>
     <div>Estimated 0-${targetSpeedKmh} km/h time</div>
     ${efficiencyWarning}
     <div class="hint">This is a rough estimate, not a precise prediction &mdash; actual acceleration depends heavily on gearing, traction, and the engine's torque curve.</div>
+    ${chartHtml}
   `;
 });
 
