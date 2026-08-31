@@ -573,8 +573,12 @@ function doughWaterForHydration(hydrationPercent, flourWeight) {
 // the slice of income between its own `from` and the next bracket's `from`
 // (or to everything above `from` for the top bracket), not the whole income.
 // `brackets` is [{ from, rate }] where rate is a decimal (0.2 for 20%).
-function calculateProgressiveTax(grossIncome, brackets) {
+// Computes progressive tax along with a per-bracket breakdown of exactly
+// which slices of income were taxed at which rate (only brackets actually
+// reached by grossIncome are included).
+function progressiveTaxBreakdown(grossIncome, brackets) {
   const sorted = [...brackets].sort((a, b) => a.from - b.from);
+  const breakdown = [];
   let tax = 0;
 
   for (let i = 0; i < sorted.length; i++) {
@@ -583,22 +587,29 @@ function calculateProgressiveTax(grossIncome, brackets) {
 
     const nextFrom = i + 1 < sorted.length ? sorted[i + 1].from : Infinity;
     const sliceTop = Math.min(grossIncome, nextFrom);
-    tax += (sliceTop - from) * rate;
+    const taxableAmount = sliceTop - from;
+    const taxOwed = taxableAmount * rate;
+    tax += taxOwed;
+    breakdown.push({ from, to: sliceTop, rate, taxableAmount, taxOwed });
   }
 
-  return tax;
+  return { tax, breakdown };
+}
+
+function calculateProgressiveTax(grossIncome, brackets) {
+  return progressiveTaxBreakdown(grossIncome, brackets).tax;
 }
 
 // Net take-home pay after progressive income tax and a flat social-security
 // style deduction on gross income. Net income is clamped at 0 rather than
 // going negative if a misconfigured bracket table over-deducts.
 function salaryAfterTax(grossAnnualIncome, brackets, socialSecurityRatePercent) {
-  const tax = calculateProgressiveTax(grossAnnualIncome, brackets);
+  const { tax, breakdown } = progressiveTaxBreakdown(grossAnnualIncome, brackets);
   const socialSecurity = grossAnnualIncome * (socialSecurityRatePercent / 100);
   const netIncome = Math.max(0, grossAnnualIncome - tax - socialSecurity);
   const effectiveRate = grossAnnualIncome > 0 ? ((tax + socialSecurity) / grossAnnualIncome) * 100 : 0;
 
-  return { tax, socialSecurity, netIncome, netMonthly: netIncome / 12, effectiveRate };
+  return { tax, socialSecurity, netIncome, netMonthly: netIncome / 12, effectiveRate, breakdown };
 }
 
 // Converts a pay rate between hourly, monthly, and annual figures, using the
@@ -5188,6 +5199,7 @@ if (typeof module !== 'undefined' && module.exports) {
     doughHydrationPercent,
     doughWaterForHydration,
     calculateProgressiveTax,
+    progressiveTaxBreakdown,
     salaryAfterTax,
     convertSalary,
     rentVsBuyComparison,

@@ -45,6 +45,7 @@ const {
   weightedAverage,
   descriptiveStats,
   calculateProgressiveTax,
+  progressiveTaxBreakdown,
   salaryAfterTax,
   convertSalary,
   rentVsBuyComparison,
@@ -973,6 +974,25 @@ describe('calculateProgressiveTax', () => {
   });
 });
 
+describe('progressiveTaxBreakdown', () => {
+  test('breaks €40,000 income down into its three reached brackets, summing to the total tax', () => {
+    const { tax, breakdown } = progressiveTaxBreakdown(40000, SALARY_TAX_BRACKETS);
+    expect(tax).toBe(7500);
+    expect(breakdown).toEqual([
+      { from: 0, to: 10000, rate: 0, taxableAmount: 10000, taxOwed: 0 },
+      { from: 10000, to: 30000, rate: 0.2, taxableAmount: 20000, taxOwed: 4000 },
+      { from: 30000, to: 40000, rate: 0.35, taxableAmount: 10000, taxOwed: 3500 },
+    ]);
+    expect(breakdown.reduce((sum, b) => sum + b.taxOwed, 0)).toBe(tax);
+  });
+
+  test('only includes brackets actually reached by income', () => {
+    const { breakdown } = progressiveTaxBreakdown(5000, SALARY_TAX_BRACKETS);
+    expect(breakdown).toHaveLength(1);
+    expect(breakdown[0].to).toBe(5000);
+  });
+});
+
 describe('salaryAfterTax', () => {
   test('matches the worked example: €40,000 gross, 9% social security -> €28,900 net', () => {
     const { tax, socialSecurity, netIncome, netMonthly, effectiveRate } = salaryAfterTax(40000, SALARY_TAX_BRACKETS, 9);
@@ -986,6 +1006,11 @@ describe('salaryAfterTax', () => {
   test('clamps net income at 0 instead of going negative for an over-deducting bracket table', () => {
     const { netIncome } = salaryAfterTax(10000, [{ from: 0, rate: 0.9 }], 50);
     expect(netIncome).toBe(0);
+  });
+
+  test('exposes the same per-bracket breakdown as progressiveTaxBreakdown', () => {
+    const { breakdown } = salaryAfterTax(40000, SALARY_TAX_BRACKETS, 9);
+    expect(breakdown).toEqual(progressiveTaxBreakdown(40000, SALARY_TAX_BRACKETS).breakdown);
   });
 });
 

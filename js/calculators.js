@@ -1691,7 +1691,7 @@ document.getElementById('salary-calc').addEventListener('click', () => {
     return;
   }
 
-  const rows = document.querySelectorAll('#tax-bracket-list .tax-bracket-row');
+  const rows = document.querySelectorAll('#tax-bracket-list .tax-bracket-row:not(.tax-bracket-header)');
   const brackets = [];
   let hasInvalidRow = false;
 
@@ -1725,12 +1725,30 @@ document.getElementById('salary-calc').addEventListener('click', () => {
   }
 
   const grossAnnual = period === 'monthly' ? grossRaw * 12 : grossRaw;
-  const { tax, socialSecurity, netIncome, netMonthly, effectiveRate } = salaryAfterTax(grossAnnual, brackets, ssRate);
+  const { tax, socialSecurity, netIncome, netMonthly, effectiveRate, breakdown } = salaryAfterTax(grossAnnual, brackets, ssRate);
+
+  const bracketRows = breakdown.map(b => `
+    <tr>
+      <td>${formatMoney(b.from)} &ndash; ${formatMoney(b.to)}</td>
+      <td>${(b.rate * 100).toFixed(1)}%</td>
+      <td>${formatMoney(b.taxOwed)}</td>
+    </tr>
+  `).join('');
+
+  const bracketTableHtml = breakdown.length > 0 ? `
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Bracket</th><th>Rate</th><th>Tax owed</th></tr></thead>
+        <tbody>${bracketRows}</tbody>
+      </table>
+    </div>
+  ` : '';
 
   document.getElementById('salary-result').innerHTML = `
     <div class="headline">${formatMoney(netIncome)} / year net</div>
     <div>${formatMoney(netMonthly)} / month &middot; Effective tax + social security rate: ${effectiveRate.toFixed(1)}%</div>
     <div class="hint">Income tax: ${formatMoney(tax)} &middot; Social security: ${formatMoney(socialSecurity)}</div>
+    ${bracketTableHtml}
   `;
 });
 
