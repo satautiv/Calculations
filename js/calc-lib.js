@@ -128,7 +128,14 @@ const COMPOUNDING_FREQUENCIES = [
 function compoundInterest(principal, annualRatePercent, compoundsPerYear, years) {
   const rate = annualRatePercent / 100;
   const futureValue = principal * Math.pow(1 + rate / compoundsPerYear, compoundsPerYear * years);
-  return { futureValue, interestEarned: futureValue - principal };
+
+  const yearly = [];
+  for (let year = 1; year <= Math.floor(years); year++) {
+    const balance = principal * Math.pow(1 + rate / compoundsPerYear, compoundsPerYear * year);
+    yearly.push({ year, balance, interestEarned: balance - principal });
+  }
+
+  return { futureValue, interestEarned: futureValue - principal, yearly };
 }
 
 // scale factor = target servings / original servings, applied independently to every ingredient

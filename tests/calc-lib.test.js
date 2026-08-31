@@ -383,6 +383,20 @@ describe('compoundInterest', () => {
     expect(futureValue).toBeCloseTo(1000, 5);
     expect(interestEarned).toBeCloseTo(0, 5);
   });
+
+  test('yearly breakdown has one entry per whole year, ending at the future value', () => {
+    const { futureValue, yearly } = compoundInterest(1000, 5, 12, 10);
+    expect(yearly).toHaveLength(10);
+    expect(yearly[0].year).toBe(1);
+    expect(yearly[9].year).toBe(10);
+    expect(yearly[9].balance).toBeCloseTo(futureValue, 5);
+    expect(yearly[9].interestEarned).toBeCloseTo(futureValue - 1000, 5);
+  });
+
+  test('yearly breakdown only includes whole years for a fractional term', () => {
+    const { yearly } = compoundInterest(1000, 5, 12, 2.5);
+    expect(yearly).toHaveLength(2);
+  });
 });
 
 describe('scaleRecipe', () => {

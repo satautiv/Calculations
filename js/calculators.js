@@ -561,12 +561,40 @@ document.getElementById('compound-calc').addEventListener('click', () => {
     return;
   }
 
-  const { futureValue, interestEarned } = compoundInterest(principal, rate, frequency, years);
+  const { futureValue, interestEarned, yearly } = compoundInterest(principal, rate, frequency, years);
+
+  let chartAndTableHtml = '';
+  if (yearly.length > 0) {
+    const chartHtml = renderLineChartSvg({
+      series: [{
+        label: 'Balance',
+        color: 'var(--accent)',
+        points: [{ x: 0, y: principal }, ...yearly.map((y) => ({ x: y.year, y: y.balance }))],
+      }],
+      xTickFormat: (x) => `Year ${Math.round(x)}`,
+      yTickFormat: (y) => formatMoney(y),
+    });
+
+    const rows = yearly.map((y) => `
+      <tr><td>${y.year}</td><td>${formatMoney(y.balance)}</td><td>${formatMoney(y.interestEarned)}</td></tr>
+    `).join('');
+
+    chartAndTableHtml = `
+      ${chartHtml}
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>Year</th><th>Balance</th><th>Interest earned</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
+    `;
+  }
 
   document.getElementById('compound-result').innerHTML = `
     <div class="headline">${futureValue.toFixed(2)}</div>
     <div>Future value after ${years} year${years === 1 ? '' : 's'}</div>
     <div class="hint">Interest earned: ${interestEarned.toFixed(2)}</div>
+    ${chartAndTableHtml}
   `;
 });
 
