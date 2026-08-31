@@ -4488,9 +4488,17 @@ document.getElementById('sleep-calc').addEventListener('click', () => {
 document.getElementById('vo2-calc').addEventListener('click', () => {
   const distance = parseFloat(document.getElementById('vo2-distance').value);
   const unit = document.getElementById('vo2-unit').value;
+  const ageRaw = document.getElementById('vo2-age').value;
+  const age = ageRaw === '' ? null : parseFloat(ageRaw);
+  const sex = document.getElementById('vo2-sex').value;
 
   if (isNaN(distance) || distance <= 0) {
     showError('vo2-result', 'Enter a valid distance greater than zero.');
+    return;
+  }
+
+  if (age !== null && age <= 0) {
+    showError('vo2-result', 'Age, if provided, must be greater than zero.');
     return;
   }
 
@@ -4503,9 +4511,14 @@ document.getElementById('vo2-calc').addEventListener('click', () => {
       ? '<div class="hint">This distance is faster than world-record 12-minute-run pace; treat this estimate with caution.</div>'
       : '';
 
+    const categoryHtml = age !== null && sex !== ''
+      ? `<div>Fitness category: <strong>${vo2maxCategory(vo2max, age, sex)}</strong> <span class="hint">(for a ${age}-year-old ${sex})</span></div>`
+      : '';
+
     document.getElementById('vo2-result').innerHTML = `
       <div class="headline">${vo2max.toFixed(1)} mL/kg/min</div>
       <div>Estimated VO2max (Cooper 12-minute run test)</div>
+      ${categoryHtml}
       ${extremeNote}
     `;
   } catch (err) {
