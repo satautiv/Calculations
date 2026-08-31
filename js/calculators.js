@@ -1284,13 +1284,25 @@ document.getElementById('savings-calc').addEventListener('click', () => {
     return;
   }
 
-  const { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth } =
+  const { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth, schedule } =
     requiredSavingsContribution(goal, current, rate, 12, months);
+
+  const chartHtml = renderLineChartSvg({
+    series: [{
+      label: 'Balance',
+      color: 'var(--accent)',
+      points: [{ x: 0, y: current }, ...schedule.map((s) => ({ x: s.period, y: s.balance }))],
+    }],
+    hLines: [{ y: goal, label: `Goal: ${formatMoney(goal)}`, color: 'var(--danger)' }],
+    xTickFormat: (x) => `Month ${Math.round(x)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
 
   if (goalAlreadyMet) {
     document.getElementById('savings-result').innerHTML = `
       <div class="headline">No further contributions needed</div>
       <div>Your current savings alone are projected to reach ${formatMoney(finalBalance)} by then, meeting the ${formatMoney(goal)} goal.</div>
+      ${chartHtml}
     `;
     return;
   }
@@ -1299,6 +1311,7 @@ document.getElementById('savings-calc').addEventListener('click', () => {
     <div class="headline">${formatMoney(requiredContribution)} / month</div>
     <div>Required monthly contribution to reach ${formatMoney(goal)} in ${months} month${months === 1 ? '' : 's'}</div>
     <div class="hint">Total contributed: ${formatMoney(totalContributed)} &middot; Growth earned: ${formatMoney(totalGrowth)}</div>
+    ${chartHtml}
   `;
 });
 
@@ -2162,14 +2175,14 @@ document.getElementById('fire-calc').addEventListener('click', () => {
 // for one or more numeric series sharing the same x-axis, with an optional
 // legend and point markers. `series` is [{ label, color, points: [{x,y}] }];
 // `markers` is [{ x, y, label }] for callouts like a break-even point.
-function renderLineChartSvg({ width = 480, height = 220, series, markers = [], xTickFormat = String, yTickFormat = String }) {
+function renderLineChartSvg({ width = 480, height = 220, series, markers = [], hLines = [], xTickFormat = String, yTickFormat = String }) {
   const padding = { top: 12, right: 16, bottom: 24, left: 60 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
 
   const allPoints = series.flatMap((s) => s.points);
   const xValues = allPoints.map((p) => p.x);
-  const yValues = allPoints.map((p) => p.y).concat(markers.map((m) => m.y));
+  const yValues = allPoints.map((p) => p.y).concat(markers.map((m) => m.y)).concat(hLines.map((h) => h.y));
   const xMin = Math.min(...xValues);
   const xMax = Math.max(...xValues);
   const yMin = Math.min(0, ...yValues);
@@ -2193,6 +2206,14 @@ function renderLineChartSvg({ width = 480, height = 220, series, markers = [], x
     <circle cx="${scaleX(x).toFixed(1)}" cy="${scaleY(y).toFixed(1)}" r="4" style="fill:var(--text)"></circle>
     <text x="${scaleX(x).toFixed(1)}" y="${(scaleY(y) - 10).toFixed(1)}" style="fill:var(--text);font-size:11px" text-anchor="middle">${label}</text>
   `).join('');
+
+  const hLineHtml = hLines.map(({ y, label, color = 'var(--muted)' }) => {
+    const yPos = scaleY(y).toFixed(1);
+    return `
+      <line x1="${padding.left}" y1="${yPos}" x2="${width - padding.right}" y2="${yPos}" style="stroke:${color};stroke-width:1.5;stroke-dasharray:4 3"></line>
+      <text x="${width - padding.right - 4}" y="${(scaleY(y) - 5).toFixed(1)}" style="fill:${color};font-size:11px" text-anchor="end">${label}</text>
+    `;
+  }).join('');
 
   const yTickCount = 4;
   const yAxisHtml = Array.from({ length: yTickCount + 1 }, (_, i) => {
@@ -2222,6 +2243,7 @@ function renderLineChartSvg({ width = 480, height = 220, series, markers = [], x
       <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" style="min-width:320px" role="img">
         ${yAxisHtml}
         ${seriesHtml}
+        ${hLineHtml}
         ${markerHtml}
         ${xAxisHtml}
       </svg>
