@@ -808,11 +808,20 @@ main:has(#wendler.tab-panel.active) {
   opacity: 0.82;
 }
 
-.luggage-item-grid {
+.luggage-item-grid,
+.luggage-bag-grid {
   margin-bottom: 0.75rem;
 }
 
 .luggage-item-row {
+  display: grid;
+  grid-template-columns: 1fr 6rem 8rem 2rem;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.luggage-bag-row {
   display: grid;
   grid-template-columns: 1fr 6rem 2rem;
   gap: 0.5rem;
@@ -820,13 +829,16 @@ main:has(#wendler.tab-panel.active) {
   margin-bottom: 0.5rem;
 }
 
-.luggage-item-header {
+.luggage-item-header,
+.luggage-bag-header {
   font-size: 0.8rem;
   color: var(--muted);
   margin-bottom: 0.35rem;
 }
 
-.luggage-item-row input {
+.luggage-item-row input,
+.luggage-item-row select,
+.luggage-bag-row input {
   width: 100%;
   padding: 0.5rem 0.6rem;
   background: var(--bg);
@@ -836,12 +848,15 @@ main:has(#wendler.tab-panel.active) {
   font-size: 0.95rem;
 }
 
-.luggage-item-row input:focus {
+.luggage-item-row input:focus,
+.luggage-item-row select:focus,
+.luggage-bag-row input:focus {
   outline: none;
   border-color: var(--accent);
 }
 
-.luggage-remove-btn {
+.luggage-remove-btn,
+.luggage-remove-bag-btn {
   background: transparent;
   border: 1px solid var(--border);
   color: var(--muted);
@@ -853,9 +868,27 @@ main:has(#wendler.tab-panel.active) {
   transition: color 0.15s, border-color 0.15s;
 }
 
-.luggage-remove-btn:hover {
+.luggage-remove-btn:hover,
+.luggage-remove-bag-btn:hover {
   color: var(--danger);
   border-color: var(--danger);
+}
+
+.luggage-bag-result {
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.luggage-bag-result:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.luggage-bag-result h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
 }
 
 .regex-flags-row {

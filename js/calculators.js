@@ -3265,7 +3265,56 @@ document.getElementById('ratio-calc').addEventListener('click', () => {
 });
 
 // --- Luggage Weight Checker calculator ---
+const LUGGAGE_INITIAL_BAGS = 1;
 const LUGGAGE_INITIAL_ROWS = 3;
+let luggageBagIdCounter = 0;
+
+function luggageBagOptionsHtml(selectedBagId) {
+  const bagRows = document.querySelectorAll('#luggage-bag-list .luggage-bag-row:not(.luggage-bag-header)');
+  return Array.from(bagRows).map(row => {
+    const bagId = row.dataset.bagId;
+    const name = row.querySelector('.luggage-bag-name').value.trim() || `Bag ${bagId}`;
+    return `<option value="${bagId}" ${bagId === selectedBagId ? 'selected' : ''}>${name}</option>`;
+  }).join('');
+}
+
+function refreshLuggageItemBagOptions() {
+  document.querySelectorAll('#luggage-item-list .luggage-item-bag').forEach(select => {
+    select.innerHTML = luggageBagOptionsHtml(select.value);
+  });
+}
+
+function addLuggageBagRow(name = '', allowance = '') {
+  luggageBagIdCounter++;
+  const bagId = String(luggageBagIdCounter);
+  const row = document.createElement('div');
+  row.className = 'luggage-bag-row';
+  row.dataset.bagId = bagId;
+  row.innerHTML = `
+    <input type="text" class="luggage-bag-name" aria-label="Bag name" placeholder="e.g. Checked bag" value="${name}">
+    <input type="number" class="luggage-bag-allowance" aria-label="Allowance (kg)" min="0" step="0.1" placeholder="e.g. 23" value="${allowance}">
+    <button type="button" class="luggage-remove-bag-btn" aria-label="Remove bag">&times;</button>
+  `;
+  document.getElementById('luggage-bag-list').appendChild(row);
+  refreshLuggageItemBagOptions();
+}
+
+for (let i = 0; i < LUGGAGE_INITIAL_BAGS; i++) addLuggageBagRow();
+
+document.getElementById('luggage-add-bag').addEventListener('click', () => addLuggageBagRow());
+
+document.getElementById('luggage-bag-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.luggage-remove-bag-btn');
+  if (!btn) return;
+  const bagRows = document.querySelectorAll('#luggage-bag-list .luggage-bag-row:not(.luggage-bag-header)');
+  if (bagRows.length <= 1) return; // always keep at least one bag
+  btn.closest('.luggage-bag-row').remove();
+  refreshLuggageItemBagOptions();
+});
+
+document.getElementById('luggage-bag-list').addEventListener('input', (e) => {
+  if (e.target.classList.contains('luggage-bag-name')) refreshLuggageItemBagOptions();
+});
 
 function addLuggageItemRow() {
   const row = document.createElement('div');
@@ -3273,6 +3322,7 @@ function addLuggageItemRow() {
   row.innerHTML = `
     <input type="text" class="luggage-item-name" aria-label="Item name" placeholder="e.g. Hiking boots">
     <input type="number" class="luggage-item-weight" aria-label="Weight (kg)" min="0" step="0.1" placeholder="e.g. 1.4">
+    <select class="luggage-item-bag" aria-label="Bag">${luggageBagOptionsHtml()}</select>
     <button type="button" class="luggage-remove-btn" aria-label="Remove item">&times;</button>
   `;
   document.getElementById('luggage-item-list').appendChild(row);
@@ -3293,30 +3343,46 @@ function formatLuggageWeight(weight) {
 }
 
 document.getElementById('luggage-calc').addEventListener('click', () => {
-  const allowance = parseFloat(document.getElementById('luggage-allowance').value);
+  const bagRows = document.querySelectorAll('#luggage-bag-list .luggage-bag-row:not(.luggage-bag-header)');
+  const bags = [];
+  let hasInvalidBag = false;
 
-  if (!allowance || allowance <= 0) {
-    showError('luggage-result', 'Enter a valid weight allowance greater than zero.');
+  bagRows.forEach(row => {
+    const bagId = row.dataset.bagId;
+    const name = row.querySelector('.luggage-bag-name').value.trim() || `Bag ${bagId}`;
+    const allowance = parseFloat(row.querySelector('.luggage-bag-allowance').value);
+
+    if (!allowance || allowance <= 0) {
+      hasInvalidBag = true;
+      return;
+    }
+
+    bags.push({ bagId, name, allowance, items: [] });
+  });
+
+  if (hasInvalidBag || bags.length === 0) {
+    showError('luggage-result', 'Enter a valid weight allowance greater than zero for every bag.');
     return;
   }
 
-  const rows = document.querySelectorAll('#luggage-item-list .luggage-item-row');
-  const items = [];
+  const bagsById = new Map(bags.map(bag => [bag.bagId, bag]));
+  const rows = document.querySelectorAll('#luggage-item-list .luggage-item-row:not(.luggage-item-header)');
   let hasInvalidRow = false;
 
   rows.forEach(row => {
     const name = row.querySelector('.luggage-item-name').value.trim();
     const weightRaw = row.querySelector('.luggage-item-weight').value;
     const weight = parseFloat(weightRaw);
+    const bagId = row.querySelector('.luggage-item-bag').value;
 
     if (!name && weightRaw === '') return; // blank row, skip silently
 
-    if (!name || weightRaw === '' || isNaN(weight) || weight < 0) {
+    if (!name || weightRaw === '' || isNaN(weight) || weight < 0 || !bagsById.has(bagId)) {
       hasInvalidRow = true;
       return;
     }
 
-    items.push({ name, weight });
+    bagsById.get(bagId).items.push({ name, weight });
   });
 
   if (hasInvalidRow) {
@@ -3324,38 +3390,49 @@ document.getElementById('luggage-calc').addEventListener('click', () => {
     return;
   }
 
-  if (items.length === 0) {
+  if (bags.every(bag => bag.items.length === 0)) {
     showError('luggage-result', 'Add at least one packed item.');
     return;
   }
 
-  const { totalWeight, difference, isOverAllowance, remainingOrOverage } = luggageWeightCheck(
-    allowance, items.map(item => item.weight)
-  );
+  const bagResultsHtml = bags.map(bag => {
+    const { totalWeight, isOverAllowance, remainingOrOverage } = luggageWeightCheck(
+      bag.allowance, bag.items.map(item => item.weight)
+    );
 
-  const rowsHtml = items.map(item => `
-    <tr>
-      <td>${item.name}</td>
-      <td>${formatLuggageWeight(item.weight)} kg</td>
-    </tr>
-  `).join('');
+    const rowsHtml = bag.items.map(item => `
+      <tr>
+        <td>${item.name}</td>
+        <td>${formatLuggageWeight(item.weight)} kg</td>
+      </tr>
+    `).join('');
 
-  const statusHtml = isOverAllowance
-    ? `<div class="headline">Over by ${formatLuggageWeight(remainingOrOverage)} kg</div>`
-    : `<div class="headline">Within allowance</div>`;
+    const statusHtml = isOverAllowance
+      ? `<div class="headline">Over by ${formatLuggageWeight(remainingOrOverage)} kg</div>`
+      : `<div class="headline">Within allowance</div>`;
 
-  const detailHtml = isOverAllowance
-    ? `<div>Total packed weight ${formatLuggageWeight(totalWeight)} kg exceeds the ${formatLuggageWeight(allowance)} kg allowance by ${formatLuggageWeight(remainingOrOverage)} kg.</div>`
-    : `<div>Total packed weight ${formatLuggageWeight(totalWeight)} kg is within the ${formatLuggageWeight(allowance)} kg allowance, with ${formatLuggageWeight(remainingOrOverage)} kg to spare.</div>`;
+    const detailHtml = isOverAllowance
+      ? `<div>Total packed weight ${formatLuggageWeight(totalWeight)} kg exceeds the ${formatLuggageWeight(bag.allowance)} kg allowance by ${formatLuggageWeight(remainingOrOverage)} kg.</div>`
+      : `<div>Total packed weight ${formatLuggageWeight(totalWeight)} kg is within the ${formatLuggageWeight(bag.allowance)} kg allowance, with ${formatLuggageWeight(remainingOrOverage)} kg to spare.</div>`;
 
-  document.getElementById('luggage-result').innerHTML = `
-    ${statusHtml}
-    ${detailHtml}
-    <table>
-      <thead><tr><th>Item</th><th>Weight</th></tr></thead>
-      <tbody>${rowsHtml}</tbody>
-    </table>
-  `;
+    const itemsTableHtml = bag.items.length > 0 ? `
+      <table>
+        <thead><tr><th>Item</th><th>Weight</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    ` : '<div class="hint">No items packed in this bag.</div>';
+
+    return `
+      <div class="luggage-bag-result">
+        <h3>${bag.name}</h3>
+        ${statusHtml}
+        ${detailHtml}
+        ${itemsTableHtml}
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('luggage-result').innerHTML = bagResultsHtml;
 });
 
 // --- Average / Weighted Average calculator ---
