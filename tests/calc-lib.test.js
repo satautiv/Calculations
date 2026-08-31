@@ -153,6 +153,7 @@ const {
   widmarkBAC,
   estimateFTP,
   ftpPowerZones,
+  ftpPowerToWeight,
   mulchVolumeNeeded,
   roofPitchMultiplier,
   roofArea,
@@ -3281,6 +3282,24 @@ describe('estimateFTP / ftpPowerZones', () => {
   test('rejects a non-positive average power or FTP', () => {
     expect(() => estimateFTP(0)).toThrow();
     expect(() => ftpPowerZones(0)).toThrow();
+  });
+});
+
+describe('ftpPowerToWeight', () => {
+  test('divides FTP by bodyweight and classifies the result', () => {
+    const result = ftpPowerToWeight(266, 70);
+    expect(result.wattsPerKg).toBeCloseTo(3.8, 2);
+    expect(result.category).toBe('Good (Cat 3)');
+  });
+
+  test('classifies across the full range of bands', () => {
+    expect(ftpPowerToWeight(140, 70).category).toBe('Untrained'); // 2.0 W/kg
+    expect(ftpPowerToWeight(455, 70).category).toBe('World class (pro/elite)'); // 6.5 W/kg
+  });
+
+  test('rejects a non-positive FTP or bodyweight', () => {
+    expect(() => ftpPowerToWeight(0, 70)).toThrow();
+    expect(() => ftpPowerToWeight(266, 0)).toThrow();
   });
 });
 
