@@ -2375,7 +2375,7 @@ document.getElementById('tripbudget-calc').addEventListener('click', () => {
     return;
   }
 
-  const { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay } = tripBudget({
+  const { dailyTotal, variableCost, fixedCost, totalTripCost, averageCostPerDay, categories } = tripBudget({
     days,
     accommodationPerDay,
     foodPerDay,
@@ -2386,6 +2386,12 @@ document.getElementById('tripbudget-calc').addEventListener('click', () => {
     otherFixed,
     travelers,
   });
+
+  const categoryRows = categories
+    .filter(({ amount }) => amount > 0)
+    .map(({ label, amount, percentOfTotal }) => `
+      <tr><td>${label}</td><td>${formatMoney(amount)}</td><td>${percentOfTotal.toFixed(1)}%</td></tr>
+    `).join('');
 
   document.getElementById('tripbudget-result').innerHTML = `
     <div class="headline">${formatMoney(totalTripCost)}</div>
@@ -2399,6 +2405,10 @@ document.getElementById('tripbudget-calc').addEventListener('click', () => {
         <tr><td>Total trip cost</td><td>${formatMoney(totalTripCost)}</td></tr>
         <tr><td>Average cost per day</td><td>${formatMoney(averageCostPerDay)}</td></tr>
       </tbody>
+    </table>
+    <table>
+      <thead><tr><th>Category</th><th>Amount</th><th>% of total</th></tr></thead>
+      <tbody>${categoryRows}</tbody>
     </table>
   `;
 });
