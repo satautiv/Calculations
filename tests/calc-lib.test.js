@@ -740,6 +740,14 @@ describe('requiredSavingsContribution', () => {
     expect(requiredContribution).toBe(0);
     expect(finalBalance).toBeGreaterThan(5000);
   });
+
+  test('schedule has one entry per period, ending at the final balance', () => {
+    const { finalBalance, schedule } = requiredSavingsContribution(10000, 1000, 4, 12, 36);
+    expect(schedule).toHaveLength(36);
+    expect(schedule[0].period).toBe(1);
+    expect(schedule[35].period).toBe(36);
+    expect(schedule[35].balance).toBeCloseTo(finalBalance, 5);
+  });
 });
 
 describe('emergencyFundTarget', () => {

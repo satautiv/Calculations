@@ -397,7 +397,14 @@ function requiredSavingsContribution(goal, currentSavings, annualRatePercent, pe
   const totalContributed = currentSavings + requiredContribution * n;
   const totalGrowth = finalBalance - totalContributed;
 
-  return { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth };
+  const schedule = [];
+  let balance = currentSavings;
+  for (let period = 1; period <= n; period++) {
+    balance = balance * (1 + i) + requiredContribution;
+    schedule.push({ period, balance });
+  }
+
+  return { requiredContribution, goalAlreadyMet, finalBalance, totalContributed, totalGrowth, schedule };
 }
 
 // Recommended emergency fund = essential monthly expenses * months of coverage.
