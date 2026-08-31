@@ -2047,6 +2047,72 @@ document.getElementById('fire-calc').addEventListener('click', () => {
   `;
 });
 
+// Renders a small inline-SVG line chart (no charting library/CDN dependency)
+// for one or more numeric series sharing the same x-axis, with an optional
+// legend and point markers. `series` is [{ label, color, points: [{x,y}] }];
+// `markers` is [{ x, y, label }] for callouts like a break-even point.
+function renderLineChartSvg({ width = 480, height = 220, series, markers = [], xTickFormat = String, yTickFormat = String }) {
+  const padding = { top: 12, right: 16, bottom: 24, left: 60 };
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+
+  const allPoints = series.flatMap((s) => s.points);
+  const xValues = allPoints.map((p) => p.x);
+  const yValues = allPoints.map((p) => p.y).concat(markers.map((m) => m.y));
+  const xMin = Math.min(...xValues);
+  const xMax = Math.max(...xValues);
+  const yMin = Math.min(0, ...yValues);
+  const yMax = Math.max(...yValues);
+
+  const scaleX = (x) => padding.left + ((x - xMin) / (xMax - xMin || 1)) * plotWidth;
+  const scaleY = (y) => padding.top + plotHeight - ((y - yMin) / (yMax - yMin || 1)) * plotHeight;
+
+  const seriesHtml = series.map((s) => {
+    const d = s.points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${scaleX(p.x).toFixed(1)} ${scaleY(p.y).toFixed(1)}`).join(' ');
+    return `<path d="${d}" style="fill:none;stroke:${s.color};stroke-width:2"></path>`;
+  }).join('');
+
+  const markerHtml = markers.map(({ x, y, label }) => `
+    <circle cx="${scaleX(x).toFixed(1)}" cy="${scaleY(y).toFixed(1)}" r="4" style="fill:var(--text)"></circle>
+    <text x="${scaleX(x).toFixed(1)}" y="${(scaleY(y) - 10).toFixed(1)}" style="fill:var(--text);font-size:11px" text-anchor="middle">${label}</text>
+  `).join('');
+
+  const yTickCount = 4;
+  const yAxisHtml = Array.from({ length: yTickCount + 1 }, (_, i) => {
+    const value = yMin + ((yMax - yMin) / yTickCount) * i;
+    const y = scaleY(value);
+    return `
+      <line x1="${padding.left}" y1="${y.toFixed(1)}" x2="${width - padding.right}" y2="${y.toFixed(1)}" style="stroke:var(--border);stroke-width:1"></line>
+      <text x="${padding.left - 8}" y="${y.toFixed(1)}" style="fill:var(--muted);font-size:10px" text-anchor="end" dominant-baseline="middle">${yTickFormat(value)}</text>
+    `;
+  }).join('');
+
+  const xTickCount = 4;
+  const xAxisHtml = Array.from({ length: xTickCount + 1 }, (_, i) => {
+    const value = xMin + ((xMax - xMin) / xTickCount) * i;
+    const anchor = i === 0 ? 'start' : i === xTickCount ? 'end' : 'middle';
+    return `<text x="${scaleX(value).toFixed(1)}" y="${height - 6}" style="fill:var(--muted);font-size:10px" text-anchor="${anchor}">${xTickFormat(value)}</text>`;
+  }).join('');
+
+  const legendHtml = series.map((s) => `
+    <span style="display:inline-flex;align-items:center;gap:4px;margin-right:14px">
+      <span style="width:10px;height:10px;border-radius:2px;background:${s.color};display:inline-block"></span>${s.label}
+    </span>
+  `).join('');
+
+  return `
+    <div style="margin-top:0.75rem;overflow-x:auto">
+      <svg viewBox="0 0 ${width} ${height}" width="100%" height="${height}" style="min-width:320px" role="img">
+        ${yAxisHtml}
+        ${seriesHtml}
+        ${markerHtml}
+        ${xAxisHtml}
+      </svg>
+      <div style="margin-top:0.35rem;font-size:0.8rem;color:var(--muted)">${legendHtml}</div>
+    </div>
+  `;
+}
+
 // --- Petrol vs Diesel Break-Even calculator ---
 document.getElementById('pdbe-calc').addEventListener('click', () => {
   const pricePremium = parseFloat(document.getElementById('pdbe-premium').value);
@@ -2103,10 +2169,31 @@ document.getElementById('pdbe-calc').addEventListener('click', () => {
     ? `<div class="hint">At ${annualMileage.toLocaleString()} km/year: about ${breakEvenYears.toFixed(2)} years to break even.</div>`
     : '';
 
+  const chartMaxDistance = Math.max(breakEvenDistanceKm * 1.5, 1);
+  const chartPoints = Array.from({ length: 21 }, (_, i) => (chartMaxDistance / 20) * i);
+  const chartHtml = renderLineChartSvg({
+    series: [
+      {
+        label: 'Petrol cumulative cost',
+        color: 'var(--danger)',
+        points: chartPoints.map((d) => ({ x: d, y: costPerKmPetrol * d })),
+      },
+      {
+        label: 'Diesel cumulative cost',
+        color: 'var(--accent)',
+        points: chartPoints.map((d) => ({ x: d, y: pricePremium + costPerKmDiesel * d })),
+      },
+    ],
+    markers: [{ x: breakEvenDistanceKm, y: costPerKmPetrol * breakEvenDistanceKm, label: 'Break-even' }],
+    xTickFormat: (x) => `${Math.round(x).toLocaleString()} km`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+
   document.getElementById('pdbe-result').innerHTML = `
     <div class="headline">${breakEvenDistanceKm.toFixed(0)} km to break even</div>
     <div>Diesel saves ${formatMoney(savingsPerKm)} per km driven (${formatMoney(costPerKmPetrol)}/km petrol vs ${formatMoney(costPerKmDiesel)}/km diesel).</div>
     ${yearsHtml}
+    ${chartHtml}
   `;
 });
 
