@@ -2066,6 +2066,61 @@
     <div class="result" id="voltage-result"></div>
   </section>
 
+  <section id="electrical-load-calculator" class="view tab-panel">
+    <h2>Electrical Load / Ohm's Law Calculator</h2>
+    <p class="hint">Solve for voltage, current, resistance, or power using Ohm's Law (V = I &times; R) and Watt's Law (P = V &times; I) &mdash; e.g. enter voltage and wattage to find the amperage a circuit breaker needs to handle.</p>
+
+    <div class="field">
+      <label for="ohm-solve-for">Solve for</label>
+      <select id="ohm-solve-for">
+        <option value="voltage-ohms">Voltage, from current and resistance</option>
+        <option value="current-ohms">Current, from voltage and resistance</option>
+        <option value="resistance-ohms">Resistance, from voltage and current</option>
+        <option value="power-watts">Power, from voltage and current</option>
+        <option value="current-watts">Current, from power and voltage</option>
+        <option value="voltage-watts">Voltage, from power and current</option>
+      </select>
+    </div>
+
+    <div class="field" id="ohm-fields-ir">
+      <label for="ohm-ir-current">Current (A)</label>
+      <input type="number" id="ohm-ir-current" min="0" step="0.01" placeholder="e.g. 2">
+      <label for="ohm-ir-resistance">Resistance (&Omega;)</label>
+      <input type="number" id="ohm-ir-resistance" min="0" step="0.01" placeholder="e.g. 5">
+    </div>
+
+    <div class="field" id="ohm-fields-vr" hidden>
+      <label for="ohm-vr-voltage">Voltage (V)</label>
+      <input type="number" id="ohm-vr-voltage" min="0" step="0.01" placeholder="e.g. 10">
+      <label for="ohm-vr-resistance">Resistance (&Omega;)</label>
+      <input type="number" id="ohm-vr-resistance" min="0" step="0.01" placeholder="e.g. 5">
+    </div>
+
+    <div class="field" id="ohm-fields-vi" hidden>
+      <label for="ohm-vi-voltage">Voltage (V)</label>
+      <input type="number" id="ohm-vi-voltage" min="0" step="0.01" placeholder="e.g. 120">
+      <label for="ohm-vi-current">Current (A)</label>
+      <input type="number" id="ohm-vi-current" min="0" step="0.01" placeholder="e.g. 5">
+    </div>
+
+    <div class="field" id="ohm-fields-pv" hidden>
+      <label for="ohm-pv-power">Power (W)</label>
+      <input type="number" id="ohm-pv-power" min="0" step="0.01" placeholder="e.g. 1200">
+      <label for="ohm-pv-voltage">Voltage (V)</label>
+      <input type="number" id="ohm-pv-voltage" min="0" step="0.01" placeholder="e.g. 120">
+    </div>
+
+    <div class="field" id="ohm-fields-pi" hidden>
+      <label for="ohm-pi-power">Power (W)</label>
+      <input type="number" id="ohm-pi-power" min="0" step="0.01" placeholder="e.g. 1200">
+      <label for="ohm-pi-current">Current (A)</label>
+      <input type="number" id="ohm-pi-current" min="0" step="0.01" placeholder="e.g. 10">
+    </div>
+
+    <button class="calc-btn" id="ohm-calc">Calculate</button>
+    <div class="result" id="ohm-result"></div>
+  </section>
+
   <section id="working-days-calculator" class="view tab-panel">
     <h2>Working Days Calculator</h2>
     <p class="hint">Counts business days (Monday-Friday) between two dates, inclusive of both endpoints, or adds/subtracts a number of business days to a single date &mdash; optionally excluding a list of holiday dates.</p>

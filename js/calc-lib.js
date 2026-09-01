@@ -3672,6 +3672,44 @@ function stoppingDistance(speedMs, reactionTimeSeconds, decelerationMs2) {
   return { reactionDistance, brakingDistance, totalDistance: reactionDistance + brakingDistance };
 }
 
+// --- Electrical load / Ohm's Law calculator ---
+
+function voltageFromOhmsLaw(current, resistance) {
+  if (!current || current <= 0) throw new Error('Current must be greater than zero.');
+  if (!resistance || resistance <= 0) throw new Error('Resistance must be greater than zero.');
+  return current * resistance;
+}
+
+function currentFromOhmsLaw(voltage, resistance) {
+  if (!voltage || voltage <= 0) throw new Error('Voltage must be greater than zero.');
+  if (!resistance || resistance <= 0) throw new Error('Resistance must be greater than zero.');
+  return voltage / resistance;
+}
+
+function resistanceFromOhmsLaw(voltage, current) {
+  if (!voltage || voltage <= 0) throw new Error('Voltage must be greater than zero.');
+  if (!current || current <= 0) throw new Error('Current must be greater than zero.');
+  return voltage / current;
+}
+
+function powerFromWattsLaw(voltage, current) {
+  if (!voltage || voltage <= 0) throw new Error('Voltage must be greater than zero.');
+  if (!current || current <= 0) throw new Error('Current must be greater than zero.');
+  return voltage * current;
+}
+
+function currentFromWattsLaw(power, voltage) {
+  if (!power || power <= 0) throw new Error('Power must be greater than zero.');
+  if (!voltage || voltage <= 0) throw new Error('Voltage must be greater than zero.');
+  return power / voltage;
+}
+
+function voltageFromWattsLaw(power, current) {
+  if (!power || power <= 0) throw new Error('Power must be greater than zero.');
+  if (!current || current <= 0) throw new Error('Current must be greater than zero.');
+  return power / current;
+}
+
 // --- URL Encoder/Decoder ---
 
 // Percent-encodes text per RFC 3986. mode 'component' treats the text as a
@@ -5873,6 +5911,12 @@ if (typeof module !== 'undefined' && module.exports) {
     projectileMotion,
     ROAD_SURFACE_DECELERATION,
     stoppingDistance,
+    voltageFromOhmsLaw,
+    currentFromOhmsLaw,
+    resistanceFromOhmsLaw,
+    powerFromWattsLaw,
+    currentFromWattsLaw,
+    voltageFromWattsLaw,
     urlEncode,
     urlDecode,
     base64UrlDecode,

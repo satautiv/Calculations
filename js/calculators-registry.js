@@ -445,6 +445,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['voltage', 'plug adapter', 'plug type', 'travel adapter', 'mains electricity', 'travel'],
   },
   {
+    id: 'electrical-load-calculator',
+    name: 'Electrical Load / Ohm\'s Law Calculator',
+    category: 'Home & DIY',
+    description: 'Solve for voltage, current, resistance, or power using Ohm\'s Law and Watt\'s Law, e.g. to size a circuit breaker.',
+    keywords: ['ohms law', 'watts law', 'voltage', 'current', 'resistance', 'power', 'breaker size', 'electrical', 'home diy'],
+  },
+  {
     id: 'working-days-calculator',
     name: 'Working Days Calculator',
     category: 'General',

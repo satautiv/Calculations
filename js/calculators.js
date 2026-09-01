@@ -4709,6 +4709,77 @@ document.getElementById('voltage-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Electrical load / Ohm's Law calculator ---
+const OHM_FIELD_GROUPS = ['ohm-fields-ir', 'ohm-fields-vr', 'ohm-fields-vi', 'ohm-fields-pv', 'ohm-fields-pi'];
+const OHM_SOLVE_FOR_GROUP = {
+  'voltage-ohms': 'ohm-fields-ir',
+  'current-ohms': 'ohm-fields-vr',
+  'resistance-ohms': 'ohm-fields-vi',
+  'power-watts': 'ohm-fields-vi',
+  'current-watts': 'ohm-fields-pv',
+  'voltage-watts': 'ohm-fields-pi',
+};
+
+document.getElementById('ohm-solve-for').addEventListener('change', (e) => {
+  const targetGroup = OHM_SOLVE_FOR_GROUP[e.target.value];
+  OHM_FIELD_GROUPS.forEach(id => { document.getElementById(id).hidden = id !== targetGroup; });
+});
+
+document.getElementById('ohm-calc').addEventListener('click', () => {
+  const solveFor = document.getElementById('ohm-solve-for').value;
+
+  try {
+    let result;
+    let label;
+    let unit;
+
+    if (solveFor === 'voltage-ohms') {
+      const current = parseFloat(document.getElementById('ohm-ir-current').value);
+      const resistance = parseFloat(document.getElementById('ohm-ir-resistance').value);
+      result = voltageFromOhmsLaw(current, resistance);
+      label = 'Voltage';
+      unit = 'V';
+    } else if (solveFor === 'current-ohms') {
+      const voltage = parseFloat(document.getElementById('ohm-vr-voltage').value);
+      const resistance = parseFloat(document.getElementById('ohm-vr-resistance').value);
+      result = currentFromOhmsLaw(voltage, resistance);
+      label = 'Current';
+      unit = 'A';
+    } else if (solveFor === 'resistance-ohms') {
+      const voltage = parseFloat(document.getElementById('ohm-vi-voltage').value);
+      const current = parseFloat(document.getElementById('ohm-vi-current').value);
+      result = resistanceFromOhmsLaw(voltage, current);
+      label = 'Resistance';
+      unit = 'Ω';
+    } else if (solveFor === 'power-watts') {
+      const voltage = parseFloat(document.getElementById('ohm-vi-voltage').value);
+      const current = parseFloat(document.getElementById('ohm-vi-current').value);
+      result = powerFromWattsLaw(voltage, current);
+      label = 'Power';
+      unit = 'W';
+    } else if (solveFor === 'current-watts') {
+      const power = parseFloat(document.getElementById('ohm-pv-power').value);
+      const voltage = parseFloat(document.getElementById('ohm-pv-voltage').value);
+      result = currentFromWattsLaw(power, voltage);
+      label = 'Current';
+      unit = 'A';
+    } else {
+      const power = parseFloat(document.getElementById('ohm-pi-power').value);
+      const current = parseFloat(document.getElementById('ohm-pi-current').value);
+      result = voltageFromWattsLaw(power, current);
+      label = 'Voltage';
+      unit = 'V';
+    }
+
+    document.getElementById('ohm-result').innerHTML = `
+      <div class="headline">${result.toFixed(2)} ${unit}</div>
+      <div>${label}</div>
+    `;
+  } catch (err) {
+    showError('ohm-result', err.message);
+  }
+});
+
 // --- Working Days calculator ---
 document.getElementById('workdays-mode').addEventListener('change', (e) => {
   const isAddSubtract = e.target.value === 'addsubtract';
