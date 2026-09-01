@@ -2056,6 +2056,23 @@ function ffmiCategory(normalizedFFMI) {
   return 'Exceeds the commonly cited natural limit';
 }
 
+// --- BMI (Body Mass Index) calculator ---
+
+function bmiValue(weightKg, heightM) {
+  if (!weightKg || weightKg <= 0) throw new Error('Weight must be greater than zero.');
+  if (!heightM || heightM <= 0) throw new Error('Height must be greater than zero.');
+
+  return weightKg / heightM ** 2;
+}
+
+// Standard WHO adult BMI classification bands.
+function bmiCategory(bmi) {
+  if (bmi < 18.5) return 'Underweight';
+  if (bmi < 25) return 'Normal weight';
+  if (bmi < 30) return 'Overweight';
+  return 'Obese';
+}
+
 // --- Lean Body Mass calculator ---
 
 function leanBodyMassFromBodyFat(weightKg, bodyFatPercent) {
@@ -5546,6 +5563,8 @@ if (typeof module !== 'undefined' && module.exports) {
     convertToAllUnits,
     ffmi,
     ffmiCategory,
+    bmiValue,
+    bmiCategory,
     leanBodyMassFromBodyFat,
     leanBodyMassBoer,
     navyBodyFatPercent,

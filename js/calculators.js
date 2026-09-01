@@ -4674,6 +4674,39 @@ document.getElementById('ffmi-calc').addEventListener('click', () => {
   }
 });
 
+// --- BMI (Body Mass Index) calculator ---
+document.getElementById('bmi-calc').addEventListener('click', () => {
+  const weightRaw = parseFloat(document.getElementById('bmi-weight').value);
+  const weightUnit = document.getElementById('bmi-weight-unit').value;
+  const heightRaw = parseFloat(document.getElementById('bmi-height').value);
+  const heightUnit = document.getElementById('bmi-height-unit').value;
+
+  if (isNaN(weightRaw) || weightRaw <= 0) {
+    showError('bmi-result', 'Enter a valid weight greater than zero.');
+    return;
+  }
+
+  if (isNaN(heightRaw) || heightRaw <= 0) {
+    showError('bmi-result', 'Enter a valid height greater than zero.');
+    return;
+  }
+
+  const weightKg = weightUnit === 'lb' ? weightRaw * 0.45359237 : weightRaw;
+  const heightM = heightUnit === 'cm' ? heightRaw / 100 : heightRaw;
+
+  try {
+    const bmi = bmiValue(weightKg, heightM);
+    const category = bmiCategory(bmi);
+
+    document.getElementById('bmi-result').innerHTML = `
+      <div class="headline">BMI ${bmi.toFixed(1)}</div>
+      <div>${category}</div>
+    `;
+  } catch (err) {
+    showError('bmi-result', err.message);
+  }
+});
+
 // --- Lean Body Mass calculator ---
 document.getElementById('lbm-method').addEventListener('change', (e) => {
   const isBoer = e.target.value === 'boer';

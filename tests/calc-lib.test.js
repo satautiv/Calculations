@@ -123,6 +123,8 @@ const {
   convertToAllUnits,
   ffmi,
   ffmiCategory,
+  bmiValue,
+  bmiCategory,
   leanBodyMassFromBodyFat,
   leanBodyMassBoer,
   navyBodyFatPercent,
@@ -2722,6 +2724,34 @@ describe('ffmiCategory', () => {
     expect(ffmiCategory(22.5)).toBe('Excellent');
     expect(ffmiCategory(24)).toContain('Superior');
     expect(ffmiCategory(27)).toContain('Exceeds');
+  });
+});
+
+// --- BMI (Body Mass Index) calculator ---
+
+describe('bmiValue', () => {
+  test('worked example: 90 kg, 1.80 m', () => {
+    expect(bmiValue(90, 1.8)).toBeCloseTo(27.78, 2);
+  });
+
+  test('rejects non-positive weight or height', () => {
+    expect(() => bmiValue(0, 1.8)).toThrow();
+    expect(() => bmiValue(90, 0)).toThrow();
+  });
+});
+
+describe('bmiCategory', () => {
+  test('labels values across the WHO bands', () => {
+    expect(bmiCategory(17)).toBe('Underweight');
+    expect(bmiCategory(22)).toBe('Normal weight');
+    expect(bmiCategory(27)).toBe('Overweight');
+    expect(bmiCategory(32)).toBe('Obese');
+  });
+
+  test('band boundaries are inclusive of the lower band', () => {
+    expect(bmiCategory(18.5)).toBe('Normal weight');
+    expect(bmiCategory(25)).toBe('Overweight');
+    expect(bmiCategory(30)).toBe('Obese');
   });
 });
 
