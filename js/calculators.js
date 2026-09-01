@@ -4614,9 +4614,13 @@ document.getElementById('bf-calc').addEventListener('click', () => {
       ? '<div class="hint">This result is outside a typical plausible range; the tape method is an estimate with roughly &plusmn;3-4% accuracy.</div>'
       : '';
 
+    const category = bodyFat >= 0 ? bodyFatCategory(sex, bodyFat) : null;
+    const categoryHtml = category ? `<div>Category: <strong>${category}</strong></div>` : '';
+
     document.getElementById('bf-result').innerHTML = `
       <div class="headline">${bodyFat.toFixed(1)}%</div>
       <div>Estimated body fat percentage (US Navy method)</div>
+      ${categoryHtml}
       ${rangeNote}
     `;
   } catch (err) {

@@ -2062,6 +2062,31 @@ function navyBodyFatPercent(sex, heightIn, neckIn, waistIn, hipIn) {
   throw new Error('Sex must be "male" or "female".');
 }
 
+// Standard sex-specific body-fat percentage bands (ACE classification).
+const BODY_FAT_CATEGORIES = {
+  male: [
+    { max: 5, label: 'Essential fat' },
+    { max: 13, label: 'Athletes' },
+    { max: 17, label: 'Fitness' },
+    { max: 24, label: 'Acceptable' },
+  ],
+  female: [
+    { max: 13, label: 'Essential fat' },
+    { max: 20, label: 'Athletes' },
+    { max: 24, label: 'Fitness' },
+    { max: 31, label: 'Acceptable' },
+  ],
+};
+
+function bodyFatCategory(sex, bodyFatPercent) {
+  const bands = BODY_FAT_CATEGORIES[sex];
+  if (!bands) throw new Error('Sex must be "male" or "female".');
+  if (bodyFatPercent < 0) throw new Error('Body fat percentage cannot be negative.');
+
+  const band = bands.find(b => bodyFatPercent <= b.max);
+  return band ? band.label : 'Obese';
+}
+
 // --- TDEE (Total Daily Energy Expenditure) calculator ---
 
 const ACTIVITY_MULTIPLIERS = {
@@ -5452,6 +5477,7 @@ if (typeof module !== 'undefined' && module.exports) {
     leanBodyMassFromBodyFat,
     leanBodyMassBoer,
     navyBodyFatPercent,
+    bodyFatCategory,
     ACTIVITY_MULTIPLIERS,
     bmrMifflinStJeor,
     tdeeFromBmr,
