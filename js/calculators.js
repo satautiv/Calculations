@@ -5562,9 +5562,17 @@ document.getElementById('earth-calc').addEventListener('click', () => {
     if (motion !== 'orbit') lines.push(`<div>Rotation: ${format(rotationKm)} ${unitLabel}</div>`);
     if (motion !== 'rotation') lines.push(`<div>Orbit: ${format(orbitKm)} ${unitLabel}</div>`);
 
+    const rotationSpeedKmh = motion !== 'orbit' ? earthRotationSpeedKmh(latitude) : 0;
+    const orbitSpeedKmh = motion !== 'rotation' ? EARTH_ORBITAL_SPEED_KMH : 0;
+    const speedParts = [];
+    if (motion !== 'orbit') speedParts.push(`Rotation speed: ${format(rotationSpeedKmh)} ${unitLabel}/h`);
+    if (motion !== 'rotation') speedParts.push(`Orbit speed: ${format(orbitSpeedKmh)} ${unitLabel}/h`);
+    if (motion === 'both') speedParts.push(`Combined: ${format(rotationSpeedKmh + orbitSpeedKmh)} ${unitLabel}/h`);
+
     document.getElementById('earth-result').innerHTML = `
       <div class="headline">${format(totalKm)} ${unitLabel} traveled</div>
       ${lines.join('')}
+      <div class="hint">${speedParts.join(' &middot; ')}</div>
       <div class="hint">Combined total is a simple additive approximation (the two motions aren't generally in the same direction), and orbital speed is treated as constant even though Earth's orbit is a slight ellipse - a simplified educational model, not a precision astronomical calculation.</div>
     `;
   } catch (err) {
