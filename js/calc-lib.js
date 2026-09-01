@@ -17,8 +17,19 @@ function mayhewOneRepMax(weight, reps) {
   return (100 * weight) / (52.2 + 41.9 * Math.exp(-0.055 * reps));
 }
 
+// Estimated reps to failure at a given %1RM, by inverting the Epley formula
+// (orm = weight * (1 + reps/30)) at weight = orm * (percent/100): reps =
+// 30 * (100/percent - 1). Floored at 1 rep (100% must be at least a single).
+function estimatedRepsAtPercent(percent) {
+  return Math.max(1, Math.floor(30 * (100 / percent - 1)));
+}
+
 function percentageTable(orm, percentages = [50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100]) {
-  return percentages.map(percent => ({ percent, weight: orm * (percent / 100) }));
+  return percentages.map(percent => ({
+    percent,
+    weight: orm * (percent / 100),
+    estimatedReps: estimatedRepsAtPercent(percent),
+  }));
 }
 
 function wilksCoefficient(bw, sex) {
@@ -5296,6 +5307,7 @@ if (typeof module !== 'undefined' && module.exports) {
     lombardiOneRepMax,
     mayhewOneRepMax,
     percentageTable,
+    estimatedRepsAtPercent,
     wilksCoefficient,
     wilksScore,
     calculatePlates,

@@ -136,24 +136,29 @@ document.getElementById('orm-calc').addEventListener('click', () => {
 });
 
 // --- Percentage-based training table ---
-document.getElementById('pct-calc').addEventListener('click', () => {
-  const orm = parseFloat(document.getElementById('pct-orm').value);
-  const unit = document.getElementById('pct-unit').value;
+document.getElementById('training-pct-calc').addEventListener('click', () => {
+  const orm = parseFloat(document.getElementById('training-pct-orm').value);
+  const unit = document.getElementById('training-pct-unit').value;
 
   if (!orm || orm <= 0) {
-    showError('pct-result', 'Enter a valid one-rep max.');
+    showError('training-pct-result', 'Enter a valid one-rep max.');
     return;
   }
 
-  const rows = percentageTable(orm)
-    .map(({ percent, weight }) => `<tr><td>${percent}%</td><td>${weight.toFixed(1)} ${unit}</td></tr>`)
+  const table = percentageTable(orm);
+  const rows = table
+    .map(({ percent, weight, estimatedReps }) => `<tr><td>${percent}%</td><td>${weight.toFixed(1)} ${unit}</td><td>${estimatedReps}</td></tr>`)
     .join('');
+  const highRepNote = table.some(({ percent }) => percent < 70)
+    ? '<div class="hint">Estimated reps get less accurate at lower intensities (below ~70%) &mdash; treat these as rough guidance, not a hard limit.</div>'
+    : '';
 
-  document.getElementById('pct-result').innerHTML = `
+  document.getElementById('training-pct-result').innerHTML = `
     <table>
-      <thead><tr><th>Percent</th><th>Weight</th></tr></thead>
+      <thead><tr><th>Percent</th><th>Weight</th><th>Est. reps to failure</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
+    ${highRepNote}
   `;
 });
 

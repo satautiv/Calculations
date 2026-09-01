@@ -4,6 +4,7 @@ const {
   lombardiOneRepMax,
   mayhewOneRepMax,
   percentageTable,
+  estimatedRepsAtPercent,
   wilksScore,
   calculatePlates,
   trainingMax,
@@ -273,11 +274,22 @@ describe('mayhewOneRepMax', () => {
 });
 
 describe('percentageTable', () => {
-  test('computes weight at each requested percentage of one-rep max', () => {
+  test('computes weight and estimated reps at each requested percentage of one-rep max', () => {
     expect(percentageTable(100, [50, 100])).toEqual([
-      { percent: 50, weight: 50 },
-      { percent: 100, weight: 100 },
+      { percent: 50, weight: 50, estimatedReps: 30 },
+      { percent: 100, weight: 100, estimatedReps: 1 },
     ]);
+  });
+});
+
+describe('estimatedRepsAtPercent', () => {
+  test('matches a standard %1RM-to-reps chart across the default percentages', () => {
+    expect([50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100].map(estimatedRepsAtPercent))
+      .toEqual([30, 24, 20, 16, 12, 9, 7, 5, 3, 1, 1]);
+  });
+
+  test('floors at 1 rep rather than going to 0 at or above 100%', () => {
+    expect(estimatedRepsAtPercent(100)).toBe(1);
   });
 });
 
