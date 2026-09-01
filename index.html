@@ -213,6 +213,24 @@
     <div class="result" id="recipe-result"></div>
   </section>
 
+  <section id="gpa-calculator" class="view tab-panel">
+    <h2>GPA Calculator</h2>
+    <p class="hint">Compute your grade point average from a list of courses, grades, and credit hours (standard US 4.0 scale).</p>
+
+    <div class="field">
+      <label>Courses</label>
+      <div class="gpa-course-grid" id="gpa-course-list">
+        <div class="gpa-course-row gpa-course-header">
+          <span>Course</span><span>Grade</span><span>Credits</span><span></span>
+        </div>
+      </div>
+      <button type="button" class="calc-btn secondary-btn" id="gpa-add-course">+ Add course</button>
+    </div>
+
+    <button class="calc-btn" id="gpa-calc">Calculate</button>
+    <div class="result" id="gpa-result"></div>
+  </section>
+
   <section id="investment-growth" class="view tab-panel">
     <h2>Investment / DCA Growth Calculator</h2>
     <p class="hint">Project how an initial lump sum plus regular contributions grows at an expected annual return.</p>

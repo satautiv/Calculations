@@ -53,6 +53,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['recipe', 'scale', 'servings', 'cooking', 'baking'],
   },
   {
+    id: 'gpa-calculator',
+    name: 'GPA Calculator',
+    category: 'General',
+    description: 'Compute your grade point average from a list of courses, grades, and credit hours (US 4.0 scale).',
+    keywords: ['gpa', 'grade point average', 'grades', 'credit hours', 'school', 'college', 'student'],
+  },
+  {
     id: 'investment-growth',
     name: 'Investment / DCA Growth',
     category: 'Finance',

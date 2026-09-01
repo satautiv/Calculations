@@ -46,6 +46,8 @@ const {
   simpleAverage,
   weightedAverage,
   descriptiveStats,
+  LETTER_GRADE_POINTS,
+  gpaFromCourses,
   calculateProgressiveTax,
   progressiveTaxBreakdown,
   salaryAfterTax,
@@ -2072,6 +2074,40 @@ describe('Average / Weighted Average calculator', () => {
     test('throws on an empty list', () => {
       expect(() => descriptiveStats([])).toThrow();
     });
+  });
+});
+
+describe('gpaFromCourses', () => {
+  test('all A courses give a 4.0 GPA regardless of credit hours', () => {
+    const courses = [
+      { gradePoints: LETTER_GRADE_POINTS['A'], creditHours: 3 },
+      { gradePoints: LETTER_GRADE_POINTS['A'], creditHours: 4 },
+    ];
+    expect(gpaFromCourses(courses)).toBe(4.0);
+  });
+
+  test('matches a worked example: A (3cr) and C (3cr) averages to a 3.0 GPA', () => {
+    const courses = [
+      { gradePoints: LETTER_GRADE_POINTS['A'], creditHours: 3 },
+      { gradePoints: LETTER_GRADE_POINTS['C'], creditHours: 3 },
+    ];
+    expect(gpaFromCourses(courses)).toBeCloseTo(3.0, 5);
+  });
+
+  test('weights by credit hours: a heavier-credit low grade pulls the GPA down', () => {
+    const evenCredits = gpaFromCourses([
+      { gradePoints: LETTER_GRADE_POINTS['A'], creditHours: 3 },
+      { gradePoints: LETTER_GRADE_POINTS['F'], creditHours: 3 },
+    ]);
+    const heavierFail = gpaFromCourses([
+      { gradePoints: LETTER_GRADE_POINTS['A'], creditHours: 3 },
+      { gradePoints: LETTER_GRADE_POINTS['F'], creditHours: 6 },
+    ]);
+    expect(heavierFail).toBeLessThan(evenCredits);
+  });
+
+  test('a single course averages to that course\'s grade points', () => {
+    expect(gpaFromCourses([{ gradePoints: 3.3, creditHours: 5 }])).toBe(3.3);
   });
 });
 
