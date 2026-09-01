@@ -417,6 +417,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['sunrise', 'sunset', 'daylight', 'solar noon', 'daylight hours', 'polar day', 'polar night', 'travel'],
   },
   {
+    id: 'moon-phase-calculator',
+    name: 'Moon Phase Calculator',
+    category: 'Unusual',
+    description: 'Estimate the moon\'s phase and illumination percentage for a given date.',
+    keywords: ['moon phase', 'full moon', 'new moon', 'lunar cycle', 'illumination', 'astronomy', 'unusual'],
+  },
+  {
     id: 'warmup-sets-calculator',
     name: 'Warm-Up Set Calculator',
     category: 'Fitness & Strength',

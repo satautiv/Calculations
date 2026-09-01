@@ -1804,6 +1804,42 @@ function formatDurationHM(minutes) {
   return `${hours}h ${mins}m`;
 }
 
+// --- Moon phase calculator ---
+
+// Mean synodic month (new moon to new moon) in days.
+const SYNODIC_MONTH_DAYS = 29.530588853;
+
+// A known reference new moon (2000-01-06 18:14 UTC), used as the epoch every
+// other new moon is measured against via the mean synodic month length. This
+// is a simplified approximation (accurate to roughly a day, since it ignores
+// the real, slightly eccentric lunar orbit) rather than an ephemeris-precision
+// calculation.
+const REFERENCE_NEW_MOON_MS = Date.UTC(2000, 0, 6, 18, 14, 0);
+
+function moonPhaseNameFromFraction(fraction) {
+  const f = ((fraction % 1) + 1) % 1;
+  if (f < 1 / 16 || f >= 15 / 16) return 'New Moon';
+  if (f < 3 / 16) return 'Waxing Crescent';
+  if (f < 5 / 16) return 'First Quarter';
+  if (f < 7 / 16) return 'Waxing Gibbous';
+  if (f < 9 / 16) return 'Full Moon';
+  if (f < 11 / 16) return 'Waning Gibbous';
+  if (f < 13 / 16) return 'Last Quarter';
+  return 'Waning Crescent';
+}
+
+function moonPhaseForDate(date) {
+  const daysSinceReference = (date.getTime() - REFERENCE_NEW_MOON_MS) / 86400000;
+  const daysSinceNewMoon = ((daysSinceReference % SYNODIC_MONTH_DAYS) + SYNODIC_MONTH_DAYS) % SYNODIC_MONTH_DAYS;
+  const phaseFraction = daysSinceNewMoon / SYNODIC_MONTH_DAYS;
+
+  // Illumination approximated as a cosine wave: 0% at new moon, 100% at full
+  // moon, symmetric across the waxing and waning halves of the cycle.
+  const illumination = (1 - Math.cos(2 * Math.PI * phaseFraction)) / 2 * 100;
+
+  return { daysSinceNewMoon, phaseFraction, illumination, phaseName: moonPhaseNameFromFraction(phaseFraction) };
+}
+
 // --- Warm-up set calculator ---
 
 // Standard percentage-based ramping scheme (popularized by powerlifting/
@@ -5947,6 +5983,9 @@ if (typeof module !== 'undefined' && module.exports) {
     sunriseSunset,
     formatMinutesAsLocalTime,
     formatDurationHM,
+    SYNODIC_MONTH_DAYS,
+    moonPhaseNameFromFraction,
+    moonPhaseForDate,
     WARMUP_SCHEME,
     warmupSets,
     dateDifference,
