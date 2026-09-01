@@ -2799,10 +2799,21 @@ document.getElementById('cardep-calc').addEventListener('click', () => {
     <tr><td>${y.year}</td><td>${formatMoney(y.value)}</td></tr>
   `).join('');
 
+  const chartHtml = renderLineChartSvg({
+    series: [{
+      label: 'Value',
+      color: 'var(--accent)',
+      points: [{ x: 0, y: purchasePrice }, ...yearly.map((y) => ({ x: y.year, y: y.value }))],
+    }],
+    xTickFormat: (x) => `Yr ${x.toFixed(0)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+
   document.getElementById('cardep-result').innerHTML = `
     <div class="headline">${formatMoney(valueAtYearN)}</div>
     <div>Projected value after ${years} year${years === 1 ? '' : 's'}</div>
     <div class="hint">Total depreciation: ${formatMoney(totalDepreciation)} (${totalDepreciationPercent.toFixed(1)}%)</div>
+    ${chartHtml}
     <table>
       <thead><tr><th>Year</th><th>Value</th></tr></thead>
       <tbody>${rows}</tbody>
