@@ -1700,9 +1700,31 @@ document.getElementById('hydration-calc').addEventListener('click', () => {
 
     const hydration = doughHydrationPercent(flourWeight, waterWeight);
 
+    const enrichingIngredients = [
+      { type: 'egg', id: 'hydration-egg-weight' },
+      { type: 'milk', id: 'hydration-milk-weight' },
+      { type: 'butter', id: 'hydration-butter-weight' },
+    ]
+      .map(({ type, id }) => ({ type, weight: parseFloat(document.getElementById(id).value) || 0 }))
+      .filter(({ weight }) => weight > 0);
+
+    let trueHydrationHtml = '';
+    try {
+      if (enrichingIngredients.length > 0) {
+        const { trueHydrationPercent, enrichingWaterWeight } = trueDoughHydrationPercent(flourWeight, waterWeight, enrichingIngredients);
+        trueHydrationHtml = `
+          <div class="hint">True hydration (including enriching liquids): ${trueHydrationPercent.toFixed(1)}% &mdash; enriching ingredients contribute an estimated ${enrichingWaterWeight.toFixed(0)} g of water-equivalent.</div>
+        `;
+      }
+    } catch (err) {
+      showError('hydration-result', err.message);
+      return;
+    }
+
     document.getElementById('hydration-result').innerHTML = `
       <div class="headline">${hydration.toFixed(1)}%</div>
       <div>Hydration (${waterWeight} g water &divide; ${flourWeight} g flour)</div>
+      ${trueHydrationHtml}
     `;
   } else {
     const targetPercent = parseFloat(document.getElementById('hydration-target-percent').value);

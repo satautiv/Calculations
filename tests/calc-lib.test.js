@@ -42,6 +42,7 @@ const {
   minutesToTimeLabel,
   doughHydrationPercent,
   doughWaterForHydration,
+  trueDoughHydrationPercent,
   simpleAverage,
   weightedAverage,
   descriptiveStats,
@@ -969,6 +970,34 @@ describe('doughHydrationPercent / doughWaterForHydration', () => {
   test('the two functions are inverses of each other', () => {
     const hydration = doughHydrationPercent(800, 560);
     expect(doughWaterForHydration(hydration, 800)).toBeCloseTo(560, 10);
+  });
+});
+
+describe('trueDoughHydrationPercent', () => {
+  test('matches plain doughHydrationPercent when there are no enriching ingredients', () => {
+    const { trueHydrationPercent } = trueDoughHydrationPercent(1000, 700);
+    expect(trueHydrationPercent).toBe(70);
+  });
+
+  test('folds egg, milk, and butter water-equivalent into the numerator', () => {
+    const { enrichingWaterWeight, totalWaterEquivalent, trueHydrationPercent } = trueDoughHydrationPercent(1000, 500, [
+      { type: 'egg', weight: 100 },
+      { type: 'milk', weight: 50 },
+      { type: 'butter', weight: 50 },
+    ]);
+    expect(enrichingWaterWeight).toBeCloseTo(127, 5);
+    expect(totalWaterEquivalent).toBeCloseTo(627, 5);
+    expect(trueHydrationPercent).toBeCloseTo(62.7, 5);
+  });
+
+  test('rejects a non-positive flour weight or negative water/ingredient weight', () => {
+    expect(() => trueDoughHydrationPercent(0, 500)).toThrow();
+    expect(() => trueDoughHydrationPercent(1000, -1)).toThrow();
+    expect(() => trueDoughHydrationPercent(1000, 500, [{ type: 'egg', weight: -1 }])).toThrow();
+  });
+
+  test('rejects an unknown enriching ingredient type', () => {
+    expect(() => trueDoughHydrationPercent(1000, 500, [{ type: 'oil', weight: 50 }])).toThrow();
   });
 });
 
