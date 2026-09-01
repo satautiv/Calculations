@@ -2339,6 +2339,35 @@ document.getElementById('fuel-calc').addEventListener('click', () => {
   }
 });
 
+// --- Fuel economy converter ---
+const FUEL_ECONOMY_LABELS = { mpgUS: 'US MPG', mpgUK: 'UK MPG', l100km: 'L/100km', kmL: 'km/L' };
+
+document.getElementById('fueleco-calc').addEventListener('click', () => {
+  const value = parseFloat(document.getElementById('fueleco-value').value);
+  const unit = document.getElementById('fueleco-unit').value;
+
+  if (isNaN(value) || value <= 0) {
+    showError('fueleco-result', 'Enter a valid value greater than zero.');
+    return;
+  }
+
+  const result = convertFuelEconomy(value, unit);
+
+  const rowsHtml = Object.keys(FUEL_ECONOMY_LABELS).map(key => `
+    <tr>
+      <td>${FUEL_ECONOMY_LABELS[key]}</td>
+      <td>${result[key].toFixed(2)}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('fueleco-result').innerHTML = `
+    <table>
+      <thead><tr><th>Unit</th><th>Value</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+});
+
 // --- Retirement savings calculator ---
 document.getElementById('retire-calc').addEventListener('click', () => {
   const currentAge = parseFloat(document.getElementById('retire-current-age').value);

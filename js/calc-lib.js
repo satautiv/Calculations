@@ -2157,6 +2157,33 @@ function convertToAllUnits(category, value, fromUnit) {
   return Object.keys(table).map(unit => ({ unit, value: convertLinearUnit(category, value, fromUnit, unit) }));
 }
 
+// --- Fuel economy converter ---
+
+const MILES_PER_KM = 1 / 1.609344;
+const LITERS_PER_US_GALLON = 3.785411784;
+const LITERS_PER_UK_GALLON = 4.54609;
+
+// L/100km is a reciprocal (km-per-liter-based) unit, so it can't be handled
+// by the simple multiply-by-factor table UNIT_CONVERSION_CATEGORIES uses for
+// linear units — everything here routes through a common km-per-liter base.
+function convertFuelEconomy(value, fromUnit) {
+  if (!value || value <= 0) throw new Error('Value must be greater than zero.');
+
+  let kmPerLiter;
+  if (fromUnit === 'mpgUS') kmPerLiter = (value / MILES_PER_KM) / LITERS_PER_US_GALLON;
+  else if (fromUnit === 'mpgUK') kmPerLiter = (value / MILES_PER_KM) / LITERS_PER_UK_GALLON;
+  else if (fromUnit === 'l100km') kmPerLiter = 100 / value;
+  else if (fromUnit === 'kmL') kmPerLiter = value;
+  else throw new Error('Unknown fuel economy unit.');
+
+  return {
+    mpgUS: kmPerLiter * LITERS_PER_US_GALLON * MILES_PER_KM,
+    mpgUK: kmPerLiter * LITERS_PER_UK_GALLON * MILES_PER_KM,
+    l100km: 100 / kmPerLiter,
+    kmL: kmPerLiter,
+  };
+}
+
 // --- FFMI (Fat-Free Mass Index) calculator ---
 
 // Computes fat-free mass, raw FFMI, and height-normalized FFMI (scaled to an
@@ -5719,6 +5746,7 @@ if (typeof module !== 'undefined' && module.exports) {
     convertTemperature,
     convertUnit,
     convertToAllUnits,
+    convertFuelEconomy,
     ffmi,
     ffmiCategory,
     bmiValue,
