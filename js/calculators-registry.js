@@ -431,6 +431,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['ffmi', 'fat-free mass index', 'muscularity', 'natural limit', 'lean mass', 'strength'],
   },
   {
+    id: 'bmi-calculator',
+    name: 'BMI Calculator',
+    category: 'Fitness & Strength',
+    description: 'Compute Body Mass Index (BMI) from weight and height, and classify it against the standard WHO bands.',
+    keywords: ['bmi', 'body mass index', 'weight', 'height', 'obesity', 'underweight', 'overweight'],
+  },
+  {
     id: 'lean-body-mass-calculator',
     name: 'Lean Body Mass Calculator',
     category: 'Fitness & Strength',
