@@ -5166,6 +5166,18 @@ document.getElementById('caf-calc').addEventListener('click', () => {
       .map(h => `<tr><td>+${h}h</td><td>${caffeineRemaining(dose, elapsed + h, halfLife).toFixed(1)} mg</td></tr>`)
       .join('');
 
+    const chartMaxHours = Math.max(24, elapsed + 12, halfLife * 3);
+    const chartPoints = Array.from({ length: 41 }, (_, i) => (chartMaxHours / 40) * i).map((t) => ({
+      x: t,
+      y: caffeineRemaining(dose, t, halfLife),
+    }));
+    const chartHtml = renderLineChartSvg({
+      series: [{ label: 'Remaining caffeine', color: 'var(--accent)', points: chartPoints }],
+      markers: [{ x: elapsed, y: remaining, label: 'Now' }],
+      xTickFormat: (x) => `${x.toFixed(0)}h`,
+      yTickFormat: (y) => `${y.toFixed(0)} mg`,
+    });
+
     document.getElementById('caf-result').innerHTML = `
       <div class="headline">${remaining.toFixed(1)} mg still active</div>
       <div>${dose} mg consumed, ${elapsed}h ago, ${halfLife}h half-life</div>
@@ -5174,6 +5186,7 @@ document.getElementById('caf-calc').addEventListener('click', () => {
         <tbody>${futureRows}</tbody>
       </table>
       <div class="hint">A simplified population-average model for general awareness, not a medical tool &mdash; actual caffeine metabolism varies significantly by individual.</div>
+      ${chartHtml}
     `;
   } catch (err) {
     showError('caf-result', err.message);
