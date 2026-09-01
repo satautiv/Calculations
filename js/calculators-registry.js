@@ -298,6 +298,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['acceleration', '0-100', '0-60', 'zero to sixty', 'kinetic energy', 'power to weight', 'cars'],
   },
   {
+    id: 'stopping-distance-calculator',
+    name: 'Stopping Distance Calculator',
+    category: 'Cars',
+    description: 'Estimate total stopping distance (reaction distance plus braking distance) based on speed and road surface.',
+    keywords: ['stopping distance', 'braking distance', 'reaction time', 'road safety', 'driving', 'cars'],
+  },
+  {
     id: 'gear-ratio-rpm',
     name: 'Gear Ratio / RPM Calculator',
     category: 'Cars',

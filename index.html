@@ -1338,6 +1338,31 @@
     <div class="result" id="accel-result"></div>
   </section>
 
+  <section id="stopping-distance-calculator" class="view tab-panel">
+    <h2>Stopping Distance Calculator</h2>
+    <p class="hint">Estimates total stopping distance as reaction distance (traveled before braking starts) plus braking distance, based on speed and road surface.</p>
+
+    <div class="field">
+      <label for="stop-speed">Speed (km/h)</label>
+      <input type="number" id="stop-speed" min="0" step="1" placeholder="e.g. 100">
+    </div>
+    <div class="field">
+      <label for="stop-reaction-time">Reaction time (seconds)</label>
+      <input type="number" id="stop-reaction-time" min="0" step="0.1" value="1.5" placeholder="e.g. 1.5">
+    </div>
+    <div class="field">
+      <label for="stop-surface">Road surface</label>
+      <select id="stop-surface">
+        <option value="dry">Dry asphalt</option>
+        <option value="wet">Wet asphalt</option>
+        <option value="icy">Icy/snow</option>
+      </select>
+    </div>
+
+    <button class="calc-btn" id="stop-calc">Calculate</button>
+    <div class="result" id="stop-result"></div>
+  </section>
+
   <section id="gear-ratio-rpm" class="view tab-panel">
     <h2>Gear Ratio / RPM Calculator</h2>
     <p class="hint">Calculate vehicle speed from engine RPM, or the RPM needed for a target speed, given the gearbox ratio, final drive ratio, and tyre diameter.</p>

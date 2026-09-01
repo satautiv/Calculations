@@ -3407,6 +3407,34 @@ document.getElementById('accel-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Stopping distance calculator ---
+document.getElementById('stop-calc').addEventListener('click', () => {
+  const speedKmh = parseFloat(document.getElementById('stop-speed').value);
+  const reactionTime = parseFloat(document.getElementById('stop-reaction-time').value);
+  const surface = document.getElementById('stop-surface').value;
+
+  if (isNaN(speedKmh) || speedKmh < 0) {
+    showError('stop-result', 'Enter a valid speed (0 or greater).');
+    return;
+  }
+
+  if (isNaN(reactionTime) || reactionTime < 0) {
+    showError('stop-result', 'Enter a valid reaction time (0 or greater).');
+    return;
+  }
+
+  const speedMs = speedKmh / 3.6;
+  const deceleration = ROAD_SURFACE_DECELERATION[surface];
+
+  const { reactionDistance, brakingDistance, totalDistance } = stoppingDistance(speedMs, reactionTime, deceleration);
+
+  document.getElementById('stop-result').innerHTML = `
+    <div class="headline">${totalDistance.toFixed(1)} m</div>
+    <div>Total stopping distance</div>
+    <div class="hint">Reaction distance: ${reactionDistance.toFixed(1)} m &middot; Braking distance: ${brakingDistance.toFixed(1)} m</div>
+  `;
+});
+
 // --- Gear Ratio / RPM calculator ---
 document.getElementById('gearrpm-mode').addEventListener('change', (e) => {
   const isRpmMode = e.target.value === 'rpm';

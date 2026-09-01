@@ -3624,6 +3624,27 @@ function projectileMotion(speed, angleDeg, initialHeight, gravity = 9.81) {
   return { timeOfFlight, maxHeight, range, vx, vy };
 }
 
+// --- Stopping distance calculator ---
+
+// Typical emergency-braking deceleration (m/s^2) by road surface condition —
+// rough, commonly-cited figures, not a substitute for a vehicle's actual
+// tested braking performance.
+const ROAD_SURFACE_DECELERATION = { dry: 7.5, wet: 5, icy: 2 };
+
+// reactionDistance = speed * reactionTime (car travels at constant speed
+// while the driver reacts); brakingDistance = speed^2 / (2*deceleration)
+// (constant-deceleration kinematics), summed to the total stopping distance.
+function stoppingDistance(speedMs, reactionTimeSeconds, decelerationMs2) {
+  if (speedMs < 0) throw new Error('Speed must be zero or greater.');
+  if (reactionTimeSeconds < 0) throw new Error('Reaction time must be zero or greater.');
+  if (!decelerationMs2 || decelerationMs2 <= 0) throw new Error('Deceleration must be greater than zero.');
+
+  const reactionDistance = speedMs * reactionTimeSeconds;
+  const brakingDistance = (speedMs * speedMs) / (2 * decelerationMs2);
+
+  return { reactionDistance, brakingDistance, totalDistance: reactionDistance + brakingDistance };
+}
+
 // --- URL Encoder/Decoder ---
 
 // Percent-encodes text per RFC 3986. mode 'component' treats the text as a
@@ -5822,6 +5843,8 @@ if (typeof module !== 'undefined' && module.exports) {
     AVERAGE_CAR_KG_CO2_PER_KM,
     solarCO2Avoided,
     projectileMotion,
+    ROAD_SURFACE_DECELERATION,
+    stoppingDistance,
     urlEncode,
     urlDecode,
     base64UrlDecode,
