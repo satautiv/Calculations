@@ -1729,12 +1729,23 @@
     <h2>DOTS Score</h2>
     <p class="hint">Compare powerlifting totals across bodyweights and sexes using the IPF-adopted DOTS formula (the modern successor to Wilks).</p>
     <div class="field">
+      <label for="dots-mode">Mode</label>
+      <select id="dots-mode">
+        <option value="forward">Total &rarr; DOTS score</option>
+        <option value="reverse">Target DOTS score &rarr; required total</option>
+      </select>
+    </div>
+    <div class="field">
       <label for="dots-bw">Bodyweight (kg)</label>
       <input type="number" id="dots-bw" min="0" step="0.1" placeholder="e.g. 90">
     </div>
-    <div class="field">
+    <div class="field" id="dots-total-field">
       <label for="dots-total">Total lifted &mdash; squat + bench + deadlift (kg)</label>
       <input type="number" id="dots-total" min="0" step="0.5" placeholder="e.g. 600">
+    </div>
+    <div class="field" id="dots-target-field" hidden>
+      <label for="dots-target">Target DOTS score</label>
+      <input type="number" id="dots-target" min="0" step="0.1" placeholder="e.g. 500">
     </div>
     <div class="field">
       <label for="dots-sex">Sex</label>

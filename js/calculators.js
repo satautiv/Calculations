@@ -4098,13 +4098,19 @@ document.getElementById('date-diff-calc').addEventListener('click', () => {
 });
 
 // --- DOTS score calculator ---
+document.getElementById('dots-mode').addEventListener('change', (e) => {
+  const isReverse = e.target.value === 'reverse';
+  document.getElementById('dots-total-field').hidden = isReverse;
+  document.getElementById('dots-target-field').hidden = !isReverse;
+});
+
 document.getElementById('dots-calc').addEventListener('click', () => {
+  const mode = document.getElementById('dots-mode').value;
   const bw = parseFloat(document.getElementById('dots-bw').value);
-  const total = parseFloat(document.getElementById('dots-total').value);
   const sex = document.getElementById('dots-sex').value;
 
-  if (!bw || bw <= 0 || !total || total <= 0) {
-    showError('dots-result', 'Enter a valid bodyweight and total lifted.');
+  if (!bw || bw <= 0) {
+    showError('dots-result', 'Enter a valid bodyweight.');
     return;
   }
 
@@ -4113,14 +4119,39 @@ document.getElementById('dots-calc').addEventListener('click', () => {
     return;
   }
 
-  const score = dotsScore(bw, total, sex);
-
   let note = '';
   if (sex === 'female' && bw > DOTS_FEMALE_BW_CAP) {
     note = `<div class="hint">The women's formula is only validated up to ${DOTS_FEMALE_BW_CAP} kg; the calculation used ${DOTS_FEMALE_BW_CAP} kg instead of your entered bodyweight.</div>`;
   } else if (bw < 40) {
     note = '<div class="hint">Bodyweight is below the formula\'s validated range (~40 kg+); the estimate may be less accurate.</div>';
   }
+
+  if (mode === 'reverse') {
+    const targetScore = parseFloat(document.getElementById('dots-target').value);
+
+    if (!targetScore || targetScore <= 0) {
+      showError('dots-result', 'Enter a valid target DOTS score.');
+      return;
+    }
+
+    const requiredTotal = targetScore / dotsCoefficient(bw, sex);
+
+    document.getElementById('dots-result').innerHTML = `
+      <div class="headline">${requiredTotal.toFixed(1)} kg total</div>
+      <div>Required total to reach ${targetScore} DOTS at ${bw} kg bodyweight</div>
+      ${note}
+    `;
+    return;
+  }
+
+  const total = parseFloat(document.getElementById('dots-total').value);
+
+  if (!total || total <= 0) {
+    showError('dots-result', 'Enter a valid total lifted.');
+    return;
+  }
+
+  const score = dotsScore(bw, total, sex);
 
   document.getElementById('dots-result').innerHTML = `
     <div class="headline">${score.toFixed(1)}</div>
