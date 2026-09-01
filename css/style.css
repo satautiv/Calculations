@@ -54,6 +54,20 @@ header h1 {
   border-color: var(--accent);
 }
 
+.lang-select {
+  position: absolute;
+  right: 1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--panel);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
