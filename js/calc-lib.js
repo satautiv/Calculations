@@ -2282,6 +2282,30 @@ function tilesNeeded(area, tileWidth, tileLength, groutWidth, wastePercent) {
   return { effectiveArea, tilesForArea, tilesNeededCount };
 }
 
+// Approximate density of mixed tile grout (varies by type — sanded vs
+// unsanded, powder vs pre-mixed — so this is a rough typical figure, not a
+// precise claim for any specific product).
+const GROUT_DENSITY_KG_PER_LITER = 1.6;
+
+// Estimated grout volume/weight for a tiled area, using the standard
+// estimation formula: volume = area × groutWidth × groutDepth ×
+// (1/tileWidth + 1/tileLength). All lengths are in meters (and area in m²),
+// matching tilesNeeded()'s convention — the DOM layer converts from mm.
+// groutDepth is typically the tile thickness.
+function groutVolumeNeeded(area, tileWidth, tileLength, groutWidth, groutDepth) {
+  if (!area || area <= 0) throw new Error('Area to cover must be greater than zero.');
+  if (!tileWidth || tileWidth <= 0) throw new Error('Tile width must be greater than zero.');
+  if (!tileLength || tileLength <= 0) throw new Error('Tile length must be greater than zero.');
+  if (!groutWidth || groutWidth <= 0) throw new Error('Grout line width must be greater than zero.');
+  if (!groutDepth || groutDepth <= 0) throw new Error('Grout depth must be greater than zero.');
+
+  const volumeM3 = area * groutWidth * groutDepth * (1 / tileWidth + 1 / tileLength);
+  const volumeLiters = volumeM3 * 1000;
+  const weightKg = volumeLiters * GROUT_DENSITY_KG_PER_LITER;
+
+  return { volumeLiters, weightKg };
+}
+
 // --- Concrete calculator ---
 
 // All dimensions in meters, volume in cubic meters.
@@ -5345,6 +5369,7 @@ if (typeof module !== 'undefined' && module.exports) {
     flooringNeeded,
     riegelPredictedTime,
     tilesNeeded,
+    groutVolumeNeeded,
     rectangularConcreteVolume,
     cylindricalConcreteVolume,
     concreteBagsNeeded,
