@@ -12,12 +12,12 @@ function renderCalculatorIndex() {
   const groups = groupCalculatorsByCategory(CALCULATOR_REGISTRY);
   const html = [...groups.entries()].map(([category, calcs]) => `
     <div class="category-group" data-category="${category}">
-      <h2 class="category-title">${category}</h2>
+      <h2 class="category-title">${t(category)}</h2>
       <div class="calc-grid">
         ${calcs.map(c => `
-          <button class="calc-card" data-calc-id="${c.id}" data-search-text="${(c.name + ' ' + c.description + ' ' + c.category + ' ' + c.keywords.join(' ')).toLowerCase()}">
-            <h3>${c.name}</h3>
-            <p>${c.description}</p>
+          <button class="calc-card" data-calc-id="${c.id}" data-search-text="${(c.name + ' ' + t(c.name) + ' ' + c.description + ' ' + t(c.description) + ' ' + c.category + ' ' + t(c.category) + ' ' + c.keywords.join(' ')).toLowerCase()}">
+            <h3>${t(c.name)}</h3>
+            <p>${t(c.description)}</p>
           </button>
         `).join('')}
       </div>
@@ -63,6 +63,7 @@ function currentCalcIdFromHash() {
 renderCalculatorIndex();
 showView(currentCalcIdFromHash());
 window.addEventListener('hashchange', () => showView(currentCalcIdFromHash()));
+initI18n();
 
 document.getElementById('calc-categories').addEventListener('click', (e) => {
   const card = e.target.closest('.calc-card');
