@@ -2649,6 +2649,21 @@ function roofArea(footprintArea, rise, run, wastePercent = 0) {
   return { multiplier, area };
 }
 
+// Converts a roof area (m²) into roofing "squares" (1 square = 100 sq ft)
+// and bundles, the units roofing materials are actually ordered in.
+// bundlesPerSquare defaults to 3 (typical for asphalt shingles) but varies
+// by product, so it's a configurable input.
+function roofingSquaresAndBundles(areaM2, bundlesPerSquare = 3) {
+  if (!areaM2 || areaM2 <= 0) throw new Error('Area must be greater than zero.');
+  if (!bundlesPerSquare || bundlesPerSquare <= 0) throw new Error('Bundles per square must be greater than zero.');
+
+  const areaSqFt = convertUnit('area', areaM2, 'm2', 'ft2');
+  const squaresNeeded = areaSqFt / 100;
+  const bundlesNeeded = Math.ceil(squaresNeeded * bundlesPerSquare);
+
+  return { squaresNeeded, bundlesNeeded };
+}
+
 // --- Roof Pitch calculator ---
 
 // Converts a measured rise/run into the slope ratio, "X-in-12" notation,
@@ -5417,6 +5432,7 @@ if (typeof module !== 'undefined' && module.exports) {
     mulchVolumeNeeded,
     roofPitchMultiplier,
     roofArea,
+    roofingSquaresAndBundles,
     roofPitchConversions,
     BOULDER_GRADE_TABLE,
     YDS_GRADES,

@@ -5316,12 +5316,16 @@ document.getElementById('roof-area-calc').addEventListener('click', () => {
   const run = parseFloat(document.getElementById('roof-run').value);
   const waste = parseFloat(document.getElementById('roof-waste').value) || 0;
 
+  const bundlesPerSquare = parseFloat(document.getElementById('roof-bundles-per-square').value) || 3;
+
   try {
     const { multiplier, area } = roofArea(footprint, rise, run, waste);
+    const { squaresNeeded, bundlesNeeded } = roofingSquaresAndBundles(area, bundlesPerSquare);
 
     document.getElementById('roof-area-result').innerHTML = `
       <div class="headline">${area.toFixed(1)} m&sup2;</div>
       <div>Pitch multiplier: ${multiplier.toFixed(3)} &middot; Footprint: ${footprint} m&sup2;</div>
+      <div class="hint">${squaresNeeded.toFixed(2)} roofing squares &middot; ${bundlesNeeded} bundles (at ${bundlesPerSquare}/square)</div>
     `;
   } catch (err) {
     showError('roof-area-result', err.message);
