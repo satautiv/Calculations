@@ -1331,6 +1331,20 @@ function originalValueFromPercentChange(finalValue, percentChange) {
   return finalValue / (1 + percentChange / 100);
 }
 
+// --- Tip calculator / bill splitter ---
+
+function tipCalculation(bill, tipPercent, numPeople) {
+  if (!bill || bill <= 0) throw new Error('Bill amount must be greater than zero.');
+  if (tipPercent < 0) throw new Error('Tip percentage cannot be negative.');
+  if (!numPeople || numPeople < 1) throw new Error('Number of people must be at least 1.');
+
+  const tipAmount = bill * (tipPercent / 100);
+  const total = bill + tipAmount;
+  const perPerson = total / numPeople;
+
+  return { tipAmount, total, perPerson };
+}
+
 // --- Fraction calculator ---
 
 // Euclidean algorithm. Works with any sign/order of inputs and treats
@@ -5538,6 +5552,7 @@ if (typeof module !== 'undefined' && module.exports) {
     whatPercentOf,
     percentageChange,
     originalValueFromPercentChange,
+    tipCalculation,
     gcd,
     simplifyFraction,
     fractionArithmetic,

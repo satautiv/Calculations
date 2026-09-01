@@ -326,6 +326,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['percentage', 'percent', 'percent of', 'percent change', 'increase', 'decrease', 'general'],
   },
   {
+    id: 'tip-calculator',
+    name: 'Tip Calculator / Bill Splitter',
+    category: 'Finance',
+    description: 'Work out the tip on a bill and split the total evenly across a group.',
+    keywords: ['tip', 'gratuity', 'bill split', 'restaurant', 'split the bill', 'finance'],
+  },
+  {
     id: 'fraction-calculator',
     name: 'Fraction Calculator',
     category: 'General',
