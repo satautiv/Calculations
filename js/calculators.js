@@ -5971,10 +5971,28 @@ document.getElementById('horizon-calc').addEventListener('click', () => {
          <div>With refraction: ${format(refractedKm, 'km')} km / ${format(refractedKm, 'mi')} mi</div>`
       : `<div>Pure geometry (no refraction): ${format(geometricKm, 'km')} km / ${format(geometricKm, 'mi')} mi</div>`;
 
+    const chartMaxHeight = height > 0 ? height * 5 : (heightUnit === 'ft' ? 33 : 10);
+    const chartPoints = Array.from({ length: 26 }, (_, i) => (chartMaxHeight / 25) * i).map((h) => {
+      const hM = heightUnit === 'ft' ? h * METERS_PER_FOOT : h;
+      const result = horizonDistance(hM);
+      return { x: h, y: includeRefraction ? result.refractedKm : result.geometricKm };
+    });
+    const chartHtml = renderLineChartSvg({
+      series: [{
+        label: includeRefraction ? 'Horizon distance (with refraction)' : 'Horizon distance (geometric)',
+        color: 'var(--accent)',
+        points: chartPoints,
+      }],
+      markers: [{ x: height, y: displayKm, label: 'You' }],
+      xTickFormat: (x) => `${x.toFixed(0)} ${heightUnit}`,
+      yTickFormat: (y) => `${y.toFixed(1)} km`,
+    });
+
     document.getElementById('horizon-result').innerHTML = `
       <div class="headline">${format(displayKm, 'km')} km (${format(displayKm, 'mi')} mi) to the horizon</div>
       ${comparisonLine}
       <div class="hint">The refraction coefficient (k = 0.13) varies with weather and temperature gradients, so the refracted figure is a typical-conditions estimate, not exact.</div>
+      ${chartHtml}
     `;
   } catch (err) {
     showError('horizon-result', err.message);
