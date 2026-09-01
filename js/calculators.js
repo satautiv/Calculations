@@ -5467,11 +5467,26 @@ document.getElementById('uv-calc').addEventListener('click', () => {
       ? `<div>With SPF ${spf}: ${formatBurnTime(timeToBurnMinutes(uvIndex, skinType, spf))}</div>`
       : '';
 
+    const comparisonRows = Object.keys(FITZPATRICK_SKIN_FACTORS).map((type) => {
+      const minutes = timeToBurnMinutes(uvIndex, type, spf);
+      const isSelected = type === skinType;
+      return `
+        <tr${isSelected ? ' style="font-weight:700"' : ''}>
+          <td>${type}${isSelected ? ' (selected)' : ''}</td>
+          <td>${formatBurnTime(minutes)}</td>
+        </tr>
+      `;
+    }).join('');
+
     document.getElementById('uv-result').innerHTML = `
       <div class="headline">${formatBurnTime(baseMinutes)}</div>
       <div>Estimated time to burn without sunscreen</div>
       ${withSpfHtml}
       <div class="hint">A rough population-average estimate; actual burn time varies with altitude, reflection off snow/sand/water, medications, time of day, and individual skin sensitivity. Reapply sunscreen regularly regardless of this estimate.</div>
+      <table>
+        <thead><tr><th>Skin type</th><th>${spf ? `Time to burn (SPF ${spf})` : 'Time to burn'}</th></tr></thead>
+        <tbody>${comparisonRows}</tbody>
+      </table>
     `;
   } catch (err) {
     showError('uv-result', err.message);
