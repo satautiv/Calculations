@@ -928,10 +928,23 @@ function evVsPetrolTCO({
 
   const difference = petrolTCO - evTCO;
 
+  const yearly = [];
+  for (let year = 1; year <= years; year++) {
+    const distanceKm = year * annualMileageKm;
+    const evCumulative = evNetPurchase
+      + (distanceKm / 100) * evEfficiencyKWh100km * electricityPricePerKWh
+      + year * evMaintenancePerYear;
+    const petrolCumulative = petrolNetPurchase
+      + (distanceKm / 100) * petrolConsumptionL100km * petrolPricePerL
+      + year * petrolMaintenancePerYear;
+    yearly.push({ year, evCumulative, petrolCumulative });
+  }
+
   return {
     evTCO,
     petrolTCO,
     difference,
+    yearly,
     evBreakdown: {
       netPurchase: evNetPurchase,
       energyOrFuel: evEnergyCost,

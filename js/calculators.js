@@ -2668,7 +2668,7 @@ document.getElementById('evtco-calc').addEventListener('click', () => {
     return;
   }
 
-  const { evTCO, petrolTCO, difference, evBreakdown, petrolBreakdown, cheaper } = evVsPetrolTCO({
+  const { evTCO, petrolTCO, difference, evBreakdown, petrolBreakdown, cheaper, yearly } = evVsPetrolTCO({
     years,
     annualMileageKm,
     evPurchasePrice,
@@ -2687,9 +2687,46 @@ document.getElementById('evtco-calc').addEventListener('click', () => {
     ? `The EV is cheaper overall by ${formatMoney(Math.abs(difference))} over ${years} year${years === 1 ? '' : 's'}.`
     : `The petrol car is cheaper overall by ${formatMoney(Math.abs(difference))} over ${years} year${years === 1 ? '' : 's'}.`;
 
+  let crossoverYear = null;
+  if (yearly.length > 0) {
+    const initialSign = Math.sign(yearly[0].evCumulative - yearly[0].petrolCumulative);
+    for (let i = 1; i < yearly.length; i++) {
+      const sign = Math.sign(yearly[i].evCumulative - yearly[i].petrolCumulative);
+      if (sign !== 0 && sign !== initialSign) {
+        crossoverYear = yearly[i];
+        break;
+      }
+    }
+  }
+
+  const evNetPurchase = evBreakdown.netPurchase;
+  const petrolNetPurchase = petrolBreakdown.netPurchase;
+  const chartHtml = yearly.length > 0 ? renderLineChartSvg({
+    series: [
+      {
+        label: 'EV cumulative cost',
+        color: 'var(--accent)',
+        points: [{ x: 0, y: evNetPurchase }, ...yearly.map((y) => ({ x: y.year, y: y.evCumulative }))],
+      },
+      {
+        label: 'Petrol cumulative cost',
+        color: 'var(--danger)',
+        points: [{ x: 0, y: petrolNetPurchase }, ...yearly.map((y) => ({ x: y.year, y: y.petrolCumulative }))],
+      },
+    ],
+    markers: crossoverYear ? [{ x: crossoverYear.year, y: crossoverYear.evCumulative, label: `Crossover: year ${crossoverYear.year}` }] : [],
+    xTickFormat: (x) => `Yr ${x.toFixed(0)}`,
+    yTickFormat: (y) => formatMoney(y),
+  }) : '';
+  const crossoverHint = crossoverYear
+    ? `<div class="hint">Estimated crossover: year ${crossoverYear.year}, where the cheaper vehicle switches.</div>`
+    : `<div class="hint">The cheaper vehicle doesn't switch within this ${years}-year period.</div>`;
+
   document.getElementById('evtco-result').innerHTML = `
     <div class="headline">${cheaper === 'ev' ? 'EV' : 'Petrol'} wins</div>
     <div>${verdict}</div>
+    ${crossoverHint}
+    ${chartHtml}
     <table>
       <thead><tr><th></th><th>Net purchase</th><th>Energy/fuel</th><th>Maintenance</th><th>Total TCO</th></tr></thead>
       <tbody>

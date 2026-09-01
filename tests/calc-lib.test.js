@@ -1385,6 +1385,12 @@ describe('evVsPetrolTCO', () => {
     expect(result.cheaper).toBe('ev');
     expect(result.evBreakdown).toEqual({ netPurchase: 17000, energyOrFuel: 3600, maintenance: 2000 });
     expect(result.petrolBreakdown).toEqual({ netPurchase: 15000, energyOrFuel: 7800, maintenance: 3500 });
+
+    expect(result.yearly).toHaveLength(5);
+    expect(result.yearly[0].year).toBe(1);
+    expect(result.yearly[4].year).toBe(5);
+    expect(result.yearly[4].evCumulative).toBeCloseTo(result.evTCO, 5);
+    expect(result.yearly[4].petrolCumulative).toBeCloseTo(result.petrolTCO, 5);
   });
 
   test('petrol comes out cheaper when the EV has a high purchase price and low resale, and petrol is efficient', () => {
