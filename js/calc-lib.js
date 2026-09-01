@@ -4749,6 +4749,48 @@ function octalToSymbolic(octalStr) {
     chmodTriadSymbolic(otherDigit, sticky, 't', 'T')
   );
 }
+
+// Decodes one 3-character triad (as produced by chmodTriadSymbolic) into its
+// read/write/execute bits plus which special bit (if any) is folded into
+// the execute slot.
+function decodeChmodTriad(triad, specialLowerChar, specialUpperChar, specialName) {
+  const read = triad[0] === 'r';
+  const write = triad[1] === 'w';
+  const thirdChar = triad[2];
+  const hasSpecial = thirdChar === specialLowerChar || thirdChar === specialUpperChar;
+  const execute = thirdChar === 'x' || thirdChar === specialLowerChar;
+  return { read, write, execute, special: hasSpecial ? specialName : null };
+}
+
+// Plain-English breakdown of a 9-character symbolic permission string (a
+// leading file-type character, e.g. from "drwxr-xr-x", is stripped if
+// present), plus warnings for commonly-flagged risky combinations:
+// world-writable, and setuid/setgid combined with world-writable.
+function chmodPermissionBreakdown(symbolic) {
+  if (typeof symbolic !== 'string') throw new Error('Provide a symbolic permission string.');
+
+  let trimmed = symbolic.trim();
+  if (trimmed.length === 10) trimmed = trimmed.slice(1);
+  if (trimmed.length !== 9) throw new Error('Symbolic permissions must be exactly 9 characters.');
+
+  const owner = decodeChmodTriad(trimmed.slice(0, 3), 's', 'S', 'setuid');
+  const group = decodeChmodTriad(trimmed.slice(3, 6), 's', 'S', 'setgid');
+  const other = decodeChmodTriad(trimmed.slice(6, 9), 't', 'T', 'sticky');
+
+  const worldWritable = other.write;
+  const warnings = [];
+  if (worldWritable) {
+    warnings.push('World-writable: anyone on the system can modify this file, not just the owner or group.');
+  }
+  if (worldWritable && owner.special === 'setuid') {
+    warnings.push("Setuid combined with world-writable is a serious risk: anyone can replace the file's contents, and it will still run with the owner's privileges.");
+  }
+  if (worldWritable && group.special === 'setgid') {
+    warnings.push("Setgid combined with world-writable is a serious risk: anyone can replace the file's contents, and it will still run with the group's privileges.");
+  }
+
+  return { owner, group, other, worldWritable, warnings };
+}
 // --- CSS Unit Converter ---
 
 // Everything funnels through a canonical px value first, then fans back out
@@ -5533,6 +5575,7 @@ if (typeof module !== 'undefined' && module.exports) {
     sha512FromBytes,
     symbolicToOctal,
     octalToSymbolic,
+    chmodPermissionBreakdown,
     convertCssUnits,
     k8sResourcePlan,
     tokenizeSql,
