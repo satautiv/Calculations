@@ -1595,17 +1595,39 @@ document.getElementById('coffee-calc').addEventListener('click', () => {
     return;
   }
 
-  if (direction === 'doseToWater') {
-    const water = coffeeWaterForDose(amount, ratio);
+  const formatGrams = (g) => g % 1 === 0 ? g : g.toFixed(1);
+  const isDoseToWater = direction === 'doseToWater';
+  const solve = (r) => isDoseToWater ? coffeeWaterForDose(amount, r) : coffeeDoseForWater(amount, r);
+  const columnLabel = isDoseToWater ? 'Water/yield' : 'Coffee dose';
+
+  const comparisonRows = [ratio - 2, ratio - 1, ratio, ratio + 1, ratio + 2]
+    .filter((r) => r > 0)
+    .map((r) => `
+      <tr${r === ratio ? ' style="font-weight:700"' : ''}>
+        <td>1:${r}</td>
+        <td>${formatGrams(solve(r))} g</td>
+      </tr>
+    `).join('');
+  const comparisonTable = `
+    <table>
+      <thead><tr><th>Ratio</th><th>${columnLabel}</th></tr></thead>
+      <tbody>${comparisonRows}</tbody>
+    </table>
+  `;
+
+  if (isDoseToWater) {
+    const water = solve(ratio);
     document.getElementById('coffee-result').innerHTML = `
-      <div class="headline">${water % 1 === 0 ? water : water.toFixed(1)} g water/yield</div>
+      <div class="headline">${formatGrams(water)} g water/yield</div>
       <div>${amount} g coffee at a 1:${ratio} ratio</div>
+      ${comparisonTable}
     `;
   } else {
-    const dose = coffeeDoseForWater(amount, ratio);
+    const dose = solve(ratio);
     document.getElementById('coffee-result').innerHTML = `
-      <div class="headline">${dose % 1 === 0 ? dose : dose.toFixed(1)} g coffee dose</div>
+      <div class="headline">${formatGrams(dose)} g coffee dose</div>
       <div>${amount} g water/yield at a 1:${ratio} ratio</div>
+      ${comparisonTable}
     `;
   }
 });
