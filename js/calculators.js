@@ -4879,10 +4879,14 @@ document.getElementById('bulk-calc').addEventListener('click', () => {
 
   try {
     const target = bulkCalories(tdee, surplusFraction);
+    const weeklySurplusKcal = (target - tdee) * 7;
+    const weeklyGainKg = weeklySurplusKcal / KCAL_PER_KG_FAT;
+    const weeklyGainLb = weeklySurplusKcal / KCAL_PER_LB_FAT;
 
     document.getElementById('bulk-result').innerHTML = `
       <div class="headline">${Math.round(target).toLocaleString()} kcal/day</div>
       <div>${(surplusFraction * 100).toFixed(0)}% surplus above a ${Math.round(tdee).toLocaleString()} kcal/day TDEE</div>
+      <div class="hint">Estimated weight gain: &asymp;${weeklyGainKg.toFixed(2)} kg/week (${weeklyGainLb.toFixed(2)} lb/week) &mdash; this includes some fat gain alongside muscle, not muscle alone.</div>
     `;
   } catch (err) {
     showError('bulk-result', err.message);
