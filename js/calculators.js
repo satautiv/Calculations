@@ -2400,7 +2400,7 @@ document.getElementById('fire-calc').addEventListener('click', () => {
 // for one or more numeric series sharing the same x-axis, with an optional
 // legend and point markers. `series` is [{ label, color, points: [{x,y}] }];
 // `markers` is [{ x, y, label }] for callouts like a break-even point.
-function renderLineChartSvg({ width = 480, height = 220, series, markers = [], hLines = [], xTickFormat = String, yTickFormat = String }) {
+function renderLineChartSvg({ width = 480, height = 220, series, markers = [], hLines = [], xTickFormat = String, yTickFormat = String, includeZero = true }) {
   const padding = { top: 12, right: 16, bottom: 24, left: 60 };
   const plotWidth = width - padding.left - padding.right;
   const plotHeight = height - padding.top - padding.bottom;
@@ -2410,7 +2410,7 @@ function renderLineChartSvg({ width = 480, height = 220, series, markers = [], h
   const yValues = allPoints.map((p) => p.y).concat(markers.map((m) => m.y)).concat(hLines.map((h) => h.y));
   const xMin = Math.min(...xValues);
   const xMax = Math.max(...xValues);
-  const yMin = Math.min(0, ...yValues);
+  const yMin = includeZero ? Math.min(0, ...yValues) : Math.min(...yValues);
   const yMax = Math.max(...yValues);
 
   const scaleX = (x) => padding.left + ((x - xMin) / (xMax - xMin || 1)) * plotWidth;
@@ -4790,10 +4790,24 @@ document.getElementById('wlt-calc').addEventListener('click', () => {
       note = '<div class="hint">This deficit produces an especially long timeline; a slightly larger (but still sustainable) deficit may be more practical.</div>';
     }
 
+    const totalWeeks = Math.ceil(weeksNeeded);
+    const chartPoints = Array.from({ length: totalWeeks + 1 }, (_, w) => ({
+      x: w,
+      y: current - Math.min(w / weeksNeeded, 1) * weightToLose,
+    }));
+    const chartHtml = renderLineChartSvg({
+      series: [{ label: 'Projected weight', color: 'var(--accent)', points: chartPoints }],
+      hLines: [{ y: goal, label: `Goal: ${goal} ${unit}`, color: 'var(--danger)' }],
+      xTickFormat: (x) => `Wk ${x.toFixed(0)}`,
+      yTickFormat: (y) => `${y.toFixed(1)} ${unit}`,
+      includeZero: false,
+    });
+
     document.getElementById('wlt-result').innerHTML = `
       <div class="headline">${Math.round(daysNeeded).toLocaleString()} days (&asymp;${weeksNeeded.toFixed(1)} weeks)</div>
       <div>To lose ${weightToLose.toLocaleString()} ${unit} at a ${deficit.toLocaleString()} kcal/day deficit</div>
       ${note}
+      ${chartHtml}
     `;
   } catch (err) {
     showError('wlt-result', err.message);
