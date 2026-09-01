@@ -128,6 +128,7 @@ const {
   glPoints,
   convertUnit,
   convertToAllUnits,
+  convertFuelEconomy,
   ffmi,
   ffmiCategory,
   bmiValue,
@@ -2891,6 +2892,40 @@ describe('convertToAllUnits', () => {
 
   test('throws for an unknown category', () => {
     expect(() => convertToAllUnits('nonsense', 1, 'm')).toThrow();
+  });
+});
+
+describe('convertFuelEconomy', () => {
+  test('worked example: 30 US MPG across every unit', () => {
+    const result = convertFuelEconomy(30, 'mpgUS');
+    expect(result.mpgUS).toBeCloseTo(30, 10);
+    expect(result.mpgUK).toBeCloseTo(36.03, 2);
+    expect(result.l100km).toBeCloseTo(7.84, 2);
+    expect(result.kmL).toBeCloseTo(12.75, 2);
+  });
+
+  test('the classic 235.214 L/100km <-> US MPG constant round-trips to ~1 US MPG', () => {
+    expect(convertFuelEconomy(235.214, 'l100km').mpgUS).toBeCloseTo(1, 4);
+  });
+
+  test('starting from l100km recovers the same mpgUS as starting from mpgUS', () => {
+    const fromMpg = convertFuelEconomy(30, 'mpgUS');
+    const fromL100km = convertFuelEconomy(fromMpg.l100km, 'l100km');
+    expect(fromL100km.mpgUS).toBeCloseTo(30, 5);
+  });
+
+  test('UK MPG reads higher than US MPG for the same real efficiency (larger UK gallon)', () => {
+    const result = convertFuelEconomy(30, 'mpgUS');
+    expect(result.mpgUK).toBeGreaterThan(result.mpgUS);
+  });
+
+  test('rejects a non-positive value', () => {
+    expect(() => convertFuelEconomy(0, 'mpgUS')).toThrow();
+    expect(() => convertFuelEconomy(-5, 'kmL')).toThrow();
+  });
+
+  test('rejects an unknown unit', () => {
+    expect(() => convertFuelEconomy(30, 'furlongsPerFirkin')).toThrow();
   });
 });
 

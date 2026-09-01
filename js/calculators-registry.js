@@ -214,6 +214,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['fuel cost', 'fuel consumption', 'mpg', 'l/100km', 'trip cost'],
   },
   {
+    id: 'fuel-economy-converter',
+    name: 'Fuel Economy Converter',
+    category: 'Cars',
+    description: 'Convert a fuel economy figure between US MPG, UK MPG, L/100km, and km/L.',
+    keywords: ['fuel economy', 'mpg', 'l/100km', 'km/l', 'gas mileage', 'cars'],
+  },
+  {
     id: 'retirement-savings',
     name: 'Retirement Savings',
     category: 'Finance',
