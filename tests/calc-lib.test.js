@@ -14,6 +14,9 @@ const {
   wendler531Sets,
   compoundInterest,
   scaleRecipe,
+  INGREDIENT_GRAMS_PER_CUP,
+  cookingVolumeToGrams,
+  cookingGramsToVolume,
   investmentGrowth,
   bakersPercentagesFromWeights,
   bakersWeightsFromPercentages,
@@ -462,6 +465,51 @@ describe('scaleRecipe', () => {
     const { scaleFactor, ingredients } = scaleRecipe(4, 2, [{ name: 'flour', quantity: 300, unit: 'g' }]);
     expect(scaleFactor).toBe(0.5);
     expect(ingredients[0].scaledQuantity).toBe(150);
+  });
+});
+
+describe('cookingVolumeToGrams', () => {
+  test('matches a worked example: 2 cups of all-purpose flour is 240 g', () => {
+    expect(cookingVolumeToGrams('allPurposeFlour', 2)).toBe(240);
+  });
+
+  test('different ingredients convert at different densities for the same volume', () => {
+    const flour = cookingVolumeToGrams('allPurposeFlour', 1);
+    const butter = cookingVolumeToGrams('butter', 1);
+    expect(flour).toBe(INGREDIENT_GRAMS_PER_CUP.allPurposeFlour);
+    expect(butter).toBe(INGREDIENT_GRAMS_PER_CUP.butter);
+    expect(flour).not.toBe(butter);
+  });
+
+  test('zero cups converts to zero grams', () => {
+    expect(cookingVolumeToGrams('granulatedSugar', 0)).toBe(0);
+  });
+
+  test('rejects an unknown ingredient', () => {
+    expect(() => cookingVolumeToGrams('unobtainium', 1)).toThrow();
+  });
+
+  test('rejects a negative amount', () => {
+    expect(() => cookingVolumeToGrams('allPurposeFlour', -1)).toThrow();
+  });
+});
+
+describe('cookingGramsToVolume', () => {
+  test('matches a worked example: 240 g of all-purpose flour is 2 cups', () => {
+    expect(cookingGramsToVolume('allPurposeFlour', 240)).toBeCloseTo(2, 10);
+  });
+
+  test('round-trips with cookingVolumeToGrams', () => {
+    const grams = cookingVolumeToGrams('brownSugar', 1.5);
+    expect(cookingGramsToVolume('brownSugar', grams)).toBeCloseTo(1.5, 10);
+  });
+
+  test('rejects an unknown ingredient', () => {
+    expect(() => cookingGramsToVolume('unobtainium', 100)).toThrow();
+  });
+
+  test('rejects a negative amount', () => {
+    expect(() => cookingGramsToVolume('allPurposeFlour', -1)).toThrow();
   });
 });
 

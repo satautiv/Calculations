@@ -707,6 +707,59 @@ document.getElementById('recipe-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Cooking measurement converter ---
+const TBSP_PER_CUP = 16;
+const TSP_PER_CUP = 48;
+
+document.getElementById('cookconv-mode').addEventListener('change', (e) => {
+  const isVolumeToGrams = e.target.value === 'volume-to-grams';
+  document.getElementById('cookconv-volume-fields').hidden = !isVolumeToGrams;
+  document.getElementById('cookconv-grams-fields').hidden = isVolumeToGrams;
+});
+
+document.getElementById('cookconv-calc').addEventListener('click', () => {
+  const mode = document.getElementById('cookconv-mode').value;
+  const ingredient = document.getElementById('cookconv-ingredient').value;
+  const ingredientLabel = document.getElementById('cookconv-ingredient').selectedOptions[0].textContent;
+
+  try {
+    if (mode === 'volume-to-grams') {
+      const amount = parseFloat(document.getElementById('cookconv-volume-amount').value);
+      const unit = document.getElementById('cookconv-volume-unit').value;
+
+      if (isNaN(amount) || amount < 0) {
+        showError('cookconv-result', 'Enter a valid amount (0 or greater).');
+        return;
+      }
+
+      const cups = unit === 'tbsp' ? amount / TBSP_PER_CUP : unit === 'tsp' ? amount / TSP_PER_CUP : amount;
+      const grams = cookingVolumeToGrams(ingredient, cups);
+
+      document.getElementById('cookconv-result').innerHTML = `
+        <div class="headline">${grams.toFixed(0)} g</div>
+        <div>${ingredientLabel}</div>
+      `;
+    } else {
+      const grams = parseFloat(document.getElementById('cookconv-grams-amount').value);
+
+      if (isNaN(grams) || grams < 0) {
+        showError('cookconv-result', 'Enter a valid amount of grams (0 or greater).');
+        return;
+      }
+
+      const cups = cookingGramsToVolume(ingredient, grams);
+
+      document.getElementById('cookconv-result').innerHTML = `
+        <div class="headline">${cups.toFixed(2)} cups</div>
+        <div>${ingredientLabel}</div>
+        <div class="hint">${(cups * TBSP_PER_CUP).toFixed(1)} tbsp &middot; ${(cups * TSP_PER_CUP).toFixed(1)} tsp</div>
+      `;
+    }
+  } catch (err) {
+    showError('cookconv-result', err.message);
+  }
+});
+
 // --- GPA calculator ---
 const GPA_INITIAL_ROWS = 3;
 const GPA_GRADE_OPTIONS = Object.keys(LETTER_GRADE_POINTS);

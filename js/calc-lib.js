@@ -194,6 +194,41 @@ function investmentGrowth(initialLumpSum, contribution, periodsPerYear, annualRa
   return { futureValue: balance, totalContributed: contributed, totalGrowth: balance - contributed, yearly };
 }
 
+// --- Cooking measurement converter ---
+
+// Approximate grams per US cup for common baking ingredients. Actual weight
+// varies with how an ingredient is packed/sifted, so these are reference
+// values, not a precision measurement.
+const INGREDIENT_GRAMS_PER_CUP = {
+  allPurposeFlour: 120,
+  granulatedSugar: 200,
+  brownSugar: 220,
+  powderedSugar: 120,
+  butter: 227,
+  honey: 340,
+  milk: 245,
+  water: 236,
+  rice: 185,
+  cocoaPowder: 85,
+  oats: 90,
+};
+
+function cookingVolumeToGrams(ingredient, cups) {
+  const gramsPerCup = INGREDIENT_GRAMS_PER_CUP[ingredient];
+  if (!gramsPerCup) throw new Error('Select a known ingredient.');
+  if (cups < 0) throw new Error('Amount must be zero or greater.');
+
+  return cups * gramsPerCup;
+}
+
+function cookingGramsToVolume(ingredient, grams) {
+  const gramsPerCup = INGREDIENT_GRAMS_PER_CUP[ingredient];
+  if (!gramsPerCup) throw new Error('Select a known ingredient.');
+  if (grams < 0) throw new Error('Grams must be zero or greater.');
+
+  return grams / gramsPerCup;
+}
+
 // Baker's percentage, weights -> percentages: every ingredient (including each
 // flour) expressed as a percentage of the combined flour weight.
 function bakersPercentagesFromWeights(ingredients) {
@@ -5652,6 +5687,9 @@ if (typeof module !== 'undefined' && module.exports) {
     COMPOUNDING_FREQUENCIES,
     compoundInterest,
     scaleRecipe,
+    INGREDIENT_GRAMS_PER_CUP,
+    cookingVolumeToGrams,
+    cookingGramsToVolume,
     CONTRIBUTION_FREQUENCIES,
     investmentGrowth,
     bakersPercentagesFromWeights,
