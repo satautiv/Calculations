@@ -6067,13 +6067,32 @@ document.getElementById('projectile-calc').addEventListener('click', () => {
   }
 
   try {
-    const { timeOfFlight, maxHeight, range } = projectileMotion(speed, angle, height);
+    const { timeOfFlight, maxHeight, range, vx, vy } = projectileMotion(speed, angle, height);
+
+    const gravity = 9.81;
+    const chartHtml = timeOfFlight > 0 ? (() => {
+      const points = Array.from({ length: 41 }, (_, i) => (timeOfFlight / 40) * i).map((t) => ({
+        x: vx * t,
+        y: height + vy * t - 0.5 * gravity * t * t,
+      }));
+      const peakTime = vy / gravity;
+      const markers = [{ x: range, y: 0, label: 'Landing' }];
+      if (peakTime > 0 && peakTime < timeOfFlight) markers.unshift({ x: vx * peakTime, y: maxHeight, label: 'Peak' });
+
+      return renderLineChartSvg({
+        series: [{ label: 'Trajectory', color: 'var(--accent)', points }],
+        markers,
+        xTickFormat: (x) => `${x.toFixed(0)} m`,
+        yTickFormat: (y) => `${y.toFixed(0)} m`,
+      });
+    })() : '';
 
     document.getElementById('projectile-result').innerHTML = `
       <div class="headline">${timeOfFlight.toFixed(2)} s flight time</div>
       <div>Maximum height: ${maxHeight.toFixed(2)} m</div>
       <div>Horizontal range: ${range.toFixed(2)} m</div>
       <div class="hint">Assumes no air resistance, flat and level ground, and constant gravity (9.81 m/s²) - a simplified physics model, not accounting for wind, spin, or drag.</div>
+      ${chartHtml}
     `;
   } catch (err) {
     showError('projectile-result', err.message);
