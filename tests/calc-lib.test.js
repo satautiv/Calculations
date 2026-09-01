@@ -143,6 +143,7 @@ const {
   rectangularConcreteVolume,
   cylindricalConcreteVolume,
   concreteBagsNeeded,
+  concreteCostComparison,
   karvonenZones,
   bedtimesForWakeTime,
   wakeTimesForBedtime,
@@ -3101,6 +3102,31 @@ describe('concreteBagsNeeded', () => {
 
   test('rejects a negative waste percentage', () => {
     expect(() => concreteBagsNeeded(0.6, -5, 0.0125)).toThrow();
+  });
+});
+
+describe('concreteCostComparison', () => {
+  test('worked example: 51 bags at €7, 0.63 m³ ready-mix at €150/m³ + €100 delivery', () => {
+    const { bagCost, readyMixCost, cheaperOption } = concreteCostComparison(51, 7, 0.63, 150, 100);
+    expect(bagCost).toBeCloseTo(357, 5);
+    expect(readyMixCost).toBeCloseTo(194.5, 5);
+    expect(cheaperOption).toBe('ready-mix');
+  });
+
+  test('small jobs favor bags once the ready-mix delivery fee dominates', () => {
+    const { cheaperOption } = concreteCostComparison(2, 7, 0.02, 150, 300);
+    expect(cheaperOption).toBe('bags');
+  });
+
+  test('defaults delivery fee to zero when omitted', () => {
+    const { readyMixCost } = concreteCostComparison(51, 7, 0.63, 150);
+    expect(readyMixCost).toBeCloseTo(94.5, 5);
+  });
+
+  test('rejects a non-positive price or a negative delivery fee', () => {
+    expect(() => concreteCostComparison(51, 0, 0.63, 150)).toThrow();
+    expect(() => concreteCostComparison(51, 7, 0.63, 0)).toThrow();
+    expect(() => concreteCostComparison(51, 7, 0.63, 150, -10)).toThrow();
   });
 });
 

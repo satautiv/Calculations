@@ -2334,6 +2334,21 @@ function concreteBagsNeeded(volume, wastePercent, yieldPerBag) {
   return { volumeWithWaste, bagsNeeded };
 }
 
+// Compares the cost of buying bagged concrete vs. ordering ready-mix
+// delivery for the same volumeWithWaste (m³), given a price per bag and a
+// price per m³ of ready-mix plus an optional flat delivery fee.
+function concreteCostComparison(bagsNeeded, pricePerBag, volumeWithWaste, pricePerReadyMixM3, deliveryFee = 0) {
+  if (!pricePerBag || pricePerBag <= 0) throw new Error('Price per bag must be greater than zero.');
+  if (!pricePerReadyMixM3 || pricePerReadyMixM3 <= 0) throw new Error('Ready-mix price must be greater than zero.');
+  if (deliveryFee < 0) throw new Error('Delivery fee cannot be negative.');
+
+  const bagCost = bagsNeeded * pricePerBag;
+  const readyMixCost = volumeWithWaste * pricePerReadyMixM3 + deliveryFee;
+  const cheaperOption = bagCost < readyMixCost ? 'bags' : readyMixCost < bagCost ? 'ready-mix' : 'tie';
+
+  return { bagCost, readyMixCost, cheaperOption };
+}
+
 // --- Heart-rate training zone calculator (Karvonen method) ---
 
 const HEART_RATE_ZONES = [
@@ -5373,6 +5388,7 @@ if (typeof module !== 'undefined' && module.exports) {
     rectangularConcreteVolume,
     cylindricalConcreteVolume,
     concreteBagsNeeded,
+    concreteCostComparison,
     HEART_RATE_ZONES,
     karvonenZones,
     SLEEP_CYCLE_MINUTES,
