@@ -6106,15 +6106,38 @@ document.getElementById('heating-calc').addEventListener('click', () => {
   const efficiency = parseFloat(document.getElementById('heating-efficiency').value);
   const price = parseFloat(document.getElementById('heating-price').value);
 
+  const heatPumpCopRaw = document.getElementById('heating-heatpump-cop').value;
+  const heatPumpCop = heatPumpCopRaw === '' ? null : parseFloat(heatPumpCopRaw);
+  const heatPumpPriceRaw = document.getElementById('heating-heatpump-price').value;
+  const heatPumpPrice = heatPumpPriceRaw === '' ? price : parseFloat(heatPumpPriceRaw);
+
+  if (heatPumpCop !== null && heatPumpCop <= 0) {
+    showError('heating-result', 'Heat pump COP, if provided, must be greater than zero.');
+    return;
+  }
+
   try {
     const { dailyHeatLossFactor, totalHeatingEnergyKwh, energyAfterEfficiencyKwh, cost } =
       heatingCost(floorArea, insulationFactor, hdd, efficiency, price);
+
+    const heatPumpHtml = heatPumpCop !== null ? (() => {
+      const heatPumpResult = heatingCost(floorArea, insulationFactor, hdd, heatPumpCop, heatPumpPrice);
+      const savings = cost - heatPumpResult.cost;
+      const verdict = savings >= 0
+        ? `Switching to a heat pump (COP ${heatPumpCop}) would save an estimated ${Math.abs(savings).toLocaleString(undefined, { maximumFractionDigits: 2 })}/season.`
+        : `Switching to a heat pump (COP ${heatPumpCop}) would cost an estimated ${Math.abs(savings).toLocaleString(undefined, { maximumFractionDigits: 2 })}/season more.`;
+      return `
+        <div class="hint">Heat pump estimated cost: ${heatPumpResult.cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+        <div class="hint">${verdict}</div>
+      `;
+    })() : '';
 
     document.getElementById('heating-result').innerHTML = `
       <div class="headline">Estimated heating cost: ${cost.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
       <div>Heating energy needed: ${totalHeatingEnergyKwh.toLocaleString(undefined, { maximumFractionDigits: 0 })} kWh</div>
       <div>Energy drawn after system efficiency: ${energyAfterEfficiencyKwh.toLocaleString(undefined, { maximumFractionDigits: 0 })} kWh</div>
       <div class="hint">Daily heat loss factor: ${dailyHeatLossFactor.toLocaleString(undefined, { maximumFractionDigits: 2 })} kWh per degree-day. This is a simplified degree-day estimate, not a substitute for a full home energy audit.</div>
+      ${heatPumpHtml}
     `;
   } catch (err) {
     showError('heating-result', err.message);
