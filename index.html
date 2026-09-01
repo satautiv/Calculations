@@ -213,6 +213,55 @@
     <div class="result" id="recipe-result"></div>
   </section>
 
+  <section id="cooking-measurement-converter" class="view tab-panel">
+    <h2>Cooking Measurement Converter</h2>
+    <p class="hint">Convert cups/tablespoons/teaspoons to grams (or back) for a specific baking ingredient. Values are approximate reference figures &mdash; actual weight varies with how an ingredient is packed or sifted.</p>
+
+    <div class="field">
+      <label for="cookconv-mode">Direction</label>
+      <select id="cookconv-mode">
+        <option value="volume-to-grams">Volume to grams</option>
+        <option value="grams-to-volume">Grams to volume</option>
+      </select>
+    </div>
+
+    <div class="field">
+      <label for="cookconv-ingredient">Ingredient</label>
+      <select id="cookconv-ingredient">
+        <option value="allPurposeFlour">All-purpose flour</option>
+        <option value="granulatedSugar">Granulated sugar</option>
+        <option value="brownSugar">Brown sugar</option>
+        <option value="powderedSugar">Powdered sugar</option>
+        <option value="butter">Butter</option>
+        <option value="honey">Honey</option>
+        <option value="milk">Milk</option>
+        <option value="water">Water</option>
+        <option value="rice">Rice (uncooked)</option>
+        <option value="cocoaPowder">Cocoa powder</option>
+        <option value="oats">Oats</option>
+      </select>
+    </div>
+
+    <div class="field" id="cookconv-volume-fields">
+      <label for="cookconv-volume-amount">Amount</label>
+      <input type="number" id="cookconv-volume-amount" min="0" step="0.01" placeholder="e.g. 2">
+      <label for="cookconv-volume-unit">Unit</label>
+      <select id="cookconv-volume-unit">
+        <option value="cup">Cups</option>
+        <option value="tbsp">Tablespoons</option>
+        <option value="tsp">Teaspoons</option>
+      </select>
+    </div>
+
+    <div class="field" id="cookconv-grams-fields" hidden>
+      <label for="cookconv-grams-amount">Grams</label>
+      <input type="number" id="cookconv-grams-amount" min="0" step="1" placeholder="e.g. 240">
+    </div>
+
+    <button class="calc-btn" id="cookconv-calc">Calculate</button>
+    <div class="result" id="cookconv-result"></div>
+  </section>
+
   <section id="gpa-calculator" class="view tab-panel">
     <h2>GPA Calculator</h2>
     <p class="hint">Compute your grade point average from a list of courses, grades, and credit hours (standard US 4.0 scale).</p>

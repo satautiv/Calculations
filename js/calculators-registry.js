@@ -53,6 +53,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['recipe', 'scale', 'servings', 'cooking', 'baking'],
   },
   {
+    id: 'cooking-measurement-converter',
+    name: 'Cooking Measurement Converter',
+    category: 'Cooking',
+    description: 'Convert cups/tablespoons/teaspoons to grams (or back) for a specific baking ingredient.',
+    keywords: ['cups to grams', 'baking conversion', 'tablespoons', 'teaspoons', 'flour', 'sugar', 'butter', 'cooking'],
+  },
+  {
     id: 'gpa-calculator',
     name: 'GPA Calculator',
     category: 'General',
