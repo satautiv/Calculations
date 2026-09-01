@@ -3713,6 +3713,46 @@ document.getElementById('tip-calc').addEventListener('click', () => {
   }
 });
 
+// --- Sales tax / VAT calculator ---
+document.getElementById('sales-tax-mode').addEventListener('change', (e) => {
+  const label = document.getElementById('sales-tax-amount-label');
+  label.textContent = e.target.value === 'inclusive' ? 'Tax-inclusive total price' : 'Pre-tax price';
+});
+
+document.getElementById('sales-tax-calc').addEventListener('click', () => {
+  const mode = document.getElementById('sales-tax-mode').value;
+  const amount = parseFloat(document.getElementById('sales-tax-amount').value);
+  const rate = parseFloat(document.getElementById('sales-tax-rate').value);
+
+  if (isNaN(amount) || amount <= 0) {
+    showError('sales-tax-result', 'Enter a valid amount greater than zero.');
+    return;
+  }
+
+  if (isNaN(rate) || rate < 0) {
+    showError('sales-tax-result', 'Enter a valid, non-negative tax rate.');
+    return;
+  }
+
+  if (mode === 'inclusive') {
+    const { preTaxPrice, taxAmount } = salesTaxFromInclusive(amount, rate);
+
+    document.getElementById('sales-tax-result').innerHTML = `
+      <div class="headline">${preTaxPrice.toFixed(2)}</div>
+      <div>Pre-tax price</div>
+      <div class="hint">Tax portion: ${taxAmount.toFixed(2)}</div>
+    `;
+  } else {
+    const { taxAmount, total } = salesTaxForward(amount, rate);
+
+    document.getElementById('sales-tax-result').innerHTML = `
+      <div class="headline">${total.toFixed(2)}</div>
+      <div>Total including tax</div>
+      <div class="hint">Tax amount: ${taxAmount.toFixed(2)}</div>
+    `;
+  }
+});
+
 // --- Fraction calculator ---
 const FRACTION_OPERATION_SYMBOLS = { add: '+', subtract: '−', multiply: '×', divide: '÷' };
 

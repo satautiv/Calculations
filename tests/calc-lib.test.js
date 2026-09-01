@@ -94,6 +94,8 @@ const {
   percentageChange,
   originalValueFromPercentChange,
   tipCalculation,
+  salesTaxForward,
+  salesTaxFromInclusive,
   gcd,
   simplifyFraction,
   fractionArithmetic,
@@ -1894,6 +1896,52 @@ describe('tipCalculation', () => {
 
   test('rejects fewer than 1 person', () => {
     expect(() => tipCalculation(50, 15, 0)).toThrow();
+  });
+});
+
+describe('salesTaxForward', () => {
+  test('matches a worked example: $100 pre-tax at 8% tax', () => {
+    const { taxAmount, total } = salesTaxForward(100, 8);
+    expect(taxAmount).toBeCloseTo(8, 10);
+    expect(total).toBeCloseTo(108, 10);
+  });
+
+  test('a 0% tax rate adds nothing', () => {
+    const { taxAmount, total } = salesTaxForward(50, 0);
+    expect(taxAmount).toBe(0);
+    expect(total).toBe(50);
+  });
+
+  test('rejects a non-positive pre-tax price', () => {
+    expect(() => salesTaxForward(0, 8)).toThrow();
+    expect(() => salesTaxForward(-10, 8)).toThrow();
+  });
+
+  test('rejects a negative tax rate', () => {
+    expect(() => salesTaxForward(100, -1)).toThrow();
+  });
+});
+
+describe('salesTaxFromInclusive', () => {
+  test('matches a worked example: $108 inclusive at 8% tax has a $100 pre-tax price', () => {
+    const { preTaxPrice, taxAmount } = salesTaxFromInclusive(108, 8);
+    expect(preTaxPrice).toBeCloseTo(100, 10);
+    expect(taxAmount).toBeCloseTo(8, 10);
+  });
+
+  test('dividing the tax out differs from naively multiplying the inclusive price by the rate', () => {
+    const { taxAmount } = salesTaxFromInclusive(108, 8);
+    const naive = 108 * 0.08;
+    expect(taxAmount).not.toBeCloseTo(naive, 5);
+  });
+
+  test('rejects a non-positive total price', () => {
+    expect(() => salesTaxFromInclusive(0, 8)).toThrow();
+    expect(() => salesTaxFromInclusive(-10, 8)).toThrow();
+  });
+
+  test('rejects a negative tax rate', () => {
+    expect(() => salesTaxFromInclusive(100, -1)).toThrow();
   });
 });
 

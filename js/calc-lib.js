@@ -1345,6 +1345,26 @@ function tipCalculation(bill, tipPercent, numPeople) {
   return { tipAmount, total, perPerson };
 }
 
+// --- Sales tax / VAT calculator ---
+
+function salesTaxForward(preTaxPrice, taxRatePercent) {
+  if (!preTaxPrice || preTaxPrice <= 0) throw new Error('Pre-tax price must be greater than zero.');
+  if (taxRatePercent < 0) throw new Error('Tax rate cannot be negative.');
+
+  const taxAmount = preTaxPrice * (taxRatePercent / 100);
+  return { taxAmount, total: preTaxPrice + taxAmount };
+}
+
+// Divides the tax back out of a tax-inclusive price, rather than naively
+// multiplying the inclusive price by the tax rate.
+function salesTaxFromInclusive(totalPrice, taxRatePercent) {
+  if (!totalPrice || totalPrice <= 0) throw new Error('Total price must be greater than zero.');
+  if (taxRatePercent < 0) throw new Error('Tax rate cannot be negative.');
+
+  const preTaxPrice = totalPrice / (1 + taxRatePercent / 100);
+  return { preTaxPrice, taxAmount: totalPrice - preTaxPrice };
+}
+
 // --- Fraction calculator ---
 
 // Euclidean algorithm. Works with any sign/order of inputs and treats
@@ -5553,6 +5573,8 @@ if (typeof module !== 'undefined' && module.exports) {
     percentageChange,
     originalValueFromPercentChange,
     tipCalculation,
+    salesTaxForward,
+    salesTaxFromInclusive,
     gcd,
     simplifyFraction,
     fractionArithmetic,

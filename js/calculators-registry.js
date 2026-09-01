@@ -333,6 +333,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['tip', 'gratuity', 'bill split', 'restaurant', 'split the bill', 'finance'],
   },
   {
+    id: 'sales-tax-calculator',
+    name: 'Sales Tax / VAT Calculator',
+    category: 'Finance',
+    description: 'Add sales tax/VAT to a pre-tax price, or find the pre-tax price and tax portion from a tax-inclusive total.',
+    keywords: ['sales tax', 'vat', 'tax rate', 'pre-tax', 'tax-inclusive', 'finance'],
+  },
+  {
     id: 'fraction-calculator',
     name: 'Fraction Calculator',
     category: 'General',
