@@ -3579,6 +3579,47 @@ function hslToRgb(h, s, l) {
   };
 }
 
+// --- Password strength / entropy calculator ---
+
+// Effective character-set size, inferred from which character classes
+// actually appear in the password (not just what's theoretically allowed).
+function characterSetSizeForPassword(password) {
+  let size = 0;
+  if (/[a-z]/.test(password)) size += 26;
+  if (/[A-Z]/.test(password)) size += 26;
+  if (/[0-9]/.test(password)) size += 10;
+  if (/[^a-zA-Z0-9]/.test(password)) size += 33;
+  return size;
+}
+
+// Shannon entropy for a uniformly-random string drawn from an alphabet of
+// characterSetSize symbols: entropy = length * log2(characterSetSize). This
+// measures resistance to brute-force guessing, not to dictionary/pattern
+// attacks that exploit non-random passwords.
+function passwordEntropyBits(length, characterSetSize) {
+  if (!length || length <= 0) throw new Error('Length must be greater than zero.');
+  if (!characterSetSize || characterSetSize <= 1) throw new Error('Character set size must be greater than 1.');
+
+  return length * Math.log2(characterSetSize);
+}
+
+// Average-case brute-force crack time: an attacker is expected to find the
+// password after searching half the 2^entropyBits possible keyspace.
+function estimatedCrackTimeSeconds(entropyBits, guessesPerSecond) {
+  if (entropyBits < 0) throw new Error('Entropy must be zero or greater.');
+  if (!guessesPerSecond || guessesPerSecond <= 0) throw new Error('Guesses per second must be greater than zero.');
+
+  return Math.pow(2, entropyBits) / (2 * guessesPerSecond);
+}
+
+function passwordStrengthLabel(entropyBits) {
+  if (entropyBits < 28) return 'Very weak';
+  if (entropyBits < 36) return 'Weak';
+  if (entropyBits < 60) return 'Reasonable';
+  if (entropyBits < 128) return 'Strong';
+  return 'Very strong';
+}
+
 // --- Base64 encoder/decoder ---
 
 // Accepts both standard (+ /) and URL-safe (- _) alphabets on decode, since
@@ -6052,6 +6093,10 @@ if (typeof module !== 'undefined' && module.exports) {
     rgbToHex,
     rgbToHsl,
     hslToRgb,
+    characterSetSizeForPassword,
+    passwordEntropyBits,
+    estimatedCrackTimeSeconds,
+    passwordStrengthLabel,
     base64Encode,
     base64Decode,
     REGEX_MATCH_DISPLAY_CAP,

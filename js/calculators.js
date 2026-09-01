@@ -6724,6 +6724,54 @@ document.getElementById('unix-calc').addEventListener('click', () => {
     showError('unix-result', err.message);
   }
 });
+// --- Password strength / entropy calculator ---
+const PASSWORD_GUESS_RATE_PRESETS = [
+  { label: 'Online attack (rate-limited, ~100 guesses/sec)', rate: 100 },
+  { label: 'Offline, slow hash e.g. bcrypt (~10,000 guesses/sec)', rate: 10000 },
+  { label: 'Offline, fast hash e.g. MD5 on GPU (~10 billion guesses/sec)', rate: 1e10 },
+];
+
+function formatCrackTimeSeconds(seconds) {
+  if (seconds < 1) return 'instantly';
+  if (seconds < 60) return `${seconds.toFixed(1)} seconds`;
+  if (seconds < 3600) return `${(seconds / 60).toFixed(1)} minutes`;
+  if (seconds < 86400) return `${(seconds / 3600).toFixed(1)} hours`;
+  if (seconds < 31536000) return `${(seconds / 86400).toFixed(1)} days`;
+
+  const years = seconds / 31536000;
+  if (years < 1e6) return `${years.toLocaleString(undefined, { maximumFractionDigits: 0 })} years`;
+  return `${years.toExponential(1)} years`;
+}
+
+document.getElementById('pwstrength-calc').addEventListener('click', () => {
+  const password = document.getElementById('pwstrength-input').value;
+
+  if (!password) {
+    showError('pwstrength-result', 'Enter a password to analyze.');
+    return;
+  }
+
+  const characterSetSize = characterSetSizeForPassword(password);
+  const entropyBits = passwordEntropyBits(password.length, characterSetSize);
+  const strength = passwordStrengthLabel(entropyBits);
+
+  const crackTimesHtml = PASSWORD_GUESS_RATE_PRESETS.map(preset => `
+    <tr>
+      <td>${preset.label}</td>
+      <td>${formatCrackTimeSeconds(estimatedCrackTimeSeconds(entropyBits, preset.rate))}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('pwstrength-result').innerHTML = `
+    <div class="headline">${entropyBits.toFixed(1)} bits &mdash; ${strength}</div>
+    <div class="hint">Length: ${password.length} &middot; Character set size: ${characterSetSize}</div>
+    <table>
+      <thead><tr><th>Estimated crack time at&hellip;</th><th>Time</th></tr></thead>
+      <tbody>${crackTimesHtml}</tbody>
+    </table>
+  `;
+});
+
 // --- Color format converter ---
 document.getElementById('colorconv-mode').addEventListener('change', (e) => {
   const mode = e.target.value;

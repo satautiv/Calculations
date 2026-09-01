@@ -208,6 +208,10 @@ const {
   rgbToHex,
   rgbToHsl,
   hslToRgb,
+  characterSetSizeForPassword,
+  passwordEntropyBits,
+  estimatedCrackTimeSeconds,
+  passwordStrengthLabel,
   base64Encode,
   base64Decode,
   findRegexMatches,
@@ -4780,6 +4784,79 @@ describe('Color format converter', () => {
     test('rejects out-of-range saturation or lightness', () => {
       expect(() => hslToRgb(220, -1, 50)).toThrow();
       expect(() => hslToRgb(220, 60, 101)).toThrow();
+    });
+  });
+});
+
+describe('Password strength / entropy calculator', () => {
+  describe('characterSetSizeForPassword', () => {
+    test('lowercase-only password has a 26-character set', () => {
+      expect(characterSetSizeForPassword('abcdef')).toBe(26);
+    });
+
+    test('mixed-case alphanumeric password sums the relevant class sizes', () => {
+      expect(characterSetSizeForPassword('Abc123')).toBe(26 + 26 + 10);
+    });
+
+    test('adding symbols expands the effective set', () => {
+      expect(characterSetSizeForPassword('abc!@#')).toBe(26 + 33);
+    });
+
+    test('an empty string has a zero-size character set', () => {
+      expect(characterSetSizeForPassword('')).toBe(0);
+    });
+  });
+
+  describe('passwordEntropyBits', () => {
+    test('matches a worked example: 8 lowercase-only characters', () => {
+      expect(passwordEntropyBits(8, 26)).toBeCloseTo(37.6, 1);
+    });
+
+    test('a longer password of the same character set has higher entropy', () => {
+      expect(passwordEntropyBits(16, 26)).toBeGreaterThan(passwordEntropyBits(8, 26));
+    });
+
+    test('a larger character set at the same length has higher entropy', () => {
+      expect(passwordEntropyBits(8, 94)).toBeGreaterThan(passwordEntropyBits(8, 26));
+    });
+
+    test('rejects a non-positive length', () => {
+      expect(() => passwordEntropyBits(0, 26)).toThrow();
+    });
+
+    test('rejects a character set size of 1 or less', () => {
+      expect(() => passwordEntropyBits(8, 1)).toThrow();
+    });
+  });
+
+  describe('estimatedCrackTimeSeconds', () => {
+    test('matches a worked example: 40 bits of entropy at 1000 guesses/sec', () => {
+      // 2^40 / (2 * 1000)
+      expect(estimatedCrackTimeSeconds(40, 1000)).toBeCloseTo(549755813.888, 3);
+    });
+
+    test('a faster guessing rate shortens the estimated crack time', () => {
+      const slow = estimatedCrackTimeSeconds(40, 1000);
+      const fast = estimatedCrackTimeSeconds(40, 1000000);
+      expect(fast).toBeLessThan(slow);
+    });
+
+    test('rejects negative entropy', () => {
+      expect(() => estimatedCrackTimeSeconds(-1, 1000)).toThrow();
+    });
+
+    test('rejects a non-positive guess rate', () => {
+      expect(() => estimatedCrackTimeSeconds(40, 0)).toThrow();
+    });
+  });
+
+  describe('passwordStrengthLabel', () => {
+    test('labels values across the reference bands', () => {
+      expect(passwordStrengthLabel(20)).toBe('Very weak');
+      expect(passwordStrengthLabel(30)).toBe('Weak');
+      expect(passwordStrengthLabel(45)).toBe('Reasonable');
+      expect(passwordStrengthLabel(90)).toBe('Strong');
+      expect(passwordStrengthLabel(140)).toBe('Very strong');
     });
   });
 });
