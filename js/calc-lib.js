@@ -3495,6 +3495,90 @@ function convertNumberBase(value, fromBase) {
   };
 }
 
+// --- Color format converter ---
+
+// Accepts a 3- or 6-digit hex color, with or without a leading '#'.
+function hexToRgb(hex) {
+  let h = hex.trim().replace(/^#/, '');
+  if (/^[0-9a-fA-F]{3}$/.test(h)) h = h.split('').map(c => c + c).join('');
+  if (!/^[0-9a-fA-F]{6}$/.test(h)) throw new Error('Enter a valid hex color, e.g. #3366CC.');
+
+  return {
+    r: parseInt(h.slice(0, 2), 16),
+    g: parseInt(h.slice(2, 4), 16),
+    b: parseInt(h.slice(4, 6), 16),
+  };
+}
+
+function rgbToHex(r, g, b) {
+  [r, g, b].forEach(v => {
+    if (!Number.isInteger(v) || v < 0 || v > 255) throw new Error('RGB values must be integers between 0 and 255.');
+  });
+
+  const toHex = v => v.toString(16).padStart(2, '0').toUpperCase();
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+}
+
+// Standard RGB -> HSL conversion. Returns hue in degrees (0-360) and
+// saturation/lightness as percentages (0-100).
+function rgbToHsl(r, g, b) {
+  [r, g, b].forEach(v => {
+    if (!Number.isInteger(v) || v < 0 || v > 255) throw new Error('RGB values must be integers between 0 and 255.');
+  });
+
+  const rn = r / 255;
+  const gn = g / 255;
+  const bn = b / 255;
+  const max = Math.max(rn, gn, bn);
+  const min = Math.min(rn, gn, bn);
+  const l = (max + min) / 2;
+
+  let h = 0;
+  let s = 0;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+
+    if (max === rn) h = (gn - bn) / d + (gn < bn ? 6 : 0);
+    else if (max === gn) h = (bn - rn) / d + 2;
+    else h = (rn - gn) / d + 4;
+
+    h *= 60;
+  }
+
+  return { h, s: s * 100, l: l * 100 };
+}
+
+// Standard HSL -> RGB conversion. h in degrees (any value, wrapped mod 360),
+// s and l as percentages (0-100).
+function hslToRgb(h, s, l) {
+  if (s < 0 || s > 100 || l < 0 || l > 100) throw new Error('Saturation and lightness must be between 0 and 100.');
+
+  const sn = s / 100;
+  const ln = l / 100;
+  const hn = ((h % 360) + 360) % 360;
+  const c = (1 - Math.abs(2 * ln - 1)) * sn;
+  const x = c * (1 - Math.abs((hn / 60) % 2 - 1));
+  const m = ln - c / 2;
+
+  let r1;
+  let g1;
+  let b1;
+  if (hn < 60) [r1, g1, b1] = [c, x, 0];
+  else if (hn < 120) [r1, g1, b1] = [x, c, 0];
+  else if (hn < 180) [r1, g1, b1] = [0, c, x];
+  else if (hn < 240) [r1, g1, b1] = [0, x, c];
+  else if (hn < 300) [r1, g1, b1] = [x, 0, c];
+  else [r1, g1, b1] = [c, 0, x];
+
+  return {
+    r: Math.round((r1 + m) * 255),
+    g: Math.round((g1 + m) * 255),
+    b: Math.round((b1 + m) * 255),
+  };
+}
+
 // --- Base64 encoder/decoder ---
 
 // Accepts both standard (+ /) and URL-safe (- _) alphabets on decode, since
@@ -5964,6 +6048,10 @@ if (typeof module !== 'undefined' && module.exports) {
     dateFieldsToEpoch,
     relativeTimeFromNow,
     convertNumberBase,
+    hexToRgb,
+    rgbToHex,
+    rgbToHsl,
+    hslToRgb,
     base64Encode,
     base64Decode,
     REGEX_MATCH_DISPLAY_CAP,

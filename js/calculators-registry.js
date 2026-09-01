@@ -760,6 +760,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['binary', 'octal', 'decimal', 'hexadecimal', 'hex', 'base conversion', 'developer'],
   },
   {
+    id: 'color-format-converter',
+    name: 'Color Format Converter',
+    category: 'Developer',
+    description: 'Convert a color between HEX, RGB, and HSL.',
+    keywords: ['color', 'hex', 'rgb', 'hsl', 'css', 'design', 'developer'],
+  },
+  {
     id: 'regex-tester',
     name: 'Regex Tester',
     category: 'Developer',

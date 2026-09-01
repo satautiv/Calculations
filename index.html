@@ -3560,6 +3560,46 @@
     <div class="result" id="unix-result"></div>
   </section>
 
+  <section id="color-format-converter" class="view tab-panel">
+    <h2>Color Format Converter</h2>
+    <p class="hint">Convert a color between HEX, RGB, and HSL.</p>
+
+    <div class="field">
+      <label for="colorconv-mode">Input format</label>
+      <select id="colorconv-mode">
+        <option value="hex">HEX</option>
+        <option value="rgb">RGB</option>
+        <option value="hsl">HSL</option>
+      </select>
+    </div>
+
+    <div class="field" id="colorconv-hex-fields">
+      <label for="colorconv-hex">Hex color</label>
+      <input type="text" id="colorconv-hex" placeholder="e.g. #3366CC">
+    </div>
+
+    <div class="field" id="colorconv-rgb-fields" hidden>
+      <label for="colorconv-r">Red (0-255)</label>
+      <input type="number" id="colorconv-r" min="0" max="255" step="1" placeholder="e.g. 51">
+      <label for="colorconv-g">Green (0-255)</label>
+      <input type="number" id="colorconv-g" min="0" max="255" step="1" placeholder="e.g. 102">
+      <label for="colorconv-b">Blue (0-255)</label>
+      <input type="number" id="colorconv-b" min="0" max="255" step="1" placeholder="e.g. 204">
+    </div>
+
+    <div class="field" id="colorconv-hsl-fields" hidden>
+      <label for="colorconv-h">Hue (0-360)</label>
+      <input type="number" id="colorconv-h" min="0" max="360" step="1" placeholder="e.g. 220">
+      <label for="colorconv-s">Saturation % (0-100)</label>
+      <input type="number" id="colorconv-s" min="0" max="100" step="1" placeholder="e.g. 60">
+      <label for="colorconv-l">Lightness % (0-100)</label>
+      <input type="number" id="colorconv-l" min="0" max="100" step="1" placeholder="e.g. 50">
+    </div>
+
+    <button class="calc-btn" id="colorconv-calc">Calculate</button>
+    <div class="result" id="colorconv-result"></div>
+  </section>
+
   <section id="number-base-converter" class="view tab-panel">
     <h2>Number Base Converter</h2>
     <p class="hint">Convert a value between binary, octal, decimal, and hexadecimal.</p>

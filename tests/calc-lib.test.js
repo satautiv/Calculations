@@ -204,6 +204,10 @@ const {
   dateFieldsToEpoch,
   relativeTimeFromNow,
   convertNumberBase,
+  hexToRgb,
+  rgbToHex,
+  rgbToHsl,
+  hslToRgb,
   base64Encode,
   base64Decode,
   findRegexMatches,
@@ -4689,6 +4693,94 @@ describe('convertNumberBase', () => {
 
   test('rejects an unsupported base', () => {
     expect(() => convertNumberBase('10', 3)).toThrow();
+  });
+});
+
+describe('Color format converter', () => {
+  describe('hexToRgb', () => {
+    test('matches a worked example: #3366CC', () => {
+      expect(hexToRgb('#3366CC')).toEqual({ r: 51, g: 102, b: 204 });
+    });
+
+    test('accepts a hex string without a leading #', () => {
+      expect(hexToRgb('3366CC')).toEqual({ r: 51, g: 102, b: 204 });
+    });
+
+    test('expands a 3-digit shorthand hex color', () => {
+      expect(hexToRgb('#36C')).toEqual({ r: 51, g: 102, b: 204 });
+    });
+
+    test('is case-insensitive', () => {
+      expect(hexToRgb('#3366cc')).toEqual({ r: 51, g: 102, b: 204 });
+    });
+
+    test('rejects an invalid hex string', () => {
+      expect(() => hexToRgb('#ZZZZZZ')).toThrow();
+      expect(() => hexToRgb('#12345')).toThrow();
+    });
+  });
+
+  describe('rgbToHex', () => {
+    test('matches a worked example: rgb(51, 102, 204)', () => {
+      expect(rgbToHex(51, 102, 204)).toBe('#3366CC');
+    });
+
+    test('round-trips with hexToRgb', () => {
+      const { r, g, b } = hexToRgb('#A1B2C3');
+      expect(rgbToHex(r, g, b)).toBe('#A1B2C3');
+    });
+
+    test('rejects out-of-range or non-integer values', () => {
+      expect(() => rgbToHex(-1, 0, 0)).toThrow();
+      expect(() => rgbToHex(256, 0, 0)).toThrow();
+      expect(() => rgbToHex(1.5, 0, 0)).toThrow();
+    });
+  });
+
+  describe('rgbToHsl', () => {
+    test('matches a worked example: rgb(51, 102, 204) is hsl(220, 60%, 50%)', () => {
+      const { h, s, l } = rgbToHsl(51, 102, 204);
+      expect(h).toBeCloseTo(220, 5);
+      expect(s).toBeCloseTo(60, 5);
+      expect(l).toBeCloseTo(50, 5);
+    });
+
+    test('pure white has zero saturation and full lightness', () => {
+      const { s, l } = rgbToHsl(255, 255, 255);
+      expect(s).toBe(0);
+      expect(l).toBe(100);
+    });
+
+    test('pure black has zero saturation and zero lightness', () => {
+      const { s, l } = rgbToHsl(0, 0, 0);
+      expect(s).toBe(0);
+      expect(l).toBe(0);
+    });
+
+    test('rejects out-of-range values', () => {
+      expect(() => rgbToHsl(-1, 0, 0)).toThrow();
+      expect(() => rgbToHsl(256, 0, 0)).toThrow();
+    });
+  });
+
+  describe('hslToRgb', () => {
+    test('matches a worked example: hsl(220, 60%, 50%) is rgb(51, 102, 204)', () => {
+      expect(hslToRgb(220, 60, 50)).toEqual({ r: 51, g: 102, b: 204 });
+    });
+
+    test('round-trips with rgbToHsl', () => {
+      const { h, s, l } = rgbToHsl(51, 102, 204);
+      expect(hslToRgb(h, s, l)).toEqual({ r: 51, g: 102, b: 204 });
+    });
+
+    test('wraps a hue outside 0-360 the same as its normalized equivalent', () => {
+      expect(hslToRgb(580, 60, 50)).toEqual(hslToRgb(220, 60, 50));
+    });
+
+    test('rejects out-of-range saturation or lightness', () => {
+      expect(() => hslToRgb(220, -1, 50)).toThrow();
+      expect(() => hslToRgb(220, 60, 101)).toThrow();
+    });
   });
 });
 
