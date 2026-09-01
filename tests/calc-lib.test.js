@@ -139,6 +139,7 @@ const {
   flooringNeeded,
   riegelPredictedTime,
   tilesNeeded,
+  groutVolumeNeeded,
   rectangularConcreteVolume,
   cylindricalConcreteVolume,
   concreteBagsNeeded,
@@ -3037,6 +3038,27 @@ describe('tilesNeeded', () => {
   test('rejects a negative grout width or waste percentage', () => {
     expect(() => tilesNeeded(12, 0.3, 0.3, -0.001, 10)).toThrow();
     expect(() => tilesNeeded(12, 0.3, 0.3, 0.003, -5)).toThrow();
+  });
+});
+
+describe('groutVolumeNeeded', () => {
+  test('worked example: 12 m² room, 300x300mm tiles, 3mm grout, 8mm depth', () => {
+    const { volumeLiters, weightKg } = groutVolumeNeeded(12, 0.3, 0.3, 0.003, 0.008);
+    expect(volumeLiters).toBeCloseTo(1.92, 5);
+    expect(weightKg).toBeCloseTo(3.072, 5);
+  });
+
+  test('a wider grout line needs proportionally more grout', () => {
+    const narrow = groutVolumeNeeded(12, 0.3, 0.3, 0.003, 0.008);
+    const wide = groutVolumeNeeded(12, 0.3, 0.3, 0.006, 0.008);
+    expect(wide.volumeLiters).toBeCloseTo(narrow.volumeLiters * 2, 5);
+  });
+
+  test('rejects non-positive inputs', () => {
+    expect(() => groutVolumeNeeded(0, 0.3, 0.3, 0.003, 0.008)).toThrow();
+    expect(() => groutVolumeNeeded(12, 0, 0.3, 0.003, 0.008)).toThrow();
+    expect(() => groutVolumeNeeded(12, 0.3, 0.3, 0, 0.008)).toThrow();
+    expect(() => groutVolumeNeeded(12, 0.3, 0.3, 0.003, 0)).toThrow();
   });
 });
 

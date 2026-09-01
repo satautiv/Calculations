@@ -4872,16 +4872,31 @@ document.getElementById('tile-calc').addEventListener('click', () => {
   const tileLengthMm = parseFloat(document.getElementById('tile-length').value);
   const groutMm = parseFloat(document.getElementById('tile-grout').value);
   const waste = parseFloat(document.getElementById('tile-waste').value);
+  const thicknessRaw = document.getElementById('tile-thickness').value;
+  const thicknessMm = thicknessRaw === '' ? null : parseFloat(thicknessRaw);
+
+  if (thicknessMm !== null && thicknessMm <= 0) {
+    showError('tile-result', 'Tile thickness, if provided, must be greater than zero.');
+    return;
+  }
 
   try {
     const { effectiveArea, tilesForArea, tilesNeededCount } = tilesNeeded(
       area, tileWidthMm / 1000, tileLengthMm / 1000, groutMm / 1000, waste
     );
 
+    const groutHtml = thicknessMm !== null ? (() => {
+      const { volumeLiters, weightKg } = groutVolumeNeeded(
+        area, tileWidthMm / 1000, tileLengthMm / 1000, groutMm / 1000, thicknessMm / 1000
+      );
+      return `<div class="hint">Estimated grout needed: &asymp;${weightKg.toFixed(1)} kg (&asymp;${volumeLiters.toFixed(2)} L) &mdash; a rough approximation; actual yield varies by grout type.</div>`;
+    })() : '';
+
     document.getElementById('tile-result').innerHTML = `
       <div class="headline">${tilesNeededCount} tiles</div>
       <div>Raw tiles needed (before waste): ${tilesForArea.toFixed(1)}</div>
       <div class="hint">Effective (grout-inclusive) tile area: ${(effectiveArea * 1e6).toFixed(0)} mm&sup2;</div>
+      ${groutHtml}
     `;
   } catch (err) {
     showError('tile-result', err.message);
