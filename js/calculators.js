@@ -1368,6 +1368,96 @@ document.getElementById('cc-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Debt payoff planner ---
+const DEBT_INITIAL_ROWS = 2;
+
+function addDebtRow() {
+  const row = document.createElement('div');
+  row.className = 'debt-row';
+  row.innerHTML = `
+    <input type="text" class="debt-name" aria-label="Debt name" placeholder="e.g. Credit card">
+    <input type="number" class="debt-balance" aria-label="Balance" min="0" step="0.01" placeholder="e.g. 3000">
+    <input type="number" class="debt-apr" aria-label="APR percent" min="0" step="0.01" placeholder="e.g. 22">
+    <input type="number" class="debt-min-payment" aria-label="Minimum payment" min="0" step="0.01" placeholder="e.g. 75">
+    <button type="button" class="debt-remove-btn" aria-label="Remove debt">&times;</button>
+  `;
+  document.getElementById('debt-list').appendChild(row);
+}
+
+for (let i = 0; i < DEBT_INITIAL_ROWS; i++) addDebtRow();
+
+document.getElementById('debt-add-row').addEventListener('click', () => addDebtRow());
+
+document.getElementById('debt-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.debt-remove-btn');
+  if (!btn) return;
+  btn.closest('.debt-row').remove();
+});
+
+document.getElementById('debt-calc').addEventListener('click', () => {
+  const monthlyBudget = parseFloat(document.getElementById('debt-monthly-budget').value);
+
+  if (isNaN(monthlyBudget) || monthlyBudget <= 0) {
+    showError('debt-result', 'Enter a valid total monthly budget greater than zero.');
+    return;
+  }
+
+  const rows = document.querySelectorAll('#debt-list .debt-row:not(.debt-row-header)');
+  const debts = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const name = row.querySelector('.debt-name').value.trim();
+    const balanceRaw = row.querySelector('.debt-balance').value;
+    const aprRaw = row.querySelector('.debt-apr').value;
+    const minPaymentRaw = row.querySelector('.debt-min-payment').value;
+
+    if (!name && balanceRaw === '' && aprRaw === '' && minPaymentRaw === '') return; // blank row, skip silently
+
+    const balance = parseFloat(balanceRaw);
+    const aprPercent = parseFloat(aprRaw);
+    const minimumPayment = parseFloat(minPaymentRaw);
+
+    if (!name || isNaN(balance) || balance <= 0 || isNaN(aprPercent) || aprPercent < 0 || isNaN(minimumPayment) || minimumPayment <= 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    debts.push({ name, balance, aprPercent, minimumPayment });
+  });
+
+  if (hasInvalidRow) {
+    showError('debt-result', 'Enter a valid name, positive balance, non-negative APR, and positive minimum payment for every debt row, or leave the row blank.');
+    return;
+  }
+
+  if (debts.length === 0) {
+    showError('debt-result', 'Add at least one debt.');
+    return;
+  }
+
+  const snowball = debtPayoffPlan(debts, monthlyBudget, 'snowball');
+  const avalanche = debtPayoffPlan(debts, monthlyBudget, 'avalanche');
+
+  if (!snowball || !avalanche) {
+    showError('debt-result', 'This monthly budget does not cover the combined minimum payments (or would take too long to pay off). Enter a larger budget.');
+    return;
+  }
+
+  const fasterStrategy = snowball.totalInterest <= avalanche.totalInterest ? 'snowball' : 'avalanche';
+
+  document.getElementById('debt-result').innerHTML = `
+    <div class="headline">${fasterStrategy === 'avalanche' ? 'Avalanche' : 'Snowball'} saves the most interest</div>
+    <table>
+      <thead><tr><th>Strategy</th><th>Time to debt-free</th><th>Total interest paid</th></tr></thead>
+      <tbody>
+        <tr><td>Snowball (smallest balance first)</td><td>${formatCcMonths(snowball.monthsToPayoff)}</td><td>${formatMoney(snowball.totalInterest)}</td></tr>
+        <tr><td>Avalanche (highest APR first)</td><td>${formatCcMonths(avalanche.monthsToPayoff)}</td><td>${formatMoney(avalanche.totalInterest)}</td></tr>
+      </tbody>
+    </table>
+  `;
+});
+
 // --- Savings goal calculator ---
 document.getElementById('savings-calc').addEventListener('click', () => {
   const goal = parseFloat(document.getElementById('savings-goal-amount').value);

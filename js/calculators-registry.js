@@ -102,6 +102,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['credit card', 'payoff', 'interest', 'minimum payment', 'debt'],
   },
   {
+    id: 'debt-payoff-calculator',
+    name: 'Debt Payoff Planner',
+    category: 'Finance',
+    description: 'Compare the snowball and avalanche strategies for paying off several debts with a fixed monthly budget.',
+    keywords: ['debt', 'snowball', 'avalanche', 'payoff', 'credit card', 'loan', 'finance'],
+  },
+  {
     id: 'savings-goal',
     name: 'Savings Goal',
     category: 'Finance',

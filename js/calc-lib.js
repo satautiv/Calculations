@@ -387,6 +387,68 @@ function creditCardPayoffMinimum(balance, aprPercent, minPercent = CREDIT_CARD_M
   return { months, totalInterest, totalPaid: balance + totalInterest, schedule };
 }
 
+// --- Debt payoff planner (snowball vs. avalanche) ---
+
+// Month-by-month multi-debt payoff simulation. `debts` is a list of
+// {name, balance, aprPercent, minimumPayment}. Every month, interest accrues
+// on every debt, then every debt's minimum payment is applied, then whatever
+// budget remains ("extra") is directed entirely at one debt at a time in
+// priority order — smallest balance first for 'snowball', highest APR first
+// for 'avalanche' — with a paid-off debt's own minimum payment freed up to
+// join the extra pool for the rest of the plan (paid off debts are simply
+// skipped, so their old minimum naturally stops being subtracted from budget
+// each month). Returns null if the budget can't even cover the combined
+// minimum payments, or if the debts aren't fully paid off within maxMonths.
+function debtPayoffPlan(debts, monthlyBudget, strategy, maxMonths = 1200) {
+  const totalMinimums = debts.reduce((sum, d) => sum + d.minimumPayment, 0);
+  if (monthlyBudget < totalMinimums) return null;
+
+  const working = debts.map(d => ({ ...d }));
+  const payoffOrder = [];
+  let months = 0;
+  let totalInterest = 0;
+
+  while (working.some(d => d.balance > 1e-8) && months < maxMonths) {
+    months++;
+    let budgetLeft = monthlyBudget;
+
+    working.forEach(d => {
+      if (d.balance <= 1e-8) return;
+      const interest = d.balance * (d.aprPercent / 100 / 12);
+      d.balance += interest;
+      totalInterest += interest;
+    });
+
+    working.forEach(d => {
+      if (d.balance <= 1e-8) return;
+      const pay = Math.min(d.minimumPayment, d.balance);
+      d.balance -= pay;
+      budgetLeft -= pay;
+    });
+
+    const priorityOrder = working
+      .filter(d => d.balance > 1e-8)
+      .sort((a, b) => (strategy === 'avalanche' ? b.aprPercent - a.aprPercent : a.balance - b.balance));
+
+    for (const d of priorityOrder) {
+      if (budgetLeft <= 0) break;
+      const pay = Math.min(budgetLeft, d.balance);
+      d.balance -= pay;
+      budgetLeft -= pay;
+    }
+
+    working.forEach(d => {
+      if (d.balance <= 1e-8 && !payoffOrder.some(p => p.name === d.name)) {
+        payoffOrder.push({ name: d.name, monthPaidOff: months });
+      }
+    });
+  }
+
+  if (months >= maxMonths && working.some(d => d.balance > 1e-8)) return null;
+
+  return { monthsToPayoff: months, totalInterest, payoffOrder };
+}
+
 // Required periodic contribution to reach a savings goal by a target date,
 // given current savings and an expected periodic return: the compound-interest
 // annuity formula (FV = P*(1+i)^n + C*[((1+i)^n-1)/i]) solved for C. Handles
@@ -5504,6 +5566,7 @@ if (typeof module !== 'undefined' && module.exports) {
     CREDIT_CARD_MIN_PAYMENT_DEFAULTS,
     creditCardPayoffFixed,
     creditCardPayoffMinimum,
+    debtPayoffPlan,
     requiredSavingsContribution,
     emergencyFundTarget,
     inflationImpact,

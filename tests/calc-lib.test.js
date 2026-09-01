@@ -26,6 +26,7 @@ const {
   caloriesPerServing,
   creditCardPayoffFixed,
   creditCardPayoffMinimum,
+  debtPayoffPlan,
   requiredSavingsContribution,
   emergencyFundTarget,
   inflationImpact,
@@ -747,6 +748,57 @@ describe('creditCardPayoffMinimum', () => {
     const { months, schedule } = creditCardPayoffMinimum(3000, 22);
     expect(schedule).toHaveLength(months);
     expect(schedule[schedule.length - 1].balance).toBeCloseTo(0, 5);
+  });
+});
+
+describe('debtPayoffPlan', () => {
+  test('a single debt matches a direct fixed-payment payoff simulation, regardless of strategy', () => {
+    const direct = creditCardPayoffFixed(1000, 12, 100);
+    const debts = [{ name: 'Card', balance: 1000, aprPercent: 12, minimumPayment: 50 }];
+
+    const snowball = debtPayoffPlan(debts, 100, 'snowball');
+    expect(snowball.monthsToPayoff).toBe(direct.months);
+    expect(snowball.totalInterest).toBeCloseTo(direct.totalInterest, 6);
+
+    const avalanche = debtPayoffPlan(debts, 100, 'avalanche');
+    expect(avalanche.monthsToPayoff).toBe(direct.months);
+    expect(avalanche.totalInterest).toBeCloseTo(direct.totalInterest, 6);
+  });
+
+  test('snowball directs extra payments to the smallest balance first', () => {
+    const debts = [
+      { name: 'Big', balance: 3000, aprPercent: 22, minimumPayment: 60 },
+      { name: 'Small', balance: 500, aprPercent: 8, minimumPayment: 25 },
+    ];
+    const plan = debtPayoffPlan(debts, 200, 'snowball');
+    expect(plan.payoffOrder[0].name).toBe('Small');
+  });
+
+  test('avalanche results in less total interest than snowball when the higher-APR debt has the larger balance', () => {
+    const debts = [
+      { name: 'Big', balance: 3000, aprPercent: 22, minimumPayment: 60 },
+      { name: 'Small', balance: 500, aprPercent: 8, minimumPayment: 25 },
+    ];
+    const snowball = debtPayoffPlan(debts, 200, 'snowball');
+    const avalanche = debtPayoffPlan(debts, 200, 'avalanche');
+    expect(avalanche.totalInterest).toBeLessThan(snowball.totalInterest);
+  });
+
+  test('returns null when the budget cannot cover the combined minimum payments', () => {
+    const debts = [
+      { name: 'A', balance: 1000, aprPercent: 15, minimumPayment: 50 },
+      { name: 'B', balance: 1000, aprPercent: 15, minimumPayment: 50 },
+    ];
+    expect(debtPayoffPlan(debts, 80, 'snowball')).toBeNull();
+  });
+
+  test('every debt eventually appears in the payoff order', () => {
+    const debts = [
+      { name: 'A', balance: 1000, aprPercent: 15, minimumPayment: 50 },
+      { name: 'B', balance: 2000, aprPercent: 10, minimumPayment: 60 },
+    ];
+    const plan = debtPayoffPlan(debts, 300, 'avalanche');
+    expect(plan.payoffOrder.map(p => p.name).sort()).toEqual(['A', 'B']);
   });
 });
 
