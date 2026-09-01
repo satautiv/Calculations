@@ -581,6 +581,40 @@ function doughWaterForHydration(hydrationPercent, flourWeight) {
   return (hydrationPercent / 100) * flourWeight;
 }
 
+// Approximate standard water-content fractions for common enriching
+// ingredients, used to fold their liquid contribution into a dough's "true
+// hydration" alongside plain water. Rough figures — actual water content
+// varies by product (e.g. egg size, milk fat %, butter brand).
+const ENRICHING_INGREDIENT_WATER_CONTENT = {
+  egg: 0.75,
+  milk: 0.87,
+  butter: 0.17,
+};
+
+// True hydration %, folding in the water-equivalent contribution of
+// enriching liquids (eggs, milk, butter, etc.) alongside plain water.
+// enrichingIngredients is [{ type, weight }], type keying into
+// ENRICHING_INGREDIENT_WATER_CONTENT.
+function trueDoughHydrationPercent(flourWeight, waterWeight, enrichingIngredients = []) {
+  if (!flourWeight || flourWeight <= 0) throw new Error('Flour weight must be greater than zero.');
+  if (waterWeight < 0) throw new Error('Water weight cannot be negative.');
+
+  const enrichingWaterWeight = enrichingIngredients.reduce((sum, { type, weight }) => {
+    const waterContent = ENRICHING_INGREDIENT_WATER_CONTENT[type];
+    if (waterContent === undefined) throw new Error(`Unknown enriching ingredient: ${type}`);
+    if (weight < 0) throw new Error('Enriching ingredient weight cannot be negative.');
+    return sum + weight * waterContent;
+  }, 0);
+
+  const totalWaterEquivalent = waterWeight + enrichingWaterWeight;
+
+  return {
+    enrichingWaterWeight,
+    totalWaterEquivalent,
+    trueHydrationPercent: (totalWaterEquivalent / flourWeight) * 100,
+  };
+}
+
 // Progressive ("marginal") bracket tax: each bracket's rate applies only to
 // the slice of income between its own `from` and the next bracket's `from`
 // (or to everything above `from` for the top bracket), not the whole income.
@@ -5396,6 +5430,8 @@ if (typeof module !== 'undefined' && module.exports) {
     minutesToTimeLabel,
     doughHydrationPercent,
     doughWaterForHydration,
+    ENRICHING_INGREDIENT_WATER_CONTENT,
+    trueDoughHydrationPercent,
     calculateProgressiveTax,
     progressiveTaxBreakdown,
     salaryAfterTax,
