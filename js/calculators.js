@@ -5499,12 +5499,24 @@ document.getElementById('pet-calc').addEventListener('click', () => {
   const age = parseFloat(document.getElementById('pet-age').value);
 
   try {
-    const humanAge = species === 'cat' ? catHumanAge(age) : dogHumanAge(age);
+    const humanAgeFn = species === 'cat' ? catHumanAge : dogHumanAge;
+    const humanAge = humanAgeFn(age);
+
+    const minAge = species === 'cat' ? 0.05 : DOG_MIN_AGE_YEARS;
+    const chartPoints = Array.from({ length: 41 }, (_, i) => Math.min(minAge + ((PET_MAX_AGE_YEARS - minAge) / 40) * i, PET_MAX_AGE_YEARS))
+      .map((a) => ({ x: a, y: humanAgeFn(a) }));
+    const chartHtml = renderLineChartSvg({
+      series: [{ label: 'Human-equivalent age', color: 'var(--accent)', points: chartPoints }],
+      markers: [{ x: age, y: humanAge, label: 'Your pet' }],
+      xTickFormat: (x) => `${x.toFixed(0)}y`,
+      yTickFormat: (y) => `${y.toFixed(0)}y`,
+    });
 
     document.getElementById('pet-result').innerHTML = `
       <div class="headline">${humanAge.toFixed(1)} human years</div>
       <div>${age} ${species} year${age === 1 ? '' : 's'} old</div>
       <div class="hint">A population-average research-based estimate (single-breed study for dogs; veterinary-association guidelines for cats), not a substitute for a vet's assessment of an individual animal's health/aging.</div>
+      ${chartHtml}
     `;
   } catch (err) {
     showError('pet-result', err.message);
