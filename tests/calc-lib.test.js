@@ -161,6 +161,7 @@ const {
   mulchVolumeNeeded,
   roofPitchMultiplier,
   roofArea,
+  roofingSquaresAndBundles,
   roofPitchConversions,
   convertClimbingGrade,
   ladderPlan,
@@ -3485,6 +3486,26 @@ describe('roofArea', () => {
 
   test('rejects a non-positive footprint area', () => {
     expect(() => roofArea(0, 6, 12)).toThrow();
+  });
+});
+
+describe('roofingSquaresAndBundles', () => {
+  test('worked example: 167.7 m² roof area, default 3 bundles/square', () => {
+    const { area } = roofArea(150, 6, 12);
+    const { squaresNeeded, bundlesNeeded } = roofingSquaresAndBundles(area);
+    expect(squaresNeeded).toBeCloseTo(18.05, 2);
+    expect(bundlesNeeded).toBe(55);
+  });
+
+  test('a different bundles-per-square scales the bundle count', () => {
+    const { area } = roofArea(150, 6, 12);
+    const { bundlesNeeded } = roofingSquaresAndBundles(area, 4);
+    expect(bundlesNeeded).toBe(73);
+  });
+
+  test('rejects a non-positive area or bundles-per-square', () => {
+    expect(() => roofingSquaresAndBundles(0)).toThrow();
+    expect(() => roofingSquaresAndBundles(100, 0)).toThrow();
   });
 });
 
