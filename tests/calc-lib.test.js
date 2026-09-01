@@ -203,6 +203,7 @@ const {
   formatDateInTimeZone,
   dateFieldsToEpoch,
   relativeTimeFromNow,
+  convertNumberBase,
   base64Encode,
   base64Decode,
   findRegexMatches,
@@ -4651,6 +4652,46 @@ describe('dateFieldsToEpoch', () => {
     expect(epochSeconds).toBe(-86400);
   });
 });
+describe('convertNumberBase', () => {
+  test('matches a worked example: hex FF across every base', () => {
+    const result = convertNumberBase('FF', 16);
+    expect(result.decimal).toBe('255');
+    expect(result.binary).toBe('11111111');
+    expect(result.octal).toBe('377');
+    expect(result.hex).toBe('FF');
+  });
+
+  test('matches a worked example: binary 101 across every base', () => {
+    const result = convertNumberBase('101', 2);
+    expect(result.decimal).toBe('5');
+    expect(result.binary).toBe('101');
+    expect(result.octal).toBe('5');
+    expect(result.hex).toBe('5');
+  });
+
+  test('accepts lowercase hex digits but always outputs uppercase hex', () => {
+    expect(convertNumberBase('abc', 16).hex).toBe('ABC');
+  });
+
+  test('decimal input round-trips through decimal', () => {
+    expect(convertNumberBase('42', 10).decimal).toBe('42');
+  });
+
+  test('rejects a digit invalid for the given base', () => {
+    expect(() => convertNumberBase('2', 2)).toThrow();
+    expect(() => convertNumberBase('8', 8)).toThrow();
+    expect(() => convertNumberBase('G', 16)).toThrow();
+  });
+
+  test('rejects an empty string', () => {
+    expect(() => convertNumberBase('', 10)).toThrow();
+  });
+
+  test('rejects an unsupported base', () => {
+    expect(() => convertNumberBase('10', 3)).toThrow();
+  });
+});
+
 // --- Base64 encoder/decoder ---
 
 describe('base64Encode', () => {

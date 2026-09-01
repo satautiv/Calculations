@@ -3467,6 +3467,34 @@ function relativeTimeFromNow(date, now = new Date()) {
 
   return deltaSeconds < 0 ? `${label} ago` : `in ${label}`;
 }
+// --- Number base converter ---
+
+const BASE_DIGIT_PATTERNS = {
+  2: /^[01]+$/,
+  8: /^[0-7]+$/,
+  10: /^[0-9]+$/,
+  16: /^[0-9a-fA-F]+$/,
+};
+
+// parseInt/toString(base) don't validate their input strictly (parseInt
+// silently stops at the first invalid digit rather than rejecting the whole
+// string), so the input is checked against a base-specific digit pattern
+// first. Non-negative integers only.
+function convertNumberBase(value, fromBase) {
+  const pattern = BASE_DIGIT_PATTERNS[fromBase];
+  if (!pattern) throw new Error('Unsupported base.');
+  if (!value || !pattern.test(value)) throw new Error(`"${value}" is not a valid base-${fromBase} number.`);
+
+  const decimalValue = parseInt(value, fromBase);
+
+  return {
+    binary: decimalValue.toString(2),
+    octal: decimalValue.toString(8),
+    decimal: decimalValue.toString(10),
+    hex: decimalValue.toString(16).toUpperCase(),
+  };
+}
+
 // --- Base64 encoder/decoder ---
 
 // Accepts both standard (+ /) and URL-safe (- _) alphabets on decode, since
@@ -5935,6 +5963,7 @@ if (typeof module !== 'undefined' && module.exports) {
     formatDateInTimeZone,
     dateFieldsToEpoch,
     relativeTimeFromNow,
+    convertNumberBase,
     base64Encode,
     base64Decode,
     REGEX_MATCH_DISPLAY_CAP,
