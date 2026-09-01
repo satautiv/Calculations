@@ -6534,16 +6534,32 @@ document.getElementById('chmod-calc').addEventListener('click', () => {
   const mode = document.getElementById('chmod-mode').value;
   const input = document.getElementById('chmod-input').value.trim();
 
+  const roleLabelHtml = (label, { read, write, execute, special }) => {
+    const parts = [read ? 'read' : null, write ? 'write' : null, execute ? 'execute' : null].filter(Boolean);
+    const permsText = parts.length > 0 ? parts.join(', ') : 'no permissions';
+    const specialText = special ? ` &middot; ${special} bit set` : '';
+    return `<div>${label}: ${permsText}${specialText}</div>`;
+  };
+
+  const breakdownHtml = (symbolicForBreakdown) => {
+    const { owner, group, other, warnings } = chmodPermissionBreakdown(symbolicForBreakdown);
+    const roles = roleLabelHtml('Owner', owner) + roleLabelHtml('Group', group) + roleLabelHtml('Other', other);
+    const warningsHtml = warnings.map(w => `<div class="hint">&#9888; ${escapeHtml(w)}</div>`).join('');
+    return roles + warningsHtml;
+  };
+
   try {
     if (mode === 'octal-to-symbolic') {
       const symbolic = octalToSymbolic(input);
       document.getElementById('chmod-result').innerHTML = `
         <div class="headline">${escapeHtml(symbolic)}</div>
+        ${breakdownHtml(symbolic)}
       `;
     } else {
       const octal = symbolicToOctal(input);
       document.getElementById('chmod-result').innerHTML = `
         <div class="headline">${escapeHtml(octal)}</div>
+        ${breakdownHtml(octalToSymbolic(octal))}
       `;
     }
   } catch (err) {

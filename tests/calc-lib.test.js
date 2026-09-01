@@ -234,6 +234,7 @@ const {
   sha512FromBytes,
   symbolicToOctal,
   octalToSymbolic,
+  chmodPermissionBreakdown,
   convertCssUnits,
   k8sResourcePlan,
   tokenizeSql,
@@ -5856,6 +5857,56 @@ describe('octalToSymbolic', () => {
     expect(() => octalToSymbolic('47551')).toThrow();
   });
 });
+
+describe('chmodPermissionBreakdown', () => {
+  test('755: no warnings, no special bits', () => {
+    const { owner, group, other, worldWritable, warnings } = chmodPermissionBreakdown('rwxr-xr-x');
+    expect(owner).toEqual({ read: true, write: true, execute: true, special: null });
+    expect(group).toEqual({ read: true, write: false, execute: true, special: null });
+    expect(other).toEqual({ read: true, write: false, execute: true, special: null });
+    expect(worldWritable).toBe(false);
+    expect(warnings).toHaveLength(0);
+  });
+
+  test('777: flags world-writable', () => {
+    const { worldWritable, warnings } = chmodPermissionBreakdown('rwxrwxrwx');
+    expect(worldWritable).toBe(true);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toMatch(/world-writable/i);
+  });
+
+  test('4757: setuid combined with world-writable adds a second, stronger warning', () => {
+    const { owner, warnings } = chmodPermissionBreakdown(octalToSymbolic('4757'));
+    expect(owner.special).toBe('setuid');
+    expect(warnings).toHaveLength(2);
+    expect(warnings.some(w => /setuid/i.test(w))).toBe(true);
+  });
+
+  test('2757: setgid combined with world-writable adds a second, stronger warning', () => {
+    const { group, warnings } = chmodPermissionBreakdown(octalToSymbolic('2757'));
+    expect(group.special).toBe('setgid');
+    expect(warnings).toHaveLength(2);
+    expect(warnings.some(w => /setgid/i.test(w))).toBe(true);
+  });
+
+  test('1777: sticky bit on other, still world-writable', () => {
+    const { other, worldWritable } = chmodPermissionBreakdown('rwxrwxrwt');
+    expect(other.special).toBe('sticky');
+    expect(other.execute).toBe(true);
+    expect(worldWritable).toBe(true);
+  });
+
+  test('accepts a 10-character string with a leading file-type character', () => {
+    const a = chmodPermissionBreakdown('drwxr-xr-x');
+    const b = chmodPermissionBreakdown('rwxr-xr-x');
+    expect(a).toEqual(b);
+  });
+
+  test('throws on the wrong length', () => {
+    expect(() => chmodPermissionBreakdown('rwx')).toThrow();
+  });
+});
+
 describe('convertCssUnits', () => {
   test('worked example: 24px, root 16px, viewport 1920x1080', () => {
     const result = convertCssUnits(24, 'px', 16, 1920, 1080);
