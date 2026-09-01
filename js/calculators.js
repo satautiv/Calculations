@@ -636,7 +636,7 @@ document.getElementById('recipe-calc').addEventListener('click', () => {
     return;
   }
 
-  const rows = document.querySelectorAll('#recipe-ingredient-list .recipe-ingredient-row');
+  const rows = document.querySelectorAll('#recipe-ingredient-list .recipe-ingredient-row:not(.recipe-ingredient-header)');
   const ingredients = [];
   let hasInvalidRow = false;
 
@@ -787,7 +787,7 @@ function formatBakerNumber(value) {
 }
 
 function readBakerIngredientRows() {
-  const rows = document.querySelectorAll('#baker-ingredient-list .baker-ingredient-row');
+  const rows = document.querySelectorAll('#baker-ingredient-list .baker-ingredient-row:not(.baker-ingredient-header)');
   const ingredients = [];
   let hasInvalidRow = false;
 
@@ -1094,7 +1094,7 @@ document.getElementById('calorie-calc').addEventListener('click', () => {
     return;
   }
 
-  const rows = document.querySelectorAll('#calorie-ingredient-list .calorie-ingredient-row');
+  const rows = document.querySelectorAll('#calorie-ingredient-list .calorie-ingredient-row:not(.calorie-ingredient-header)');
   const ingredients = [];
   let hasInvalidRow = false;
 
