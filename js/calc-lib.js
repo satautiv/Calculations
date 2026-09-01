@@ -110,6 +110,7 @@ function wendler531Sets(trainingMaxValue, week, roundingIncrement) {
 }
 
 const AVAILABLE_PLATES = [25, 20, 15, 10, 5, 2.5, 1.25, 0.5];
+const AVAILABLE_PLATES_LB = [45, 35, 25, 10, 5, 2.5];
 
 function calculatePlates(target, bar, availablePlates = AVAILABLE_PLATES) {
   let perSide = (target - bar) / 2;
@@ -5312,6 +5313,7 @@ if (typeof module !== 'undefined' && module.exports) {
     wilksScore,
     calculatePlates,
     AVAILABLE_PLATES,
+    AVAILABLE_PLATES_LB,
     WENDLER_LIFTS,
     WENDLER_WEEKS,
     trainingMax,

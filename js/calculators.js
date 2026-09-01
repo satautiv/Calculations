@@ -185,9 +185,21 @@ document.getElementById('wilks-calc').addEventListener('click', () => {
 });
 
 // --- Plate loading calculator ---
+const PLATE_UNIT_DEFAULT_BAR = { kg: 20, lb: 45 };
+
+document.getElementById('plate-unit').addEventListener('change', (e) => {
+  const barInput = document.getElementById('plate-bar');
+  const currentBar = parseFloat(barInput.value);
+  const otherUnit = e.target.value === 'kg' ? 'lb' : 'kg';
+  if (currentBar === PLATE_UNIT_DEFAULT_BAR[otherUnit]) {
+    barInput.value = PLATE_UNIT_DEFAULT_BAR[e.target.value];
+  }
+});
+
 document.getElementById('plate-calc').addEventListener('click', () => {
   const target = parseFloat(document.getElementById('plate-target').value);
   const bar = parseFloat(document.getElementById('plate-bar').value);
+  const unit = document.getElementById('plate-unit').value;
 
   if (!target || target <= 0 || bar === undefined || isNaN(bar) || bar < 0) {
     showError('plate-result', 'Enter a valid target weight and bar weight.');
@@ -199,18 +211,19 @@ document.getElementById('plate-calc').addEventListener('click', () => {
     return;
   }
 
-  const { used, leftover } = calculatePlates(target, bar);
+  const availablePlates = unit === 'lb' ? AVAILABLE_PLATES_LB : AVAILABLE_PLATES;
+  const { used, leftover } = calculatePlates(target, bar, availablePlates);
 
   const rows = used.map(u => `
-    <div class="plate-row"><span>${u.plate} kg</span><span>x${u.count} per side</span></div>
+    <div class="plate-row"><span>${u.plate} ${unit}</span><span>x${u.count} per side</span></div>
   `).join('');
 
   const leftoverHtml = leftover > 1e-6
-    ? `<div class="hint">Remaining ${leftover.toFixed(2)} kg per side can't be made with standard plates.</div>`
+    ? `<div class="hint">Remaining ${leftover.toFixed(2)} ${unit} per side can't be made with standard plates.</div>`
     : '';
 
   document.getElementById('plate-result').innerHTML = `
-    <div class="headline">${target} kg total</div>
+    <div class="headline">${target} ${unit} total</div>
     ${rows || '<div>No plates needed.</div>'}
     ${leftoverHtml}
   `;
