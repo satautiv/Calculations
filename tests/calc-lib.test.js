@@ -27,6 +27,7 @@ const {
   creditCardPayoffFixed,
   creditCardPayoffMinimum,
   debtPayoffPlan,
+  requiredHourlyRate,
   requiredSavingsContribution,
   emergencyFundTarget,
   inflationImpact,
@@ -799,6 +800,37 @@ describe('debtPayoffPlan', () => {
     ];
     const plan = debtPayoffPlan(debts, 300, 'avalanche');
     expect(plan.payoffOrder.map(p => p.name).sort()).toEqual(['A', 'B']);
+  });
+});
+
+describe('requiredHourlyRate', () => {
+  test('matches a worked example: $80,000 target, $5,000 expenses, 48 weeks, 25 billable hours', () => {
+    // (80000 + 5000) / (48 * 25) = 85000 / 1200
+    expect(requiredHourlyRate(80000, 5000, 48, 25)).toBeCloseTo(70.83, 2);
+  });
+
+  test('zero expenses divides target income evenly across billable hours', () => {
+    expect(requiredHourlyRate(60000, 0, 50, 30)).toBeCloseTo(40, 5);
+  });
+
+  test('fewer billable hours per week requires a higher rate for the same target', () => {
+    const fewerHours = requiredHourlyRate(60000, 0, 48, 20);
+    const moreHours = requiredHourlyRate(60000, 0, 48, 40);
+    expect(fewerHours).toBeGreaterThan(moreHours);
+  });
+
+  test('rejects a non-positive target income', () => {
+    expect(() => requiredHourlyRate(0, 0, 48, 25)).toThrow();
+    expect(() => requiredHourlyRate(-1, 0, 48, 25)).toThrow();
+  });
+
+  test('rejects negative expenses', () => {
+    expect(() => requiredHourlyRate(60000, -1, 48, 25)).toThrow();
+  });
+
+  test('rejects non-positive weeks or billable hours', () => {
+    expect(() => requiredHourlyRate(60000, 0, 0, 25)).toThrow();
+    expect(() => requiredHourlyRate(60000, 0, 48, 0)).toThrow();
   });
 });
 

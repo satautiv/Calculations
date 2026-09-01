@@ -449,6 +449,20 @@ function debtPayoffPlan(debts, monthlyBudget, strategy, maxMonths = 1200) {
   return { monthsToPayoff: months, totalInterest, payoffOrder };
 }
 
+// --- Freelance/hourly rate calculator ---
+
+// requiredHourlyRate = (targetIncome + annualExpenses) / (weeksPerYear * billableHoursPerWeek).
+// billableHoursPerWeek is deliberately distinct from total hours worked per
+// week, since it should already exclude admin/unbillable time.
+function requiredHourlyRate(targetIncome, annualExpenses, weeksPerYear, billableHoursPerWeek) {
+  if (!targetIncome || targetIncome <= 0) throw new Error('Target income must be greater than zero.');
+  if (annualExpenses < 0) throw new Error('Annual expenses cannot be negative.');
+  if (!weeksPerYear || weeksPerYear <= 0) throw new Error('Weeks worked per year must be greater than zero.');
+  if (!billableHoursPerWeek || billableHoursPerWeek <= 0) throw new Error('Billable hours per week must be greater than zero.');
+
+  return (targetIncome + annualExpenses) / (weeksPerYear * billableHoursPerWeek);
+}
+
 // Required periodic contribution to reach a savings goal by a target date,
 // given current savings and an expected periodic return: the compound-interest
 // annuity formula (FV = P*(1+i)^n + C*[((1+i)^n-1)/i]) solved for C. Handles
@@ -5567,6 +5581,7 @@ if (typeof module !== 'undefined' && module.exports) {
     creditCardPayoffFixed,
     creditCardPayoffMinimum,
     debtPayoffPlan,
+    requiredHourlyRate,
     requiredSavingsContribution,
     emergencyFundTarget,
     inflationImpact,

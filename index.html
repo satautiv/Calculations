@@ -464,6 +464,29 @@
     <div class="result" id="debt-result"></div>
   </section>
 
+  <section id="freelance-rate-calculator" class="view tab-panel">
+    <h2>Freelance/Hourly Rate Calculator</h2>
+    <p class="hint">Work out the hourly rate you need to charge to hit a target income, accounting for business expenses and realistic billable hours.</p>
+    <div class="field">
+      <label for="freelance-target-income">Target annual income (take-home)</label>
+      <input type="number" id="freelance-target-income" min="0" step="0.01" placeholder="e.g. 80000">
+    </div>
+    <div class="field">
+      <label for="freelance-expenses">Annual business expenses</label>
+      <input type="number" id="freelance-expenses" min="0" step="0.01" value="0" placeholder="e.g. 5000">
+    </div>
+    <div class="field">
+      <label for="freelance-weeks">Weeks worked per year</label>
+      <input type="number" id="freelance-weeks" min="0" step="1" placeholder="e.g. 48">
+    </div>
+    <div class="field">
+      <label for="freelance-billable-hours">Billable hours per week</label>
+      <input type="number" id="freelance-billable-hours" min="0" step="0.5" placeholder="e.g. 25">
+    </div>
+    <button class="calc-btn" id="freelance-calc">Calculate</button>
+    <div class="result" id="freelance-result"></div>
+  </section>
+
   <section id="savings-goal" class="view tab-panel">
     <h2>Savings Goal Calculator</h2>
     <p class="hint">Find out how much you need to save each month to reach a target amount by a target date.</p>
