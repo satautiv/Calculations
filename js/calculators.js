@@ -6413,8 +6413,10 @@ document.getElementById('solar-calc').addEventListener('click', () => {
   const energyPrice = parseFloat(document.getElementById('solar-energy-price').value);
   const maintenanceCostInput = document.getElementById('solar-maintenance-cost').value;
   const maintenanceCost = maintenanceCostInput === '' ? 0 : parseFloat(maintenanceCostInput);
+  const emissionsFactorInput = document.getElementById('solar-emissions-factor').value;
+  const emissionsFactor = emissionsFactorInput === '' ? 0.4 : parseFloat(emissionsFactorInput);
 
-  if ([targetDailyKwh, panelWattage, peakSunHours, derateFactor, systemCost, energyPrice, maintenanceCost].some(isNaN)) {
+  if ([targetDailyKwh, panelWattage, peakSunHours, derateFactor, systemCost, energyPrice, maintenanceCost, emissionsFactor].some(isNaN)) {
     showError('solar-result', 'Enter valid numbers for all fields.');
     return;
   }
@@ -6434,13 +6436,21 @@ document.getElementById('solar-calc').addEventListener('click', () => {
       maintenanceCost,
     );
 
+    const co2Html = emissionsFactor > 0 ? (() => {
+      const { annualCO2AvoidedKg, equivalentCarKm } = solarCO2Avoided(annualProductionKwh, emissionsFactor);
+      return `
+        <div>Estimated CO2 avoided: ${annualCO2AvoidedKg.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg/year (&asymp;${equivalentCarKm.toLocaleString(undefined, { maximumFractionDigits: 0 })} km of average car driving avoided per year)</div>
+      `;
+    })() : '';
+
     document.getElementById('solar-result').innerHTML = `
       <div class="headline">${numberOfPanels} panels &middot; ${systemSizeKw.toFixed(2)} kW system</div>
       <div>Daily output per panel: ${dailyOutputPerPanelKwh.toFixed(2)} kWh</div>
       <div>Estimated annual production: ${annualProductionKwh.toLocaleString(undefined, { maximumFractionDigits: 0 })} kWh</div>
       <div>Estimated annual savings: ${formatMoney(annualSavings)}</div>
       <div>Payback period: ${paybackYears.toFixed(1)} years</div>
-      <div class="hint">Simplified estimate - real-world results vary with weather, shading, and panel degradation, and this doesn't account for financing, incentives, or energy price inflation.</div>
+      ${co2Html}
+      <div class="hint">Simplified estimate - real-world results vary with weather, shading, and panel degradation, and this doesn't account for financing, incentives, or energy price inflation. The grid emissions factor and average-car comparison are rough, user-adjustable figures, not live regional data.</div>
     `;
   } catch (err) {
     showError('solar-result', err.message);

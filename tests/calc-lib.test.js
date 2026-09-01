@@ -197,6 +197,7 @@ const {
   horizonDistance,
   solarPanelSizing,
   solarPaybackPeriod,
+  solarCO2Avoided,
   projectileMotion,
   urlEncode,
   urlDecode,
@@ -4590,6 +4591,27 @@ describe('solarPaybackPeriod', () => {
     expect(Number.isFinite(paybackYears)).toBe(true);
   });
 });
+
+describe('solarCO2Avoided', () => {
+  test('worked example: 5781.6 kWh/year at a 0.4 kg CO2/kWh grid factor', () => {
+    const { annualCO2AvoidedKg, equivalentCarKm } = solarCO2Avoided(5781.6, 0.4);
+    expect(annualCO2AvoidedKg).toBeCloseTo(2312.64, 2);
+    expect(equivalentCarKm).toBeCloseTo(13603.76, 2);
+  });
+
+  test('scales linearly with the emissions factor', () => {
+    const low = solarCO2Avoided(5000, 0.2);
+    const high = solarCO2Avoided(5000, 0.4);
+    expect(high.annualCO2AvoidedKg).toBeCloseTo(low.annualCO2AvoidedKg * 2, 5);
+  });
+
+  test('rejects a non-positive production or emissions factor', () => {
+    expect(() => solarCO2Avoided(0, 0.4)).toThrow();
+    expect(() => solarCO2Avoided(5000, 0)).toThrow();
+    expect(() => solarCO2Avoided(5000, -0.1)).toThrow();
+  });
+});
+
 // --- Projectile motion and fall time calculator ---
 
 describe('projectileMotion', () => {
