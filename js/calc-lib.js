@@ -1122,6 +1122,24 @@ function wheelOffsetShift(oldWidthIn, oldET, newWidthIn, newET) {
   return { outwardShiftMm, inwardShiftMm };
 }
 
+// Compares a computed shift against measured available clearance on that
+// side. A shift that's zero or negative moves away from that boundary, so
+// there's nothing to check. "Tight" flags a thin (<3mm) margin as a
+// rough DIY-measurement tolerance, not a fitment guarantee.
+function wheelClearanceFit(shiftMm, availableClearanceMm) {
+  if (!availableClearanceMm || availableClearanceMm <= 0) {
+    throw new Error('Available clearance must be greater than zero.');
+  }
+
+  if (shiftMm <= 0) {
+    return { applicable: false, marginMm: null, verdict: 'not applicable' };
+  }
+
+  const marginMm = availableClearanceMm - shiftMm;
+  const verdict = marginMm < 0 ? 'no fit' : marginMm < 3 ? 'tight fit' : 'fits';
+  return { applicable: true, marginMm, verdict };
+}
+
 // Inverts an exchange rate, e.g. for a "swap direction" toggle that converts
 // target currency back into source currency using the same quoted rate.
 function inverseExchangeRate(exchangeRate) {
@@ -5252,6 +5270,7 @@ if (typeof module !== 'undefined' && module.exports) {
     convertCurrency,
     inverseExchangeRate,
     wheelOffsetShift,
+    wheelClearanceFit,
     roofBoxFuelPenalty,
     percentOf,
     whatPercentOf,

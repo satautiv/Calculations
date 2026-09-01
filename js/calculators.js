@@ -3207,6 +3207,21 @@ document.getElementById('woc-calc').addEventListener('click', () => {
     return;
   }
 
+  const fenderClearanceRaw = document.getElementById('woc-fender-clearance').value;
+  const fenderClearance = fenderClearanceRaw === '' ? null : parseFloat(fenderClearanceRaw);
+  const strutClearanceRaw = document.getElementById('woc-strut-clearance').value;
+  const strutClearance = strutClearanceRaw === '' ? null : parseFloat(strutClearanceRaw);
+
+  if (fenderClearance !== null && fenderClearance <= 0) {
+    showError('woc-result', 'Fender clearance, if provided, must be greater than zero.');
+    return;
+  }
+
+  if (strutClearance !== null && strutClearance <= 0) {
+    showError('woc-result', 'Inner/strut clearance, if provided, must be greater than zero.');
+    return;
+  }
+
   const etWarning = (Math.abs(oldET) > 60 || Math.abs(newET) > 60)
     ? '<div class="hint">Note: an offset (ET) beyond &plusmn;60mm is unusual &mdash; double check the value.</div>'
     : '';
@@ -3225,9 +3240,30 @@ document.getElementById('woc-calc').addEventListener('click', () => {
       ? `sits ${Math.abs(inwardShiftMm).toFixed(1)} mm further out, away from the suspension/strut`
       : 'stays in the same place relative to the suspension/strut';
 
+  const fitCheckHtml = (fenderClearance !== null || strutClearance !== null) ? (() => {
+    const lines = [];
+
+    if (fenderClearance !== null) {
+      const { applicable, marginMm, verdict } = wheelClearanceFit(outwardShiftMm, fenderClearance);
+      lines.push(applicable
+        ? `<div>Fender side: <strong>${verdict}</strong> (${marginMm >= 0 ? '' : '-'}${Math.abs(marginMm).toFixed(1)} mm ${marginMm >= 0 ? 'to spare' : 'short'})</div>`
+        : `<div>Fender side: not applicable &mdash; the new wheel doesn't shift outward.</div>`);
+    }
+
+    if (strutClearance !== null) {
+      const { applicable, marginMm, verdict } = wheelClearanceFit(inwardShiftMm, strutClearance);
+      lines.push(applicable
+        ? `<div>Strut side: <strong>${verdict}</strong> (${marginMm >= 0 ? '' : '-'}${Math.abs(marginMm).toFixed(1)} mm ${marginMm >= 0 ? 'to spare' : 'short'})</div>`
+        : `<div>Strut side: not applicable &mdash; the new wheel doesn't shift inward.</div>`);
+    }
+
+    return lines.join('');
+  })() : '';
+
   document.getElementById('woc-result').innerHTML = `
     <div class="headline">${outwardShiftMm >= 0 ? '+' : ''}${outwardShiftMm.toFixed(1)} mm outward / ${inwardShiftMm >= 0 ? '+' : ''}${inwardShiftMm.toFixed(1)} mm inward</div>
     <div>The new wheel ${outwardDescription}, and ${inwardDescription}.</div>
+    ${fitCheckHtml}
     ${etWarning}
     <div class="hint">This is an approximation, not a fitment guarantee &mdash; it doesn't account for suspension travel, steering lock, or fender rolling.</div>
   `;

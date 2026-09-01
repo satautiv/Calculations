@@ -83,6 +83,7 @@ const {
   convertCurrency,
   inverseExchangeRate,
   wheelOffsetShift,
+  wheelClearanceFit,
   roofBoxFuelPenalty,
   percentOf,
   whatPercentOf,
@@ -1705,6 +1706,36 @@ describe('Wheel Offset & Clearance (ET) calculator', () => {
     const { outwardShiftMm, inwardShiftMm } = wheelOffsetShift(8, 35, 8, 35);
     expect(outwardShiftMm).toBe(0);
     expect(inwardShiftMm).toBe(0);
+  });
+
+  test('wheelClearanceFit: comfortable margin fits', () => {
+    const { applicable, marginMm, verdict } = wheelClearanceFit(22.7, 30);
+    expect(applicable).toBe(true);
+    expect(marginMm).toBeCloseTo(7.3, 5);
+    expect(verdict).toBe('fits');
+  });
+
+  test('wheelClearanceFit: thin margin (<3mm) is tight', () => {
+    const { verdict } = wheelClearanceFit(22.7, 25);
+    expect(verdict).toBe('tight fit');
+  });
+
+  test('wheelClearanceFit: negative margin does not fit', () => {
+    const { applicable, marginMm, verdict } = wheelClearanceFit(22.7, 20);
+    expect(applicable).toBe(true);
+    expect(marginMm).toBeCloseTo(-2.7, 5);
+    expect(verdict).toBe('no fit');
+  });
+
+  test('wheelClearanceFit: a shift that moves away from the boundary is not applicable', () => {
+    const { applicable, verdict } = wheelClearanceFit(-10, 20);
+    expect(applicable).toBe(false);
+    expect(verdict).toBe('not applicable');
+  });
+
+  test('wheelClearanceFit: rejects a non-positive available clearance', () => {
+    expect(() => wheelClearanceFit(22.7, 0)).toThrow();
+    expect(() => wheelClearanceFit(22.7, -5)).toThrow();
   });
 });
 
