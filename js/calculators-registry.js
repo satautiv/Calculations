@@ -795,6 +795,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['horizon', 'distance', 'curvature', 'refraction', 'eye height', 'line of sight', 'unusual'],
   },
   {
+    id: 'altitude-pressure-calculator',
+    name: 'Barometric/Altitude Air Pressure Calculator',
+    category: 'Unusual',
+    description: "Estimate atmospheric pressure and water's boiling point at a given altitude.",
+    keywords: ['barometric pressure', 'altitude', 'boiling point', 'atmospheric pressure', 'hiking', 'high altitude cooking', 'unusual'],
+  },
+  {
     id: 'solar-panel-calculator',
     name: 'Solar Panel Sizing & ROI Calculator',
     category: 'Home & DIY',

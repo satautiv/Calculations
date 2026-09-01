@@ -3786,6 +3786,41 @@ function horizonDistance(heightM, refractionCoefficient = HORIZON_REFRACTION_COE
   };
 }
 
+// --- Barometric/altitude air pressure calculator ---
+
+// International Standard Atmosphere constants for the troposphere.
+const ISA_SEA_LEVEL_TEMPERATURE_K = 288.15;
+const ISA_TEMPERATURE_LAPSE_RATE = 0.0065; // K per meter
+const ISA_BAROMETRIC_EXPONENT = 5.25588; // g*M / (R*L)
+
+// Barometric formula: estimates atmospheric pressure at a given altitude
+// from sea-level pressure and the standard temperature lapse rate. Only
+// valid within the troposphere (below ~11 km, where the lapse rate this
+// formula assumes holds).
+function pressureAtAltitude(altitudeM, seaLevelPressureHpa = 1013.25) {
+  if (!seaLevelPressureHpa || seaLevelPressureHpa <= 0) throw new Error('Sea-level pressure must be greater than zero.');
+
+  const base = 1 - (ISA_TEMPERATURE_LAPSE_RATE * altitudeM) / ISA_SEA_LEVEL_TEMPERATURE_K;
+  if (base <= 0) throw new Error('Altitude is too high for this approximation (above the tropopause).');
+
+  return seaLevelPressureHpa * Math.pow(base, ISA_BAROMETRIC_EXPONENT);
+}
+
+// Clausius-Clapeyron-derived estimate of water's boiling point at a given
+// atmospheric pressure, referenced to 100°C at standard sea-level pressure.
+// R_OVER_MOLAR_LATENT_HEAT = R / L_v (8.314 J/mol/K over water's molar heat
+// of vaporization, ~40660 J/mol at 100°C).
+function boilingPointAtPressure(pressureHpa) {
+  if (!pressureHpa || pressureHpa <= 0) throw new Error('Pressure must be greater than zero.');
+
+  const REFERENCE_PRESSURE_HPA = 1013.25;
+  const REFERENCE_BOILING_POINT_K = 373.15;
+  const R_OVER_MOLAR_LATENT_HEAT = 0.0002045;
+
+  const inverseKelvin = 1 / REFERENCE_BOILING_POINT_K - R_OVER_MOLAR_LATENT_HEAT * Math.log(pressureHpa / REFERENCE_PRESSURE_HPA);
+  return 1 / inverseKelvin - 273.15;
+}
+
 // --- Solar panel sizing & ROI calculator ---
 
 // How many panels are needed to cover a target daily energy consumption,
@@ -6143,6 +6178,8 @@ if (typeof module !== 'undefined' && module.exports) {
     applyRegexReplacement,
     HORIZON_REFRACTION_COEFFICIENT,
     horizonDistance,
+    pressureAtAltitude,
+    boilingPointAtPressure,
     solarPanelSizing,
     solarPaybackPeriod,
     AVERAGE_CAR_KG_CO2_PER_KM,

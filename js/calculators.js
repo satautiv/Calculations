@@ -7030,6 +7030,31 @@ document.getElementById('horizon-calc').addEventListener('click', () => {
   }
 });
 
+// --- Barometric/altitude air pressure calculator ---
+document.getElementById('altpressure-calc').addEventListener('click', () => {
+  const altitude = parseFloat(document.getElementById('altpressure-altitude').value);
+  const sealevelRaw = document.getElementById('altpressure-sealevel').value;
+  const seaLevelPressure = sealevelRaw === '' ? 1013.25 : parseFloat(sealevelRaw);
+
+  if (isNaN(altitude)) {
+    showError('altpressure-result', 'Enter a valid altitude.');
+    return;
+  }
+
+  try {
+    const pressure = pressureAtAltitude(altitude, seaLevelPressure);
+    const boilingPoint = boilingPointAtPressure(pressure);
+
+    document.getElementById('altpressure-result').innerHTML = `
+      <div class="headline">${pressure.toFixed(1)} hPa</div>
+      <div>Estimated atmospheric pressure</div>
+      <div class="hint">Water boils at approximately ${boilingPoint.toFixed(1)}&deg;C at this pressure</div>
+    `;
+  } catch (err) {
+    showError('altpressure-result', err.message);
+  }
+});
+
 // --- Solar panel sizing & ROI calculator ---
 document.getElementById('solar-calc').addEventListener('click', () => {
   const targetDailyKwh = parseFloat(document.getElementById('solar-target-kwh').value);

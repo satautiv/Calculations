@@ -3721,6 +3721,21 @@
     <div class="result" id="horizon-result"></div>
   </section>
 
+  <section id="altitude-pressure-calculator" class="view tab-panel">
+    <h2>Barometric/Altitude Air Pressure Calculator</h2>
+    <p class="hint">Estimates atmospheric pressure and water's boiling point at a given altitude, using the standard barometric formula. Only valid within the troposphere (below ~11 km).</p>
+    <div class="field">
+      <label for="altpressure-altitude">Altitude (m above sea level)</label>
+      <input type="number" id="altpressure-altitude" step="1" placeholder="e.g. 1609">
+    </div>
+    <div class="field">
+      <label for="altpressure-sealevel">Sea-level pressure (hPa, optional)</label>
+      <input type="number" id="altpressure-sealevel" min="0" step="0.01" value="1013.25" placeholder="Default 1013.25 (standard atmosphere)">
+    </div>
+    <button class="calc-btn" id="altpressure-calc">Calculate</button>
+    <div class="result" id="altpressure-result"></div>
+  </section>
+
   <section id="solar-panel-calculator" class="view tab-panel">
     <h2>Solar Panel Sizing &amp; ROI Calculator</h2>
     <p class="hint">Estimates how many solar panels you need to cover a target daily energy use, and how long the system takes to pay for itself. Sun-hours and energy price are manual inputs - no live pricing or irradiance data is fetched.</p>
