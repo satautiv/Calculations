@@ -6668,9 +6668,16 @@ document.getElementById('k8s-calc').addEventListener('click', () => {
   const memPeak = parseFloat(document.getElementById('k8s-mem-peak').value);
   const memUnit = document.getElementById('k8s-mem-unit').value;
   const headroom = parseFloat(document.getElementById('k8s-headroom').value);
+  const replicasRaw = document.getElementById('k8s-replicas').value;
+  const replicas = replicasRaw === '' ? 1 : parseInt(replicasRaw, 10);
 
   const cpuMultiplier = cpuUnit === 'cores' ? 1000 : 1;
   const memMultiplier = memUnit === 'gib' ? 1024 : 1;
+
+  if (!replicas || replicas < 1 || !Number.isInteger(replicas)) {
+    showError('k8s-result', 'Replica count, if provided, must be a whole number of 1 or more.');
+    return;
+  }
 
   try {
     const plan = k8sResourcePlan(
@@ -6681,6 +6688,10 @@ document.getElementById('k8s-calc').addEventListener('click', () => {
       headroom
     );
 
+    const totalHtml = replicas > 1 ? `
+      <div class="hint">Total across ${replicas} replicas &mdash; CPU: ${plan.cpuRequestMillicores * replicas}m request / ${plan.cpuLimitMillicores * replicas}m limit &middot; Memory: ${plan.memRequestMiB * replicas}Mi request / ${plan.memLimitMiB * replicas}Mi limit</div>
+    ` : '';
+
     document.getElementById('k8s-result').innerHTML = `
       <div class="headline">QoS class: ${plan.qosClass}</div>
       <table>
@@ -6690,6 +6701,7 @@ document.getElementById('k8s-calc').addEventListener('click', () => {
           <tr><td>Memory</td><td>${plan.memRequestMiB}Mi</td><td>${plan.memLimitMiB}Mi</td></tr>
         </tbody>
       </table>
+      ${totalHtml}
       <pre>${escapeHtml(plan.yamlSnippet)}</pre>
       <p class="hint">Exceeding a CPU limit causes CFS throttling (slower execution), not termination - many production guides recommend omitting a CPU limit entirely for latency-sensitive workloads. Exceeding a memory limit gets the container OOMKilled (hard termination), so memory limits should generally use more conservative (larger) headroom than CPU.</p>
     `;
