@@ -2555,6 +2555,20 @@ function widmarkBAC(alcoholGrams, weightKg, sex, hoursElapsed) {
   return Math.max(0, bacRaw);
 }
 
+// Hours remaining from right now until BAC (at its current, already-elapsed
+// value) drops to thresholdPercent, solving the same linear elimination
+// rate for time. Returns 0 if already at or below the threshold.
+function bacTimeToThreshold(currentBAC, thresholdPercent, eliminationRatePerHour = BAC_ELIMINATION_RATE_PER_HOUR) {
+  if (currentBAC < 0) throw new Error('Current BAC cannot be negative.');
+  if (thresholdPercent < 0) throw new Error('Threshold cannot be negative.');
+  if (!eliminationRatePerHour || eliminationRatePerHour <= 0) {
+    throw new Error('Elimination rate must be greater than zero.');
+  }
+
+  if (currentBAC <= thresholdPercent) return 0;
+  return (currentBAC - thresholdPercent) / eliminationRatePerHour;
+}
+
 // --- Cycling FTP calculator ---
 
 // Coggan's 7 power training zones, as a fraction of FTP. Zone 7 has no
@@ -5471,6 +5485,7 @@ if (typeof module !== 'undefined' && module.exports) {
     alcoholGramsFromDrinkCount,
     alcoholGramsFromVolume,
     widmarkBAC,
+    bacTimeToThreshold,
     FTP_ZONES,
     estimateFTP,
     ftpPowerZones,

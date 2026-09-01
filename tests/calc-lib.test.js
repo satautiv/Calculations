@@ -155,6 +155,7 @@ const {
   alcoholGramsFromDrinkCount,
   alcoholGramsFromVolume,
   widmarkBAC,
+  bacTimeToThreshold,
   estimateFTP,
   ftpPowerZones,
   ftpPowerToWeight,
@@ -3362,6 +3363,25 @@ describe('widmarkBAC', () => {
   test('throws for a missing or invalid sex', () => {
     expect(() => widmarkBAC(42, 70, undefined, 2)).toThrow();
     expect(() => widmarkBAC(42, 70, 'other', 2)).toThrow();
+  });
+});
+
+describe('bacTimeToThreshold', () => {
+  test('worked example: 70 kg man, 3 standard drinks, BAC at t=0', () => {
+    const bac0 = widmarkBAC(alcoholGramsFromDrinkCount(3), 70, 'male', 0);
+    expect(bacTimeToThreshold(bac0, 0.08)).toBeCloseTo(0.549, 3);
+    expect(bacTimeToThreshold(bac0, 0)).toBeCloseTo(5.882, 3);
+  });
+
+  test('returns 0 when already at or below the threshold', () => {
+    expect(bacTimeToThreshold(0.05, 0.08)).toBe(0);
+    expect(bacTimeToThreshold(0.08, 0.08)).toBe(0);
+  });
+
+  test('rejects a negative BAC, negative threshold, or non-positive elimination rate', () => {
+    expect(() => bacTimeToThreshold(-0.01, 0.08)).toThrow();
+    expect(() => bacTimeToThreshold(0.1, -0.01)).toThrow();
+    expect(() => bacTimeToThreshold(0.1, 0.08, 0)).toThrow();
   });
 });
 

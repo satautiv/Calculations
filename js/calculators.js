@@ -5243,10 +5243,34 @@ document.getElementById('bac-calc').addEventListener('click', () => {
         ? 'Below the typical 0.08% legal limit'
         : 'At or above the typical 0.08% legal limit';
 
+    const timeToLimit = bacTimeToThreshold(bac, 0.08);
+    const timeToSober = bacTimeToThreshold(bac, 0);
+    const timeLines = [];
+    if (timeToLimit > 0) timeLines.push(`<div>Estimated time until at/below 0.08%: ${timeToLimit.toFixed(1)}h</div>`);
+    if (timeToSober > 0) timeLines.push(`<div>Estimated time until sober (0%): ${timeToSober.toFixed(1)}h</div>`);
+
+    const bac0 = widmarkBAC(alcoholGrams, weight, sex, 0);
+    const chartMaxHours = Math.max(hours + timeToSober + 1, hours + 1, 1);
+    const chartPoints = Array.from({ length: 41 }, (_, i) => (chartMaxHours / 40) * i).map((t) => ({
+      x: t,
+      y: widmarkBAC(alcoholGrams, weight, sex, t),
+    }));
+    const chartHtml = bac0 > 0 ? renderLineChartSvg({
+      series: [{ label: 'BAC', color: 'var(--accent)', points: chartPoints }],
+      hLines: [
+        { y: 0.08, label: '0.08% limit', color: 'var(--danger)' },
+      ],
+      markers: [{ x: hours, y: bac, label: 'Now' }],
+      xTickFormat: (x) => `${x.toFixed(1)}h`,
+      yTickFormat: (y) => `${y.toFixed(2)}%`,
+    }) : '';
+
     document.getElementById('bac-result').innerHTML = `
       <div class="headline">${bac.toFixed(3)}%</div>
       <div>${label}</div>
+      ${timeLines.join('')}
       <div class="hint">Entertainment/educational estimate only &mdash; not a measurement of your actual BAC. Never drive after drinking.</div>
+      ${chartHtml}
     `;
   } catch (err) {
     showError('bac-result', err.message);
