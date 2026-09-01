@@ -5920,11 +5920,34 @@ document.getElementById('decking-calc').addEventListener('click', () => {
       deckLength, deckWidth, boardWidth, boardLength, gap, waste, joistSpacing, screwsPerJoist
     );
 
+    const pricePerBoardRaw = document.getElementById('decking-price-per-board').value;
+    const pricePerBoard = pricePerBoardRaw === '' ? null : parseFloat(pricePerBoardRaw);
+    const pricePerScrewRaw = document.getElementById('decking-price-per-screw').value;
+    const pricePerScrew = pricePerScrewRaw === '' ? null : parseFloat(pricePerScrewRaw);
+
+    if (pricePerBoard !== null && pricePerBoard < 0) {
+      showError('decking-result', 'Price per board, if provided, cannot be negative.');
+      return;
+    }
+
+    if (pricePerScrew !== null && pricePerScrew < 0) {
+      showError('decking-result', 'Price per screw, if provided, cannot be negative.');
+      return;
+    }
+
+    let costHtml = '';
+    if (pricePerBoard !== null || pricePerScrew !== null) {
+      const boardCost = totalBoards * (pricePerBoard || 0);
+      const screwCost = totalScrews * (pricePerScrew || 0);
+      costHtml = `<div class="hint">Estimated materials cost: ${formatMoney(boardCost + screwCost)} (boards: ${formatMoney(boardCost)}, screws: ${formatMoney(screwCost)})</div>`;
+    }
+
     document.getElementById('decking-result').innerHTML = `
       <div class="headline">${totalBoards} boards, ${totalScrews} screws</div>
       <div>${boardRows} rows across the deck's width, ${totalLinearLengthM.toFixed(1)} m of linear decking needed</div>
       <div>${joistsCrossedPerBoard} joist crossings per board &times; ${screwsPerJoist} screws each = ${screwsPerBoard} screws per board</div>
       <div class="hint">Board count includes waste for cutting and end-trimming; always round up and order a little extra.</div>
+      ${costHtml}
     `;
   } catch (err) {
     showError('decking-result', err.message);
