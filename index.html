@@ -2414,14 +2414,15 @@
 
   <section id="flooring-calculator" class="view tab-panel">
     <h2>Flooring Calculator</h2>
-    <p class="hint">Calculates how much flooring material (laminate, hardwood, vinyl plank, carpet, etc.) and how many boxes you need for a room, including a waste allowance for cuts and layout.</p>
+    <p class="hint">Calculates how much flooring material (laminate, hardwood, vinyl plank, carpet, etc.) and how many boxes you need for a room, including a waste allowance for cuts and layout. Add more than one section for an L-shaped room, an alcove, or a connecting hallway.</p>
     <div class="field">
-      <label for="floor-length">Room length (m)</label>
-      <input type="number" id="floor-length" min="0" step="0.01" placeholder="e.g. 5">
-    </div>
-    <div class="field">
-      <label for="floor-width">Room width (m)</label>
-      <input type="number" id="floor-width" min="0" step="0.01" placeholder="e.g. 4">
+      <label>Sections</label>
+      <div class="floor-section-grid" id="floor-section-list">
+        <div class="floor-section-row floor-section-header">
+          <span>Length (m)</span><span>Width (m)</span><span></span>
+        </div>
+      </div>
+      <button type="button" class="calc-btn secondary-btn" id="floor-add-section">+ Add section</button>
     </div>
     <div class="field">
       <label for="floor-waste">Waste allowance (%, e.g. enter 10 for 10%)</label>

@@ -4770,18 +4770,60 @@ document.getElementById('wp-calc').addEventListener('click', () => {
 });
 
 // --- Flooring calculator ---
+function addFloorSectionRow(length = '', width = '') {
+  const row = document.createElement('div');
+  row.className = 'floor-section-row';
+  row.innerHTML = `
+    <input type="number" class="floor-section-length" aria-label="Section length (m)" min="0" step="0.01" placeholder="e.g. 5" value="${length}">
+    <input type="number" class="floor-section-width" aria-label="Section width (m)" min="0" step="0.01" placeholder="e.g. 4" value="${width}">
+    <button type="button" class="floor-remove-section-btn" aria-label="Remove section">&times;</button>
+  `;
+  document.getElementById('floor-section-list').appendChild(row);
+}
+
+addFloorSectionRow();
+
+document.getElementById('floor-add-section').addEventListener('click', () => addFloorSectionRow());
+
+document.getElementById('floor-section-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.floor-remove-section-btn');
+  if (!btn) return;
+  const rows = document.querySelectorAll('#floor-section-list .floor-section-row:not(.floor-section-header)');
+  if (rows.length <= 1) return; // always keep at least one section
+  btn.closest('.floor-section-row').remove();
+});
+
 document.getElementById('floor-calc').addEventListener('click', () => {
-  const length = parseFloat(document.getElementById('floor-length').value);
-  const width = parseFloat(document.getElementById('floor-width').value);
   const waste = parseFloat(document.getElementById('floor-waste').value);
   const boxCoverage = parseFloat(document.getElementById('floor-box-coverage').value);
 
-  if (isNaN(length) || length <= 0 || isNaN(width) || width <= 0) {
-    showError('floor-result', 'Enter valid room length and width greater than zero.');
+  const rows = document.querySelectorAll('#floor-section-list .floor-section-row:not(.floor-section-header)');
+  const sections = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const length = parseFloat(row.querySelector('.floor-section-length').value);
+    const width = parseFloat(row.querySelector('.floor-section-width').value);
+
+    if (isNaN(length) || length <= 0 || isNaN(width) || width <= 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    sections.push({ length, width, area: length * width });
+  });
+
+  if (hasInvalidRow) {
+    showError('floor-result', 'Enter a valid length and width greater than zero for every section.');
     return;
   }
 
-  const area = length * width;
+  if (sections.length === 0) {
+    showError('floor-result', 'Add at least one section.');
+    return;
+  }
+
+  const area = sections.reduce((sum, s) => sum + s.area, 0);
 
   try {
     const { areaWithWaste, boxesNeeded, totalPurchasedArea } = flooringNeeded(area, waste, boxCoverage);
@@ -4790,10 +4832,15 @@ document.getElementById('floor-calc').addEventListener('click', () => {
       ? '<div class="hint">That\'s an unusually high waste percentage &mdash; double-check this is intentional.</div>'
       : '';
 
+    const sectionsNote = sections.length > 1
+      ? `<div class="hint">Sections: ${sections.map((s, i) => `#${i + 1} ${s.length}&times;${s.width}m = ${s.area.toFixed(2)} m&sup2;`).join(', ')}</div>`
+      : '';
+
     document.getElementById('floor-result').innerHTML = `
       <div class="headline">${boxesNeeded} boxes</div>
       <div>Room area: ${area.toFixed(2)} m&sup2; &middot; Area with waste: ${areaWithWaste.toFixed(2)} m&sup2;</div>
       <div class="hint">Total material purchased: ${totalPurchasedArea.toFixed(2)} m&sup2;</div>
+      ${sectionsNote}
       ${wasteNote}
     `;
   } catch (err) {
