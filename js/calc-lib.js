@@ -3427,6 +3427,29 @@ function solarPaybackPeriod(dailyOutputPerPanelKwh, numberOfPanels, systemCost, 
 
   return { annualProductionKwh, annualSavings, paybackYears };
 }
+
+// Rough average car emissions figure (varies widely by vehicle and region;
+// this is a commonly-cited rough average for a relatable comparison, not a
+// specific vehicle's figure).
+const AVERAGE_CAR_KG_CO2_PER_KM = 0.17;
+
+// CO2 avoided per year from solar production offsetting grid electricity,
+// given a user-adjustable grid emissions factor (kg CO2/kWh - there's no
+// live grid-mix data, so this is a rough, editable estimate). Also reports
+// a relatable equivalent in km of average car driving avoided.
+function solarCO2Avoided(annualProductionKwh, emissionsFactorKgPerKwh) {
+  if (!annualProductionKwh || annualProductionKwh <= 0) {
+    throw new Error('Annual production must be greater than zero.');
+  }
+  if (!emissionsFactorKgPerKwh || emissionsFactorKgPerKwh <= 0) {
+    throw new Error('Grid emissions factor must be greater than zero.');
+  }
+
+  const annualCO2AvoidedKg = annualProductionKwh * emissionsFactorKgPerKwh;
+  const equivalentCarKm = annualCO2AvoidedKg / AVERAGE_CAR_KG_CO2_PER_KM;
+
+  return { annualCO2AvoidedKg, equivalentCarKm };
+}
 // --- Projectile motion and fall time calculator ---
 
 // Time of flight, max height, and range for a launch at `speed` and
@@ -5640,6 +5663,8 @@ if (typeof module !== 'undefined' && module.exports) {
     horizonDistance,
     solarPanelSizing,
     solarPaybackPeriod,
+    AVERAGE_CAR_KG_CO2_PER_KM,
+    solarCO2Avoided,
     projectileMotion,
     urlEncode,
     urlDecode,
