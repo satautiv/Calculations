@@ -6447,6 +6447,9 @@ document.getElementById('wchi-calc').addEventListener('click', () => {
   try {
     const tempF = tempUnit === 'C' ? celsiusToFahrenheit(tempInput) : tempInput;
 
+    const unitLabel = tempUnit === 'C' ? '&deg;C' : '&deg;F';
+    const toDisplayTemp = (f) => tempUnit === 'C' ? fahrenheitToCelsius(f) : f;
+
     if (mode === 'windchill') {
       const windSpeedInput = parseFloat(document.getElementById('wchi-wind-speed').value);
       const windUnit = document.getElementById('wchi-wind-unit').value;
@@ -6456,38 +6459,68 @@ document.getElementById('wchi-calc').addEventListener('click', () => {
 
       const { applicable, feelsLikeF } = windChillFahrenheit(tempF, windSpeedMph);
 
+      const chartHtml = tempF <= 50 ? (() => {
+        const maxSpeed = Math.max(60, windSpeedMph * 1.5);
+        const points = Array.from({ length: 31 }, (_, i) => (maxSpeed / 30) * i)
+          .map((v) => ({ v, result: windChillFahrenheit(tempF, v) }))
+          .filter(({ result }) => result.applicable)
+          .map(({ v, result }) => ({ x: v, y: toDisplayTemp(result.feelsLikeF) }));
+        if (points.length === 0) return '';
+        const markers = applicable ? [{ x: windSpeedMph, y: toDisplayTemp(feelsLikeF), label: 'You' }] : [];
+        return renderLineChartSvg({
+          series: [{ label: 'Feels like', color: 'var(--accent)', points }],
+          markers,
+          xTickFormat: (x) => `${x.toFixed(0)} mph`,
+          yTickFormat: (y) => `${y.toFixed(0)}${unitLabel.replace(/&deg;/, '°')}`,
+        });
+      })() : '';
+
       if (!applicable) {
         document.getElementById('wchi-result').innerHTML = `
           <div class="headline">Not applicable</div>
           <div>Wind chill is only defined for air temperatures of 50&deg;F (10&deg;C) or below with wind speeds above 3 mph (4.8 km/h). Outside that range, wind doesn't meaningfully change the perceived temperature.</div>
+          ${chartHtml}
         `;
         return;
       }
 
-      const feelsLikeDisplay = tempUnit === 'C' ? fahrenheitToCelsius(feelsLikeF) : feelsLikeF;
-      const unitLabel = tempUnit === 'C' ? '&deg;C' : '&deg;F';
+      const feelsLikeDisplay = toDisplayTemp(feelsLikeF);
       document.getElementById('wchi-result').innerHTML = `
         <div class="headline">${feelsLikeDisplay.toFixed(1)}${unitLabel} feels like</div>
         <div class="hint">Based on the official NWS (2001) wind chill formula. This is an approximation with its own margin of error.</div>
+        ${chartHtml}
       `;
     } else {
       const humidity = parseFloat(document.getElementById('wchi-humidity').value);
 
       const { applicable, feelsLikeF } = heatIndexFahrenheit(tempF, humidity);
 
+      const chartHtml = tempF >= 80 ? (() => {
+        const points = Array.from({ length: 21 }, (_, i) => 5 * i)
+          .map((rh) => ({ x: rh, y: toDisplayTemp(heatIndexFahrenheit(tempF, rh).feelsLikeF) }));
+        const markers = applicable ? [{ x: humidity, y: toDisplayTemp(feelsLikeF), label: 'You' }] : [];
+        return renderLineChartSvg({
+          series: [{ label: 'Feels like', color: 'var(--accent)', points }],
+          markers,
+          xTickFormat: (x) => `${x.toFixed(0)}%`,
+          yTickFormat: (y) => `${y.toFixed(0)}${unitLabel.replace(/&deg;/, '°')}`,
+        });
+      })() : '';
+
       if (!applicable) {
         document.getElementById('wchi-result').innerHTML = `
           <div class="headline">Not applicable</div>
           <div>Heat index is only calculated for air temperatures of 80&deg;F (26.7&deg;C) or above. Below that, humidity has a negligible effect on the perceived temperature.</div>
+          ${chartHtml}
         `;
         return;
       }
 
-      const feelsLikeDisplay = tempUnit === 'C' ? fahrenheitToCelsius(feelsLikeF) : feelsLikeF;
-      const unitLabel = tempUnit === 'C' ? '&deg;C' : '&deg;F';
+      const feelsLikeDisplay = toDisplayTemp(feelsLikeF);
       document.getElementById('wchi-result').innerHTML = `
         <div class="headline">${feelsLikeDisplay.toFixed(1)}${unitLabel} feels like</div>
         <div class="hint">Based on the official NWS/NOAA Rothfusz regression. This is an approximation with its own margin of error.</div>
+        ${chartHtml}
       `;
     }
   } catch (err) {
