@@ -211,6 +211,12 @@ const {
   projectileMotion,
   ROAD_SURFACE_DECELERATION,
   stoppingDistance,
+  voltageFromOhmsLaw,
+  currentFromOhmsLaw,
+  resistanceFromOhmsLaw,
+  powerFromWattsLaw,
+  currentFromWattsLaw,
+  voltageFromWattsLaw,
   urlEncode,
   urlDecode,
   base64UrlDecode,
@@ -4970,6 +4976,74 @@ describe('stoppingDistance', () => {
   test('rejects a non-positive deceleration', () => {
     expect(() => stoppingDistance(10, 1, 0)).toThrow();
     expect(() => stoppingDistance(10, 1, -1)).toThrow();
+  });
+});
+
+describe('Ohm\'s Law / Watt\'s Law calculator', () => {
+  describe('voltageFromOhmsLaw', () => {
+    test('matches the worked example: 2 A through 5 ohms is 10 V', () => {
+      expect(voltageFromOhmsLaw(2, 5)).toBe(10);
+    });
+
+    test('rejects non-positive inputs', () => {
+      expect(() => voltageFromOhmsLaw(0, 5)).toThrow();
+      expect(() => voltageFromOhmsLaw(2, 0)).toThrow();
+    });
+  });
+
+  describe('currentFromOhmsLaw', () => {
+    test('matches the worked example: 10 V across 5 ohms is 2 A', () => {
+      expect(currentFromOhmsLaw(10, 5)).toBe(2);
+    });
+
+    test('rejects non-positive inputs', () => {
+      expect(() => currentFromOhmsLaw(0, 5)).toThrow();
+      expect(() => currentFromOhmsLaw(10, 0)).toThrow();
+    });
+  });
+
+  describe('resistanceFromOhmsLaw', () => {
+    test('matches the worked example: 10 V at 2 A is 5 ohms', () => {
+      expect(resistanceFromOhmsLaw(10, 2)).toBe(5);
+    });
+
+    test('rejects non-positive inputs', () => {
+      expect(() => resistanceFromOhmsLaw(0, 2)).toThrow();
+      expect(() => resistanceFromOhmsLaw(10, 0)).toThrow();
+    });
+  });
+
+  describe('powerFromWattsLaw', () => {
+    test('matches the worked example: 120 V at 5 A is 600 W', () => {
+      expect(powerFromWattsLaw(120, 5)).toBe(600);
+    });
+
+    test('rejects non-positive inputs', () => {
+      expect(() => powerFromWattsLaw(0, 5)).toThrow();
+      expect(() => powerFromWattsLaw(120, 0)).toThrow();
+    });
+  });
+
+  describe('currentFromWattsLaw', () => {
+    test('matches the worked example: 1200 W at 120 V is 10 A (a common breaker-sizing question)', () => {
+      expect(currentFromWattsLaw(1200, 120)).toBe(10);
+    });
+
+    test('rejects non-positive inputs', () => {
+      expect(() => currentFromWattsLaw(0, 120)).toThrow();
+      expect(() => currentFromWattsLaw(1200, 0)).toThrow();
+    });
+  });
+
+  describe('voltageFromWattsLaw', () => {
+    test('matches the worked example: 1200 W at 10 A is 120 V', () => {
+      expect(voltageFromWattsLaw(1200, 10)).toBe(120);
+    });
+
+    test('rejects non-positive inputs', () => {
+      expect(() => voltageFromWattsLaw(0, 10)).toThrow();
+      expect(() => voltageFromWattsLaw(1200, 0)).toThrow();
+    });
   });
 });
 
