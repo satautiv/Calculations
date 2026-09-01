@@ -6724,6 +6724,30 @@ document.getElementById('unix-calc').addEventListener('click', () => {
     showError('unix-result', err.message);
   }
 });
+// --- Number base converter ---
+document.getElementById('numbase-calc').addEventListener('click', () => {
+  const value = document.getElementById('numbase-value').value.trim();
+  const fromBase = parseInt(document.getElementById('numbase-from').value, 10);
+
+  try {
+    const { binary, octal, decimal, hex } = convertNumberBase(value, fromBase);
+
+    document.getElementById('numbase-result').innerHTML = `
+      <table>
+        <thead><tr><th>Base</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Binary</td><td>${binary}</td></tr>
+          <tr><td>Octal</td><td>${octal}</td></tr>
+          <tr><td>Decimal</td><td>${decimal}</td></tr>
+          <tr><td>Hexadecimal</td><td>${hex}</td></tr>
+        </tbody>
+      </table>
+    `;
+  } catch (err) {
+    showError('numbase-result', err.message);
+  }
+});
+
 // --- Base64 encoder/decoder ---
 document.getElementById('base64-mode').addEventListener('change', (e) => {
   const isDecode = e.target.value === 'decode';

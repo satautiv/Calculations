@@ -3560,6 +3560,26 @@
     <div class="result" id="unix-result"></div>
   </section>
 
+  <section id="number-base-converter" class="view tab-panel">
+    <h2>Number Base Converter</h2>
+    <p class="hint">Convert a value between binary, octal, decimal, and hexadecimal.</p>
+    <div class="field">
+      <label for="numbase-value">Value</label>
+      <input type="text" id="numbase-value" placeholder="e.g. FF">
+    </div>
+    <div class="field">
+      <label for="numbase-from">From base</label>
+      <select id="numbase-from">
+        <option value="2">Binary (base 2)</option>
+        <option value="8">Octal (base 8)</option>
+        <option value="10">Decimal (base 10)</option>
+        <option value="16">Hexadecimal (base 16)</option>
+      </select>
+    </div>
+    <button class="calc-btn" id="numbase-calc">Calculate</button>
+    <div class="result" id="numbase-result"></div>
+  </section>
+
   <section id="base64-encoder-decoder" class="view tab-panel">
     <h2>Base64 Encoder/Decoder</h2>
     <p class="hint">Converts plain text to Base64 and back - useful for inspecting Basic Auth headers, data URIs, or encoded tokens. UTF-8 text is fully supported. Choose URL-safe below to encode using <code>-</code>/<code>_</code> with padding stripped, instead of the standard <code>+</code>/<code>/</code>/<code>=</code> alphabet. Decoding accepts both alphabets regardless of this setting; whitespace/newlines in the input are stripped automatically.</p>

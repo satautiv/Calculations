@@ -753,6 +753,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['base64', 'encode', 'decode', 'developer', 'utf-8', 'url-safe', 'basic auth'],
   },
   {
+    id: 'number-base-converter',
+    name: 'Number Base Converter',
+    category: 'Developer',
+    description: 'Convert a value between binary, octal, decimal, and hexadecimal.',
+    keywords: ['binary', 'octal', 'decimal', 'hexadecimal', 'hex', 'base conversion', 'developer'],
+  },
+  {
     id: 'regex-tester',
     name: 'Regex Tester',
     category: 'Developer',
