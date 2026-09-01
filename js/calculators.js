@@ -1006,7 +1006,14 @@ function formatCooktimeMinutes(minutes) {
   return minutes % 1 === 0 ? String(minutes) : minutes.toFixed(1);
 }
 
-const COOKTIME_DONENESS_HINT = 'This is a rule-of-thumb estimate &mdash; start checking for doneness about 15&ndash;25% before the estimated new time.';
+const COOKTIME_DONENESS_HINT = 'This is a rule-of-thumb estimate.';
+
+// Splits the 15-25% "check early" guidance down the middle into a single
+// concrete check-early time, rather than leaving it as a vague percentage.
+function cooktimeCheckEarlyHint(newTime) {
+  const checkEarly = newTime * 0.8;
+  return `Start checking for doneness around ${formatCooktimeMinutes(checkEarly)} min, likely done by ${formatCooktimeMinutes(newTime)} min.`;
+}
 
 document.getElementById('cooktime-calc').addEventListener('click', () => {
   const mode = document.getElementById('cooktime-mode').value;
@@ -1053,7 +1060,7 @@ document.getElementById('cooktime-calc').addEventListener('click', () => {
     document.getElementById('cooktime-result').innerHTML = `
       <div class="headline">${formatCooktimeMinutes(newTime)} min</div>
       <div>Estimated new cooking time (area ratio: ${areaRatio.toFixed(2)}x)</div>
-      <div class="hint">${COOKTIME_DONENESS_HINT}</div>
+      <div class="hint">${cooktimeCheckEarlyHint(newTime)} ${COOKTIME_DONENESS_HINT}</div>
     `;
   } else {
     const originalQuantity = parseFloat(document.getElementById('cooktime-orig-qty').value);
@@ -1074,7 +1081,7 @@ document.getElementById('cooktime-calc').addEventListener('click', () => {
     document.getElementById('cooktime-result').innerHTML = `
       <div class="headline">${formatCooktimeMinutes(newTime)} min</div>
       <div>Estimated new cooking time (quantity ratio: ${quantityRatio.toFixed(2)}x)</div>
-      <div class="hint">${COOKTIME_DONENESS_HINT}</div>
+      <div class="hint">${cooktimeCheckEarlyHint(newTime)} ${COOKTIME_DONENESS_HINT}</div>
     `;
   }
 });
