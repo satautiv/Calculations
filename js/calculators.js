@@ -174,10 +174,13 @@ document.getElementById('wilks-calc').addEventListener('click', () => {
   }
 
   const score = wilksScore(bw, lift, sex);
+  const dots = dotsScore(bw, lift, sex);
+  const gl = glPoints(bw, lift, sex, 'raw');
 
   document.getElementById('wilks-result').innerHTML = `
     <div class="headline">${score.toFixed(1)}</div>
     <div>Wilks score (relative strength)</div>
+    <div class="hint">DOTS: ${dots.toFixed(1)} &middot; IPF GL Points (raw): ${gl.toFixed(1)}</div>
   `;
 });
 
