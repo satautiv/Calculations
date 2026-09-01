@@ -4689,10 +4689,21 @@ document.getElementById('tdee-calc').addEventListener('click', () => {
     const bmr = bmrMifflinStJeor(weight, height, age, sex);
     const tdee = tdeeFromBmr(bmr, activity);
 
+    const comparisonRows = Array.from(document.getElementById('tdee-activity').options).map((option) => `
+      <tr${option.value === activity ? ' style="font-weight:700"' : ''}>
+        <td>${option.textContent}</td>
+        <td>${Math.round(tdeeFromBmr(bmr, option.value)).toLocaleString()} kcal/day</td>
+      </tr>
+    `).join('');
+
     document.getElementById('tdee-result').innerHTML = `
       <div class="headline">${Math.round(tdee).toLocaleString()} kcal/day</div>
       <div>Estimated TDEE (maintenance calories)</div>
       <div class="hint">BMR: ${Math.round(bmr).toLocaleString()} kcal/day</div>
+      <table>
+        <thead><tr><th>Activity level</th><th>TDEE</th></tr></thead>
+        <tbody>${comparisonRows}</tbody>
+      </table>
     `;
   } catch (err) {
     showError('tdee-result', err.message);
