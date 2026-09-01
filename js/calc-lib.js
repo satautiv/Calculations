@@ -734,11 +734,11 @@ function retirementCountdown(fromDate, yearsRemaining) {
 // compound formula as the Investment/DCA Growth and Net Worth calculators.
 function retirementProjection(currentAge, retirementAge, currentSavings, monthlyContribution, annualRatePercent) {
   const yearsRemaining = retirementAge - currentAge;
-  const { futureValue, totalContributed, totalGrowth } = investmentGrowth(
+  const { futureValue, totalContributed, totalGrowth, yearly } = investmentGrowth(
     currentSavings, monthlyContribution, 12, annualRatePercent, yearsRemaining
   );
 
-  return { yearsRemaining, futureValue, totalContributed, totalGrowth };
+  return { yearsRemaining, futureValue, totalContributed, totalGrowth, yearly };
 }
 
 // Rule-of-thumb jet lag recovery: ~1 day/zone crossed eastward (harder to

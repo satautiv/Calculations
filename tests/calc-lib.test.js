@@ -1114,6 +1114,12 @@ describe('retirementProjection', () => {
     expect(totalContributed).toBe(184000);
     expect(totalGrowth).toBeCloseTo(458709.03, 1);
   });
+
+  test('yearly breakdown has one entry per year, ending at the future value', () => {
+    const { yearsRemaining, futureValue, yearly } = retirementProjection(35, 65, 40000, 400, 6);
+    expect(yearly).toHaveLength(yearsRemaining);
+    expect(yearly[yearly.length - 1].endingBalance).toBeCloseTo(futureValue, 5);
+  });
 });
 
 describe('retirementCountdown', () => {

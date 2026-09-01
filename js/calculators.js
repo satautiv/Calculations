@@ -2051,15 +2051,34 @@ document.getElementById('retire-calc').addEventListener('click', () => {
     return;
   }
 
-  const { yearsRemaining, futureValue, totalContributed, totalGrowth } =
+  const { yearsRemaining, futureValue, totalContributed, totalGrowth, yearly } =
     retirementProjection(currentAge, retirementAge, currentSavings, monthlyContribution, rate);
   const { daysRemaining } = retirementCountdown(new Date(), yearsRemaining);
+
+  const chartHtml = yearly.length > 0 ? renderLineChartSvg({
+    series: [
+      {
+        label: 'Contributed',
+        color: 'var(--accent)',
+        fill: true,
+        points: [{ x: 0, y: currentSavings }, ...yearly.map((y) => ({ x: y.year, y: y.cumulativeContributions }))],
+      },
+      {
+        label: 'Balance (incl. growth)',
+        color: 'var(--danger)',
+        points: [{ x: 0, y: currentSavings }, ...yearly.map((y) => ({ x: y.year, y: y.endingBalance }))],
+      },
+    ],
+    xTickFormat: (x) => `Age ${Math.round(currentAge + x)}`,
+    yTickFormat: (y) => formatMoney(y),
+  }) : '';
 
   document.getElementById('retire-result').innerHTML = `
     <div class="headline">${formatMoney(futureValue)}</div>
     <div>Projected savings at age ${retirementAge}</div>
     <div class="hint">Contributed: ${formatMoney(totalContributed)} &middot; Growth: ${formatMoney(totalGrowth)}</div>
     <div class="hint">Time remaining: ${yearsRemaining} year${yearsRemaining === 1 ? '' : 's'} (&asymp;${daysRemaining.toLocaleString()} days)</div>
+    ${chartHtml}
   `;
 });
 
