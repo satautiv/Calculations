@@ -8,6 +8,7 @@
 // }). Add new languages here as their locale files land.
 const SUPPORTED_LANGUAGES = [
   { code: 'en', name: 'English' },
+  { code: 'es', name: 'Español' },
 ];
 
 const I18N_STORAGE_KEY = 'calc-suite-lang';
