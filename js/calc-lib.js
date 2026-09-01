@@ -4824,6 +4824,9 @@ function convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, vie
     case 'vh':
       px = (value / 100) * viewportHeightPx;
       break;
+    case 'pt':
+      px = value * (96 / 72);
+      break;
     default:
       throw new Error('Unsupported source unit.');
   }
@@ -4833,6 +4836,7 @@ function convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, vie
     rem: px / rootFontSizePx,
     vw: (px / viewportWidthPx) * 100,
     vh: (px / viewportHeightPx) * 100,
+    pt: px * (72 / 96),
   };
 }
 // --- Docker/Kubernetes resource request/limit calculator ---

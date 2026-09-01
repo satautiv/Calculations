@@ -6633,13 +6633,14 @@ document.getElementById('css-unit-calc').addEventListener('click', () => {
   const viewportHeightPx = parseFloat(document.getElementById('css-unit-viewport-height').value);
 
   try {
-    const { px, rem, vw, vh } = convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, viewportHeightPx);
+    const { px, rem, vw, vh, pt } = convertCssUnits(value, sourceUnit, rootFontSizePx, viewportWidthPx, viewportHeightPx);
 
     document.getElementById('css-unit-result').innerHTML = `
       <div class="headline">${formatCssUnitValue(px)}px</div>
       <div>rem: ${formatCssUnitValue(rem)}rem</div>
       <div>vw: ${formatCssUnitValue(vw)}vw</div>
       <div>vh: ${formatCssUnitValue(vh)}vh</div>
+      <div>pt: ${formatCssUnitValue(pt)}pt</div>
     `;
   } catch (err) {
     showError('css-unit-result', err.message);

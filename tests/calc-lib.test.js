@@ -5948,6 +5948,14 @@ describe('convertCssUnits', () => {
     expect(convertCssUnits(-16, 'px', 16, 1920, 1080).rem).toBeCloseTo(-1, 4);
   });
 
+  test('pt example: 24px is 18pt (96px = 72pt)', () => {
+    expect(convertCssUnits(24, 'px', 16, 1920, 1080).pt).toBeCloseTo(18, 4);
+  });
+
+  test('converts pt source unit back to px', () => {
+    expect(convertCssUnits(18, 'pt', 16, 1920, 1080).px).toBeCloseTo(24, 4);
+  });
+
   test('rejects a non-numeric value', () => {
     expect(() => convertCssUnits(NaN, 'px', 16, 1920, 1080)).toThrow();
   });
@@ -5977,7 +5985,7 @@ describe('convertCssUnits', () => {
   });
 
   test('rejects an unsupported source unit', () => {
-    expect(() => convertCssUnits(24, 'pt', 16, 1920, 1080)).toThrow();
+    expect(() => convertCssUnits(24, 'em', 16, 1920, 1080)).toThrow();
   });
 });
 describe('k8sResourcePlan', () => {
