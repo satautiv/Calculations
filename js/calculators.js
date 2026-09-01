@@ -1926,10 +1926,29 @@ document.getElementById('nw-calc').addEventListener('click', () => {
     </tr>
   `).join('');
 
+  const chartHtml = renderLineChartSvg({
+    series: [
+      {
+        label: 'Contributed',
+        color: 'var(--accent)',
+        fill: true,
+        points: [{ x: 0, y: current }, ...yearly.map((y) => ({ x: y.year, y: y.cumulativeContributions }))],
+      },
+      {
+        label: 'Net worth (incl. growth)',
+        color: 'var(--danger)',
+        points: [{ x: 0, y: current }, ...yearly.map((y) => ({ x: y.year, y: y.endingBalance }))],
+      },
+    ],
+    xTickFormat: (x) => `Year ${Math.round(x)}`,
+    yTickFormat: (y) => formatMoney(y),
+  });
+
   document.getElementById('nw-result').innerHTML = `
     <div class="headline">${formatMoney(futureValue)}</div>
     <div>Projected net worth after ${years} year${years === 1 ? '' : 's'}</div>
     <div class="hint">Contributed: ${formatMoney(totalContributed)} &middot; Growth: ${formatMoney(totalGrowth)}</div>
+    ${chartHtml}
     <table>
       <thead><tr><th>Year</th><th>Net worth</th><th>Contributed</th><th>Growth</th></tr></thead>
       <tbody>${rows}</tbody>
