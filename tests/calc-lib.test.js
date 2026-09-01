@@ -220,6 +220,8 @@ const {
   findRegexMatches,
   applyRegexReplacement,
   horizonDistance,
+  pressureAtAltitude,
+  boilingPointAtPressure,
   solarPanelSizing,
   solarPaybackPeriod,
   solarCO2Avoided,
@@ -5103,6 +5105,55 @@ describe('horizonDistance', () => {
 
   test('rejects non-numeric height', () => {
     expect(() => horizonDistance(NaN)).toThrow();
+  });
+});
+
+describe('pressureAtAltitude', () => {
+  test('sea level with the default standard pressure returns 1013.25 hPa unchanged', () => {
+    expect(pressureAtAltitude(0)).toBeCloseTo(1013.25, 5);
+  });
+
+  test('matches a worked example: Denver, ~1609 m', () => {
+    expect(pressureAtAltitude(1609)).toBeCloseTo(834.3, 1);
+  });
+
+  test('higher altitude yields lower pressure', () => {
+    expect(pressureAtAltitude(3000)).toBeLessThan(pressureAtAltitude(1609));
+  });
+
+  test('honors a custom sea-level pressure reading', () => {
+    const standard = pressureAtAltitude(1000);
+    const higher = pressureAtAltitude(1000, 1030);
+    expect(higher).toBeGreaterThan(standard);
+  });
+
+  test('rejects a non-positive sea-level pressure', () => {
+    expect(() => pressureAtAltitude(0, 0)).toThrow();
+    expect(() => pressureAtAltitude(0, -5)).toThrow();
+  });
+
+  test('rejects an altitude above the tropopause (formula breaks down)', () => {
+    expect(() => pressureAtAltitude(50000)).toThrow();
+  });
+});
+
+describe('boilingPointAtPressure', () => {
+  test('standard sea-level pressure boils water at 100°C', () => {
+    expect(boilingPointAtPressure(1013.25)).toBeCloseTo(100, 5);
+  });
+
+  test('matches a worked example: Denver-altitude pressure boils water below 100°C', () => {
+    const denverPressure = pressureAtAltitude(1609);
+    expect(boilingPointAtPressure(denverPressure)).toBeCloseTo(94.5, 1);
+  });
+
+  test('lower pressure yields a lower boiling point', () => {
+    expect(boilingPointAtPressure(700)).toBeLessThan(boilingPointAtPressure(1013.25));
+  });
+
+  test('rejects a non-positive pressure', () => {
+    expect(() => boilingPointAtPressure(0)).toThrow();
+    expect(() => boilingPointAtPressure(-5)).toThrow();
   });
 });
 
