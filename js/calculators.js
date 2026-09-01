@@ -707,6 +707,84 @@ document.getElementById('recipe-calc').addEventListener('click', () => {
   `;
 });
 
+// --- GPA calculator ---
+const GPA_INITIAL_ROWS = 3;
+const GPA_GRADE_OPTIONS = Object.keys(LETTER_GRADE_POINTS);
+
+function addGpaCourseRow() {
+  const row = document.createElement('div');
+  row.className = 'gpa-course-row';
+  const gradeOptionsHtml = GPA_GRADE_OPTIONS.map(g => `<option value="${g}">${g}</option>`).join('');
+  row.innerHTML = `
+    <input type="text" class="gpa-course-name" aria-label="Course name" placeholder="e.g. Calculus I">
+    <select class="gpa-course-grade" aria-label="Grade">${gradeOptionsHtml}</select>
+    <input type="number" class="gpa-course-credits" aria-label="Credit hours" min="0" step="0.5" placeholder="e.g. 3">
+    <button type="button" class="gpa-remove-btn" aria-label="Remove course">&times;</button>
+  `;
+  document.getElementById('gpa-course-list').appendChild(row);
+}
+
+for (let i = 0; i < GPA_INITIAL_ROWS; i++) addGpaCourseRow();
+
+document.getElementById('gpa-add-course').addEventListener('click', () => addGpaCourseRow());
+
+document.getElementById('gpa-course-list').addEventListener('click', (e) => {
+  const btn = e.target.closest('.gpa-remove-btn');
+  if (!btn) return;
+  btn.closest('.gpa-course-row').remove();
+});
+
+document.getElementById('gpa-calc').addEventListener('click', () => {
+  const rows = document.querySelectorAll('#gpa-course-list .gpa-course-row:not(.gpa-course-header)');
+  const courses = [];
+  let hasInvalidRow = false;
+
+  rows.forEach(row => {
+    const name = row.querySelector('.gpa-course-name').value.trim();
+    const grade = row.querySelector('.gpa-course-grade').value;
+    const creditsRaw = row.querySelector('.gpa-course-credits').value;
+    const creditHours = parseFloat(creditsRaw);
+
+    if (!name && creditsRaw === '') return; // blank row, skip silently
+
+    if (creditsRaw === '' || isNaN(creditHours) || creditHours <= 0) {
+      hasInvalidRow = true;
+      return;
+    }
+
+    courses.push({ name: name || grade, grade, gradePoints: LETTER_GRADE_POINTS[grade], creditHours });
+  });
+
+  if (hasInvalidRow) {
+    showError('gpa-result', 'Enter a valid positive number of credit hours for every course row, or leave the row blank.');
+    return;
+  }
+
+  if (courses.length === 0) {
+    showError('gpa-result', 'Add at least one course.');
+    return;
+  }
+
+  const gpa = gpaFromCourses(courses);
+
+  const rowsHtml = courses.map(c => `
+    <tr>
+      <td>${c.name}</td>
+      <td>${c.grade}</td>
+      <td>${c.creditHours}</td>
+    </tr>
+  `).join('');
+
+  document.getElementById('gpa-result').innerHTML = `
+    <div class="headline">${gpa.toFixed(2)}</div>
+    <div>GPA (4.0 scale)</div>
+    <table>
+      <thead><tr><th>Course</th><th>Grade</th><th>Credits</th></tr></thead>
+      <tbody>${rowsHtml}</tbody>
+    </table>
+  `;
+});
+
 // --- Investment / DCA growth calculator ---
 function formatMoney(value) {
   return value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });

@@ -1497,6 +1497,26 @@ function descriptiveStats(values) {
   return { mean, median, min, max, range };
 }
 
+// --- GPA calculator ---
+
+// Standard US 4.0-scale letter grade to grade-points mapping.
+const LETTER_GRADE_POINTS = {
+  'A+': 4.0, 'A': 4.0, 'A-': 3.7,
+  'B+': 3.3, 'B': 3.0, 'B-': 2.7,
+  'C+': 2.3, 'C': 2.0, 'C-': 1.7,
+  'D+': 1.3, 'D': 1.0, 'D-': 0.7,
+  'F': 0.0,
+};
+
+// GPA = (Σ gradePoints*creditHours) / (Σ creditHours), given a list of
+// {gradePoints, creditHours} courses. Assumes the DOM layer has already
+// validated that courses is non-empty and every creditHours is positive.
+function gpaFromCourses(courses) {
+  const totalCredits = courses.reduce((sum, c) => sum + c.creditHours, 0);
+  const totalPoints = courses.reduce((sum, c) => sum + c.gradePoints * c.creditHours, 0);
+  return totalPoints / totalCredits;
+}
+
 // --- Age calculator ---
 
 // Number of days in `month` (0-indexed) of `year`, via UTC calendar
@@ -5527,6 +5547,8 @@ if (typeof module !== 'undefined' && module.exports) {
     simpleAverage,
     weightedAverage,
     descriptiveStats,
+    LETTER_GRADE_POINTS,
+    gpaFromCourses,
     ageBreakdown,
     nextBirthdayCountdown,
     dayOfYear,
