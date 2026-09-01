@@ -208,6 +208,8 @@ const {
   solarPaybackPeriod,
   solarCO2Avoided,
   projectileMotion,
+  ROAD_SURFACE_DECELERATION,
+  stoppingDistance,
   urlEncode,
   urlDecode,
   base64UrlDecode,
@@ -4898,6 +4900,44 @@ describe('projectileMotion', () => {
     expect(() => projectileMotion(10, 45, -1)).toThrow();
   });
 });
+
+describe('stoppingDistance', () => {
+  test('matches a worked example: 20 m/s, 1.5s reaction, 7.5 m/s^2 deceleration', () => {
+    const { reactionDistance, brakingDistance, totalDistance } = stoppingDistance(20, 1.5, 7.5);
+    expect(reactionDistance).toBeCloseTo(30, 5);
+    expect(brakingDistance).toBeCloseTo(26.67, 2);
+    expect(totalDistance).toBeCloseTo(56.67, 2);
+  });
+
+  test('braking distance quadruples when speed doubles (scales with speed squared)', () => {
+    const slow = stoppingDistance(10, 0, 5);
+    const fast = stoppingDistance(20, 0, 5);
+    expect(fast.brakingDistance).toBeCloseTo(slow.brakingDistance * 4, 5);
+  });
+
+  test('a lower deceleration (worse road surface) increases braking distance', () => {
+    const dry = stoppingDistance(20, 0, ROAD_SURFACE_DECELERATION.dry);
+    const icy = stoppingDistance(20, 0, ROAD_SURFACE_DECELERATION.icy);
+    expect(icy.brakingDistance).toBeGreaterThan(dry.brakingDistance);
+  });
+
+  test('zero reaction time means the total distance is just the braking distance', () => {
+    const { reactionDistance, brakingDistance, totalDistance } = stoppingDistance(15, 0, 6);
+    expect(reactionDistance).toBe(0);
+    expect(totalDistance).toBe(brakingDistance);
+  });
+
+  test('rejects a negative speed or reaction time', () => {
+    expect(() => stoppingDistance(-1, 1, 5)).toThrow();
+    expect(() => stoppingDistance(10, -1, 5)).toThrow();
+  });
+
+  test('rejects a non-positive deceleration', () => {
+    expect(() => stoppingDistance(10, 1, 0)).toThrow();
+    expect(() => stoppingDistance(10, 1, -1)).toThrow();
+  });
+});
+
 // --- URL Encoder/Decoder ---
 
 describe('urlEncode', () => {
