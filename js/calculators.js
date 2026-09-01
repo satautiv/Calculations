@@ -1458,6 +1458,42 @@ document.getElementById('debt-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Freelance/hourly rate calculator ---
+document.getElementById('freelance-calc').addEventListener('click', () => {
+  const targetIncome = parseFloat(document.getElementById('freelance-target-income').value);
+  const expenses = parseFloat(document.getElementById('freelance-expenses').value) || 0;
+  const weeksPerYear = parseFloat(document.getElementById('freelance-weeks').value);
+  const billableHours = parseFloat(document.getElementById('freelance-billable-hours').value);
+
+  if (isNaN(targetIncome) || targetIncome <= 0) {
+    showError('freelance-result', 'Enter a valid target annual income greater than zero.');
+    return;
+  }
+
+  if (expenses < 0) {
+    showError('freelance-result', 'Annual business expenses cannot be negative.');
+    return;
+  }
+
+  if (isNaN(weeksPerYear) || weeksPerYear <= 0 || weeksPerYear > 52) {
+    showError('freelance-result', 'Enter a valid number of weeks worked per year (1-52).');
+    return;
+  }
+
+  if (isNaN(billableHours) || billableHours <= 0) {
+    showError('freelance-result', 'Enter a valid number of billable hours per week greater than zero.');
+    return;
+  }
+
+  const rate = requiredHourlyRate(targetIncome, expenses, weeksPerYear, billableHours);
+
+  document.getElementById('freelance-result').innerHTML = `
+    <div class="headline">${formatMoney(rate)}/hour</div>
+    <div>Required hourly rate</div>
+    <div class="hint">Based on ${billableHours} billable hours/week for ${weeksPerYear} weeks/year</div>
+  `;
+});
+
 // --- Savings goal calculator ---
 document.getElementById('savings-calc').addEventListener('click', () => {
   const goal = parseFloat(document.getElementById('savings-goal-amount').value);

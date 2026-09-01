@@ -109,6 +109,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['debt', 'snowball', 'avalanche', 'payoff', 'credit card', 'loan', 'finance'],
   },
   {
+    id: 'freelance-rate-calculator',
+    name: 'Freelance/Hourly Rate Calculator',
+    category: 'Finance',
+    description: 'Work out the hourly rate you need to charge to hit a target income, accounting for business expenses and realistic billable hours.',
+    keywords: ['freelance', 'hourly rate', 'contracting', 'billable hours', 'self-employed', 'finance'],
+  },
+  {
     id: 'savings-goal',
     name: 'Savings Goal',
     category: 'Finance',
