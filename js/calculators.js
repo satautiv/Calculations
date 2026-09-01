@@ -1494,9 +1494,21 @@ document.getElementById('oven-calc').addEventListener('click', () => {
     ? '<div>Gas Mark: outside standard range</div>'
     : `<div>Gas Mark: ${formatGasMarkLabel(gasMark)}</div>`;
 
+  const referenceRows = GAS_MARK_TABLE.map((row) => `
+    <tr${row.mark === gasMark ? ' style="font-weight:700"' : ''}>
+      <td>${formatGasMarkLabel(row.mark)}</td>
+      <td>${row.celsius}&deg;C</td>
+      <td>${row.fahrenheit}&deg;F</td>
+    </tr>
+  `).join('');
+
   document.getElementById('oven-result').innerHTML = `
     <div class="headline">${celsius.toFixed(0)}&deg;C / ${fahrenheit.toFixed(0)}&deg;F</div>
     ${gasMarkLine}
+    <table>
+      <thead><tr><th>Gas Mark</th><th>&deg;C</th><th>&deg;F</th></tr></thead>
+      <tbody>${referenceRows}</tbody>
+    </table>
   `;
 });
 
