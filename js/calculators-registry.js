@@ -767,6 +767,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['color', 'hex', 'rgb', 'hsl', 'css', 'design', 'developer'],
   },
   {
+    id: 'password-strength-calculator',
+    name: 'Password Strength / Entropy Calculator',
+    category: 'Developer',
+    description: 'Estimate password entropy and brute-force crack time from its length and character classes.',
+    keywords: ['password', 'entropy', 'strength', 'crack time', 'brute force', 'security', 'developer'],
+  },
+  {
     id: 'regex-tester',
     name: 'Regex Tester',
     category: 'Developer',

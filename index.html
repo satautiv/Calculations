@@ -3560,6 +3560,17 @@
     <div class="result" id="unix-result"></div>
   </section>
 
+  <section id="password-strength-calculator" class="view tab-panel">
+    <h2>Password Strength / Entropy Calculator</h2>
+    <p class="hint">Estimates entropy from the length and character classes actually used in a password, then estimates brute-force crack time at a few common guessing rates. This measures resistance to random guessing, not to dictionary or pattern-based attacks.</p>
+    <div class="field">
+      <label for="pwstrength-input">Password</label>
+      <input type="text" id="pwstrength-input" autocomplete="off" placeholder="Type a password to analyze">
+    </div>
+    <button class="calc-btn" id="pwstrength-calc">Calculate</button>
+    <div class="result" id="pwstrength-result"></div>
+  </section>
+
   <section id="color-format-converter" class="view tab-panel">
     <h2>Color Format Converter</h2>
     <p class="hint">Convert a color between HEX, RGB, and HSL.</p>
