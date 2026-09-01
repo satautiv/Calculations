@@ -3217,6 +3217,14 @@
       <label for="heating-price">Energy price (per kWh)</label>
       <input type="number" id="heating-price" min="0" step="0.01" placeholder="e.g. 0.30">
     </div>
+    <div class="field">
+      <label for="heating-heatpump-cop">Heat pump COP for comparison (optional)</label>
+      <input type="number" id="heating-heatpump-cop" min="0" step="0.1" value="3.0" placeholder="e.g. 3.0">
+    </div>
+    <div class="field">
+      <label for="heating-heatpump-price">Heat pump electricity price (per kWh, optional &mdash; defaults to the price above)</label>
+      <input type="number" id="heating-heatpump-price" min="0" step="0.01" placeholder="e.g. 0.30">
+    </div>
     <button class="calc-btn" id="heating-calc">Calculate</button>
     <div class="result" id="heating-result"></div>
   </section>
