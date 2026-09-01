@@ -3679,6 +3679,40 @@ document.getElementById('pct-calc').addEventListener('click', () => {
   }
 });
 
+// --- Tip calculator / bill splitter ---
+document.getElementById('tip-calc').addEventListener('click', () => {
+  const bill = parseFloat(document.getElementById('tip-bill').value);
+  const tipPercent = parseFloat(document.getElementById('tip-percent').value);
+  const numPeople = parseInt(document.getElementById('tip-people').value, 10);
+
+  if (isNaN(bill) || bill <= 0) {
+    showError('tip-result', 'Enter a valid bill amount greater than zero.');
+    return;
+  }
+
+  if (isNaN(tipPercent) || tipPercent < 0) {
+    showError('tip-result', 'Enter a valid, non-negative tip percentage.');
+    return;
+  }
+
+  if (isNaN(numPeople) || numPeople < 1) {
+    showError('tip-result', 'Enter a valid number of people (at least 1).');
+    return;
+  }
+
+  try {
+    const { tipAmount, total, perPerson } = tipCalculation(bill, tipPercent, numPeople);
+
+    document.getElementById('tip-result').innerHTML = `
+      <div class="headline">${perPerson.toFixed(2)} per person</div>
+      <div>Tip: ${tipAmount.toFixed(2)} &middot; Total: ${total.toFixed(2)}</div>
+      <div class="hint">Split across ${numPeople} ${numPeople === 1 ? 'person' : 'people'}</div>
+    `;
+  } catch (err) {
+    showError('tip-result', err.message);
+  }
+});
+
 // --- Fraction calculator ---
 const FRACTION_OPERATION_SYMBOLS = { add: '+', subtract: '−', multiply: '×', divide: '÷' };
 

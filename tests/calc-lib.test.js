@@ -93,6 +93,7 @@ const {
   whatPercentOf,
   percentageChange,
   originalValueFromPercentChange,
+  tipCalculation,
   gcd,
   simplifyFraction,
   fractionArithmetic,
@@ -1859,6 +1860,40 @@ describe('Percentage calculator', () => {
     // is -100 (i.e. the original value was reduced to $0), so the DOM layer
     // must reject this case with showError before calling in.
     expect(originalValueFromPercentChange(80, -100)).toBe(Infinity);
+  });
+});
+
+describe('tipCalculation', () => {
+  test('matches a worked example: $50 bill, 20% tip, 2 people', () => {
+    const { tipAmount, total, perPerson } = tipCalculation(50, 20, 2);
+    expect(tipAmount).toBeCloseTo(10, 10);
+    expect(total).toBeCloseTo(60, 10);
+    expect(perPerson).toBeCloseTo(30, 10);
+  });
+
+  test('a 0% tip splits just the bill', () => {
+    const { tipAmount, total, perPerson } = tipCalculation(100, 0, 4);
+    expect(tipAmount).toBe(0);
+    expect(total).toBe(100);
+    expect(perPerson).toBe(25);
+  });
+
+  test('a single person pays the full total', () => {
+    const { total, perPerson } = tipCalculation(40, 15, 1);
+    expect(perPerson).toBe(total);
+  });
+
+  test('rejects a non-positive bill', () => {
+    expect(() => tipCalculation(0, 15, 2)).toThrow();
+    expect(() => tipCalculation(-10, 15, 2)).toThrow();
+  });
+
+  test('rejects a negative tip percentage', () => {
+    expect(() => tipCalculation(50, -5, 2)).toThrow();
+  });
+
+  test('rejects fewer than 1 person', () => {
+    expect(() => tipCalculation(50, 15, 0)).toThrow();
   });
 });
 
