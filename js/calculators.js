@@ -6029,15 +6029,35 @@ document.getElementById('fence-calc').addEventListener('click', () => {
   const fenceLength = parseFloat(document.getElementById('fence-length').value);
   const fenceType = document.getElementById('fence-type').value;
 
+  const parseOptionalPrice = (id) => {
+    const raw = document.getElementById(id).value;
+    return raw === '' ? null : parseFloat(raw);
+  };
+
   try {
     if (fenceType === 'panel') {
       const panelWidth = parseFloat(document.getElementById('fence-panel-width').value);
       const { numPanels, numPosts } = panelFenceCalculation(fenceLength, panelWidth);
 
+      const pricePerPost = parseOptionalPrice('fence-price-per-post');
+      const pricePerPanel = parseOptionalPrice('fence-price-per-panel');
+
+      if ((pricePerPost !== null && pricePerPost < 0) || (pricePerPanel !== null && pricePerPanel < 0)) {
+        showError('fence-result', 'Prices, if provided, cannot be negative.');
+        return;
+      }
+
+      const costHtml = (pricePerPost !== null || pricePerPanel !== null) ? (() => {
+        const postCost = numPosts * (pricePerPost || 0);
+        const panelCost = numPanels * (pricePerPanel || 0);
+        return `<div class="hint">Estimated materials cost: ${formatMoney(postCost + panelCost)} (posts: ${formatMoney(postCost)}, panels: ${formatMoney(panelCost)})</div>`;
+      })() : '';
+
       document.getElementById('fence-result').innerHTML = `
         <div class="headline">${numPosts} posts, ${numPanels} panel${numPanels === 1 ? '' : 's'}</div>
         <div>${numPanels} panel${numPanels === 1 ? '' : 's'} &times; ${panelWidth} m + 1 end post = ${numPosts} posts</div>
         <div class="hint">Assumes a straight, unbroken run - corners, gates, and end conditions may need extra posts.</div>
+        ${costHtml}
       `;
     } else {
       const postSpacing = parseFloat(document.getElementById('fence-post-spacing').value);
@@ -6045,11 +6065,26 @@ document.getElementById('fence-calc').addEventListener('click', () => {
       const { numPosts, actualSpacing, numRails } = railFenceCalculation(fenceLength, postSpacing, railLines);
       const numSections = numPosts - 1;
 
+      const pricePerPost = parseOptionalPrice('fence-price-per-post-rail');
+      const pricePerRail = parseOptionalPrice('fence-price-per-rail');
+
+      if ((pricePerPost !== null && pricePerPost < 0) || (pricePerRail !== null && pricePerRail < 0)) {
+        showError('fence-result', 'Prices, if provided, cannot be negative.');
+        return;
+      }
+
+      const costHtml = (pricePerPost !== null || pricePerRail !== null) ? (() => {
+        const postCost = numPosts * (pricePerPost || 0);
+        const railCost = numRails * (pricePerRail || 0);
+        return `<div class="hint">Estimated materials cost: ${formatMoney(postCost + railCost)} (posts: ${formatMoney(postCost)}, rails: ${formatMoney(railCost)})</div>`;
+      })() : '';
+
       document.getElementById('fence-result').innerHTML = `
         <div class="headline">${numPosts} posts, ${numRails} rails</div>
         <div>Actual post spacing: ${actualSpacing.toFixed(2)} m (evenly redistributed, max allowed ${postSpacing} m)</div>
         <div>${railLines} rail line${railLines === 1 ? '' : 's'} &times; ${numSections} section${numSections === 1 ? '' : 's'} = ${numRails} rails</div>
         <div class="hint">Assumes a straight, unbroken run - corners, gates, and end conditions may need extra posts.</div>
+        ${costHtml}
       `;
     }
   } catch (err) {
