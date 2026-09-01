@@ -4540,6 +4540,27 @@ document.getElementById('sunrise-calc').addEventListener('click', () => {
   `;
 });
 
+// --- Moon phase calculator ---
+document.getElementById('moonphase-calc').addEventListener('click', () => {
+  const dateRaw = document.getElementById('moonphase-date').value;
+
+  if (!dateRaw) {
+    showError('moonphase-result', 'Enter a valid date.');
+    return;
+  }
+
+  const [year, month, day] = dateRaw.split('-').map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+
+  const { phaseName, illumination, daysSinceNewMoon } = moonPhaseForDate(date);
+
+  document.getElementById('moonphase-result').innerHTML = `
+    <div class="headline">${phaseName}</div>
+    <div>${illumination.toFixed(0)}% illuminated</div>
+    <div class="hint">${daysSinceNewMoon.toFixed(1)} days since the last new moon</div>
+  `;
+});
+
 // --- Warm-up set calculator ---
 document.getElementById('warmup-calc').addEventListener('click', () => {
   const target = parseFloat(document.getElementById('warmup-target').value);

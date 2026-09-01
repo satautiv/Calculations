@@ -113,6 +113,9 @@ const {
   sunriseSunset,
   formatMinutesAsLocalTime,
   formatDurationHM,
+  SYNODIC_MONTH_DAYS,
+  moonPhaseNameFromFraction,
+  moonPhaseForDate,
   warmupSets,
   dateDifference,
   dotsCoefficient,
@@ -2488,6 +2491,67 @@ describe('formatDurationHM', () => {
 
   test('rounds a fractional-minute duration before formatting', () => {
     expect(formatDurationHM(970.99)).toBe('16h 11m');
+  });
+});
+
+describe('Moon phase calculator', () => {
+  function utcDate(ms) {
+    return new Date(ms);
+  }
+
+  const REFERENCE_NEW_MOON = new Date(Date.UTC(2000, 0, 6, 18, 14, 0));
+
+  describe('moonPhaseNameFromFraction', () => {
+    test('labels the 8 standard phases across the cycle', () => {
+      expect(moonPhaseNameFromFraction(0)).toBe('New Moon');
+      expect(moonPhaseNameFromFraction(0.125)).toBe('Waxing Crescent');
+      expect(moonPhaseNameFromFraction(0.25)).toBe('First Quarter');
+      expect(moonPhaseNameFromFraction(0.375)).toBe('Waxing Gibbous');
+      expect(moonPhaseNameFromFraction(0.5)).toBe('Full Moon');
+      expect(moonPhaseNameFromFraction(0.625)).toBe('Waning Gibbous');
+      expect(moonPhaseNameFromFraction(0.75)).toBe('Last Quarter');
+      expect(moonPhaseNameFromFraction(0.875)).toBe('Waning Crescent');
+      expect(moonPhaseNameFromFraction(0.9999)).toBe('New Moon');
+    });
+  });
+
+  describe('moonPhaseForDate', () => {
+    test('the reference new moon itself is a New Moon with ~0% illumination', () => {
+      const { phaseName, illumination, daysSinceNewMoon } = moonPhaseForDate(REFERENCE_NEW_MOON);
+      expect(phaseName).toBe('New Moon');
+      expect(illumination).toBeCloseTo(0, 5);
+      expect(daysSinceNewMoon).toBeCloseTo(0, 5);
+    });
+
+    test('half a synodic month later is a Full Moon with ~100% illumination', () => {
+      const halfCycleLater = utcDate(REFERENCE_NEW_MOON.getTime() + (SYNODIC_MONTH_DAYS / 2) * 86400000);
+      const { phaseName, illumination } = moonPhaseForDate(halfCycleLater);
+      expect(phaseName).toBe('Full Moon');
+      expect(illumination).toBeCloseTo(100, 5);
+    });
+
+    test('a quarter synodic month later is a First Quarter with ~50% illumination', () => {
+      const quarterCycleLater = utcDate(REFERENCE_NEW_MOON.getTime() + (SYNODIC_MONTH_DAYS / 4) * 86400000);
+      const { phaseName, illumination } = moonPhaseForDate(quarterCycleLater);
+      expect(phaseName).toBe('First Quarter');
+      expect(illumination).toBeCloseTo(50, 5);
+    });
+
+    test('a full synodic month later returns to a New Moon', () => {
+      const fullCycleLater = utcDate(REFERENCE_NEW_MOON.getTime() + SYNODIC_MONTH_DAYS * 86400000);
+      const { phaseName, daysSinceNewMoon } = moonPhaseForDate(fullCycleLater);
+      expect(phaseName).toBe('New Moon');
+      // Floating-point rounding on the ms round-trip can land just short of a
+      // full cycle instead of exactly 0, so accept either end of the wrap.
+      const distanceFromWrap = Math.min(daysSinceNewMoon, SYNODIC_MONTH_DAYS - daysSinceNewMoon);
+      expect(distanceFromWrap).toBeCloseTo(0, 3);
+    });
+
+    test('a date before the reference wraps around correctly rather than going negative', () => {
+      const beforeReference = utcDate(REFERENCE_NEW_MOON.getTime() - 2 * 86400000);
+      const { daysSinceNewMoon } = moonPhaseForDate(beforeReference);
+      expect(daysSinceNewMoon).toBeCloseTo(SYNODIC_MONTH_DAYS - 2, 5);
+    });
   });
 });
 
