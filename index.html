@@ -441,6 +441,29 @@
     <div class="result" id="cc-result"></div>
   </section>
 
+  <section id="debt-payoff-calculator" class="view tab-panel">
+    <h2>Debt Payoff Planner</h2>
+    <p class="hint">Compare the "snowball" (smallest balance first) and "avalanche" (highest interest rate first) strategies for paying off several debts with a fixed total monthly budget.</p>
+
+    <div class="field">
+      <label>Debts</label>
+      <div class="debt-row-grid" id="debt-list">
+        <div class="debt-row debt-row-header">
+          <span>Name</span><span>Balance</span><span>APR %</span><span>Min. payment</span><span></span>
+        </div>
+      </div>
+      <button type="button" class="calc-btn secondary-btn" id="debt-add-row">+ Add debt</button>
+    </div>
+
+    <div class="field">
+      <label for="debt-monthly-budget">Total monthly budget (across all debts)</label>
+      <input type="number" id="debt-monthly-budget" min="0" step="0.01" placeholder="e.g. 400">
+    </div>
+
+    <button class="calc-btn" id="debt-calc">Calculate</button>
+    <div class="result" id="debt-result"></div>
+  </section>
+
   <section id="savings-goal" class="view tab-panel">
     <h2>Savings Goal Calculator</h2>
     <p class="hint">Find out how much you need to save each month to reach a target amount by a target date.</p>
