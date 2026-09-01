@@ -2250,11 +2250,29 @@ document.getElementById('fire-calc').addEventListener('click', () => {
   const { fiTarget, yearsToFI, annualSavings, savingsRatePercent, alreadyFI } =
     fireCalculator(annualIncome, annualExpenses, currentSavings, returnRate, withdrawalRate);
 
+  const buildFireTrajectoryChart = (horizonYears) => {
+    const { yearly } = investmentGrowth(currentSavings, annualSavings, 1, returnRate, horizonYears);
+    const crossing = yearly.find((y) => y.endingBalance >= fiTarget);
+
+    return renderLineChartSvg({
+      series: [{
+        label: 'Projected balance',
+        color: 'var(--accent)',
+        points: [{ x: 0, y: currentSavings }, ...yearly.map((y) => ({ x: y.year, y: y.endingBalance }))],
+      }],
+      hLines: [{ y: fiTarget, label: `FI target: ${formatMoney(fiTarget)}`, color: 'var(--danger)' }],
+      markers: crossing ? [{ x: crossing.year, y: crossing.endingBalance, label: `Year ${crossing.year}` }] : [],
+      xTickFormat: (x) => `Yr ${x.toFixed(0)}`,
+      yTickFormat: (y) => formatMoney(y),
+    });
+  };
+
   if (annualSavings <= 0 && !alreadyFI) {
     document.getElementById('fire-result').innerHTML = `
       <div class="headline">FI is never reached</div>
       <div>Annual income doesn't exceed annual expenses, so there's nothing left to invest.</div>
       <div class="hint">FI target: ${formatMoney(fiTarget)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
+      ${buildFireTrajectoryChart(30)}
     `;
     return;
   }
@@ -2264,6 +2282,7 @@ document.getElementById('fire-calc').addEventListener('click', () => {
       <div class="headline">Already financially independent</div>
       <div>Current savings already meet or exceed the FI target.</div>
       <div class="hint">FI target: ${formatMoney(fiTarget)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
+      ${buildFireTrajectoryChart(10)}
     `;
     return;
   }
@@ -2272,6 +2291,7 @@ document.getElementById('fire-calc').addEventListener('click', () => {
     <div class="headline">${yearsToFI.toFixed(1)} year${yearsToFI === 1 ? '' : 's'} to FI</div>
     <div>FI target: ${formatMoney(fiTarget)}</div>
     <div class="hint">Annual savings: ${formatMoney(annualSavings)} &middot; Savings rate: ${savingsRatePercent.toFixed(1)}%</div>
+    ${buildFireTrajectoryChart(Math.min(Math.ceil(yearsToFI) + 2, 60))}
   `;
 });
 
