@@ -125,6 +125,7 @@ const {
   leanBodyMassFromBodyFat,
   leanBodyMassBoer,
   navyBodyFatPercent,
+  bodyFatCategory,
   bmrMifflinStJeor,
   tdeeFromBmr,
   macroGrams,
@@ -2755,6 +2756,29 @@ describe('navyBodyFatPercent', () => {
   test('throws for a missing or invalid sex', () => {
     expect(() => navyBodyFatPercent(undefined, 70, 15, 34)).toThrow();
     expect(() => navyBodyFatPercent('other', 70, 15, 34)).toThrow();
+  });
+});
+
+describe('bodyFatCategory', () => {
+  test('classifies a man across every band', () => {
+    expect(bodyFatCategory('male', 4)).toBe('Essential fat');
+    expect(bodyFatCategory('male', 10)).toBe('Athletes');
+    expect(bodyFatCategory('male', 15)).toBe('Fitness');
+    expect(bodyFatCategory('male', 20)).toBe('Acceptable');
+    expect(bodyFatCategory('male', 30)).toBe('Obese');
+  });
+
+  test('classifies a woman across every band', () => {
+    expect(bodyFatCategory('female', 12)).toBe('Essential fat');
+    expect(bodyFatCategory('female', 18)).toBe('Athletes');
+    expect(bodyFatCategory('female', 22)).toBe('Fitness');
+    expect(bodyFatCategory('female', 28)).toBe('Acceptable');
+    expect(bodyFatCategory('female', 35)).toBe('Obese');
+  });
+
+  test('rejects a negative body fat percentage or invalid sex', () => {
+    expect(() => bodyFatCategory('male', -1)).toThrow();
+    expect(() => bodyFatCategory('other', 15)).toThrow();
   });
 });
 
