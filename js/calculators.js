@@ -3814,10 +3814,31 @@ document.getElementById('sunrise-calc').addEventListener('click', () => {
   const doy = dayOfYear(year, month, day);
   const result = sunriseSunset(doy, lat, lon, utcOffset);
 
+  const daylightMinutesForDay = (d) => {
+    const r = sunriseSunset(d, lat, lon, utcOffset);
+    if (r.polarDay) return 1440;
+    if (r.polarNight) return 0;
+    return r.daylightMinutes;
+  };
+
+  const yearChartPoints = [];
+  for (let m = 1; m <= 12; m++) {
+    for (const d of [1, 15]) {
+      yearChartPoints.push({ x: dayOfYear(year, m, d), y: daylightMinutesForDay(dayOfYear(year, m, d)) });
+    }
+  }
+  const yearChartHtml = renderLineChartSvg({
+    series: [{ label: 'Daylight', color: 'var(--accent)', points: yearChartPoints }],
+    markers: [{ x: doy, y: daylightMinutesForDay(doy), label: 'This date' }],
+    xTickFormat: (x) => new Date(Date.UTC(year, 0, x)).toLocaleDateString(undefined, { month: 'short' }),
+    yTickFormat: (y) => formatDurationHM(y),
+  });
+
   if (result.polarDay) {
     document.getElementById('sunrise-result').innerHTML = `
       <div class="headline">Polar day (24h daylight)</div>
       <div>The sun does not set at this location on this date.</div>
+      ${yearChartHtml}
     `;
     return;
   }
@@ -3826,6 +3847,7 @@ document.getElementById('sunrise-calc').addEventListener('click', () => {
     document.getElementById('sunrise-result').innerHTML = `
       <div class="headline">Polar night (0h daylight)</div>
       <div>The sun does not rise at this location on this date.</div>
+      ${yearChartHtml}
     `;
     return;
   }
@@ -3838,6 +3860,7 @@ document.getElementById('sunrise-calc').addEventListener('click', () => {
     <div class="headline">Sunrise ${sunrise} &middot; Sunset ${sunset}</div>
     <div>Daylight duration: ${daylight}</div>
     <div class="hint">Approximate local times based on the UTC offset you entered.</div>
+    ${yearChartHtml}
   `;
 });
 
