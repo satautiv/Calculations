@@ -1532,10 +1532,27 @@ document.getElementById('meat-calc').addEventListener('click', () => {
     <div class="hint">${doneness.label} beef falls below the USDA safe minimum internal temperature (145&deg;F / 63&deg;C). This is a personal risk tolerance choice, not a food-safety recommendation.</div>
   ` : '';
 
+  const ladderRows = MEAT_DONENESS_LEVELS.map((level) => {
+    const row = meatPullTemperature(level.id, cutSize, unit);
+    const levelRangeLabel = unit === 'f' ? level.rangeLabelF : level.rangeLabelC;
+    return `
+      <tr${level.id === donenessId ? ' style="font-weight:700"' : ''}>
+        <td>${level.label}</td>
+        <td>${levelRangeLabel}</td>
+        <td>${row.pullTemperature}${unitLabel}</td>
+        <td>${row.restMinutes} min</td>
+      </tr>
+    `;
+  }).join('');
+
   document.getElementById('meat-result').innerHTML = `
     <div class="headline">Pull at ${pullTemperature}${unitLabel}</div>
     <div>${doneness.label} target: ${rangeLabel} &middot; Rest ${restMinutes} minutes to coast up to temperature</div>
     ${safetyNote}
+    <table>
+      <thead><tr><th>Doneness</th><th>Target</th><th>Pull temp</th><th>Rest</th></tr></thead>
+      <tbody>${ladderRows}</tbody>
+    </table>
   `;
 });
 
