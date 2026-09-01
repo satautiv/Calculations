@@ -2965,6 +2965,39 @@ document.getElementById('carloan-calc').addEventListener('click', () => {
     const totalPaid = monthlyPayment * term;
     const totalInterest = totalPaid - principal;
 
+    let chartHtml = '';
+    if (principal > 0) {
+      const { schedule } = amortizationSchedule(principal, apr, term);
+      const maxPoints = 30;
+      const step = Math.max(1, Math.ceil(schedule.length / maxPoints));
+      const balancePoints = [{ x: 0, y: principal }];
+      const interestPoints = [{ x: 0, y: 0 }];
+      let cumulativeInterest = 0;
+
+      schedule.forEach((row, i) => {
+        cumulativeInterest += row.interest;
+        if (i % step === 0) {
+          balancePoints.push({ x: row.month, y: row.balance });
+          interestPoints.push({ x: row.month, y: cumulativeInterest });
+        }
+      });
+
+      const last = schedule[schedule.length - 1];
+      if (balancePoints[balancePoints.length - 1].x !== last.month) {
+        balancePoints.push({ x: last.month, y: last.balance });
+        interestPoints.push({ x: last.month, y: cumulativeInterest });
+      }
+
+      chartHtml = renderLineChartSvg({
+        series: [
+          { label: 'Remaining balance', color: 'var(--accent)', points: balancePoints },
+          { label: 'Cumulative interest paid', color: 'var(--danger)', points: interestPoints },
+        ],
+        xTickFormat: (x) => `Mo ${x.toFixed(0)}`,
+        yTickFormat: (y) => formatMoney(y),
+      });
+    }
+
     document.getElementById('carloan-result').innerHTML = `
       <div class="headline">${formatMoney(monthlyPayment)}/month</div>
       <div>Loan payment over ${term} month${term === 1 ? '' : 's'}</div>
@@ -2976,6 +3009,7 @@ document.getElementById('carloan-calc').addEventListener('click', () => {
           <tr><td>Total interest</td><td>${formatMoney(totalInterest)}</td></tr>
         </tbody>
       </table>
+      ${chartHtml}
     `;
     return;
   }
