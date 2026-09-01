@@ -3098,6 +3098,14 @@
       <label for="decking-screws-per-joist">Screws per joist crossing</label>
       <input type="number" id="decking-screws-per-joist" min="1" step="1" value="2">
     </div>
+    <div class="field">
+      <label for="decking-price-per-board">Price per board (optional, for a materials cost estimate)</label>
+      <input type="number" id="decking-price-per-board" min="0" step="0.01" placeholder="e.g. 25">
+    </div>
+    <div class="field">
+      <label for="decking-price-per-screw">Price per screw (optional)</label>
+      <input type="number" id="decking-price-per-screw" min="0" step="0.001" placeholder="e.g. 0.10">
+    </div>
     <button class="calc-btn" id="decking-calc">Calculate</button>
     <div class="result" id="decking-result"></div>
   </section>
