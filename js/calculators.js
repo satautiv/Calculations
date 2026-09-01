@@ -1465,10 +1465,21 @@ document.getElementById('drive-calc').addEventListener('click', () => {
     <div class="hint">Total trip time including stops: ${formatHM(hoursToHoursMinutes(totalHours))}</div>
   ` : '';
 
+  const departureRaw = document.getElementById('drive-departure').value;
+  const arrivalHtml = departureRaw ? (() => {
+    const [depHour, depMinute] = departureRaw.split(':').map(Number);
+    const departureMinutes = depHour * 60 + depMinute;
+    const totalMinutes = departureMinutes + totalHours * 60;
+    const arrivalMinutes = ((totalMinutes % 1440) + 1440) % 1440;
+    const dayOffset = Math.floor(totalMinutes / 1440);
+    return `<div>Estimated arrival: ${minutesToTimeLabel(arrivalMinutes)} (${formatDayOffsetLabel(dayOffset)})</div>`;
+  })() : '';
+
   document.getElementById('drive-result').innerHTML = `
     <div class="headline">${formatHM(drivingHM)}</div>
     <div>Estimated driving time</div>
     ${totalHtml}
+    ${arrivalHtml}
   `;
 });
 
