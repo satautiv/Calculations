@@ -4977,10 +4977,31 @@ document.getElementById('concrete-calc').addEventListener('click', () => {
 
     const { volumeWithWaste, bagsNeeded } = concreteBagsNeeded(volume, waste, yieldPerBag);
 
+    const pricePerBagRaw = document.getElementById('concrete-price-per-bag').value;
+    const pricePerBag = pricePerBagRaw === '' ? null : parseFloat(pricePerBagRaw);
+    const priceReadyMixRaw = document.getElementById('concrete-price-ready-mix').value;
+    const priceReadyMix = priceReadyMixRaw === '' ? null : parseFloat(priceReadyMixRaw);
+    const deliveryFee = parseFloat(document.getElementById('concrete-delivery-fee').value) || 0;
+
+    let costHtml = '';
+    if (pricePerBag !== null && priceReadyMix !== null) {
+      const { bagCost, readyMixCost, cheaperOption } = concreteCostComparison(
+        bagsNeeded, pricePerBag, volumeWithWaste, priceReadyMix, deliveryFee
+      );
+      const verdict = cheaperOption === 'tie'
+        ? 'Bags and ready-mix cost the same for this volume.'
+        : `${cheaperOption === 'bags' ? 'Bags' : 'Ready-mix'} is cheaper for this volume.`;
+      costHtml = `
+        <div class="hint">Bags: ${formatMoney(bagCost)} &middot; Ready-mix: ${formatMoney(readyMixCost)}</div>
+        <div class="hint">${verdict}</div>
+      `;
+    }
+
     document.getElementById('concrete-result').innerHTML = `
       <div class="headline">${bagsNeeded} bags</div>
       <div>Volume: ${volume.toFixed(3)} m&sup3; &middot; With ${waste}% waste: ${volumeWithWaste.toFixed(3)} m&sup3;</div>
       <div class="hint">Ready-mix equivalent: ${volumeWithWaste.toFixed(2)} m&sup3; (${(volumeWithWaste * 1.30795).toFixed(2)} cu yd)</div>
+      ${costHtml}
     `;
   } catch (err) {
     showError('concrete-result', err.message);

@@ -2564,6 +2564,18 @@
         <option value="0.016990">80 lb bag (&asymp;0.6 cu ft)</option>
       </select>
     </div>
+    <div class="field">
+      <label for="concrete-price-per-bag">Price per bag (optional, for a cost comparison)</label>
+      <input type="number" id="concrete-price-per-bag" min="0" step="0.01" placeholder="e.g. 7">
+    </div>
+    <div class="field">
+      <label for="concrete-price-ready-mix">Ready-mix price per m&sup3; (optional)</label>
+      <input type="number" id="concrete-price-ready-mix" min="0" step="0.01" placeholder="e.g. 150">
+    </div>
+    <div class="field">
+      <label for="concrete-delivery-fee">Ready-mix delivery fee (optional)</label>
+      <input type="number" id="concrete-delivery-fee" min="0" step="0.01" value="0" placeholder="e.g. 100">
+    </div>
     <button class="calc-btn" id="concrete-calc">Calculate</button>
     <div class="result" id="concrete-result"></div>
   </section>
