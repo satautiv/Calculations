@@ -6724,6 +6724,49 @@ document.getElementById('unix-calc').addEventListener('click', () => {
     showError('unix-result', err.message);
   }
 });
+// --- Color format converter ---
+document.getElementById('colorconv-mode').addEventListener('change', (e) => {
+  const mode = e.target.value;
+  document.getElementById('colorconv-hex-fields').hidden = mode !== 'hex';
+  document.getElementById('colorconv-rgb-fields').hidden = mode !== 'rgb';
+  document.getElementById('colorconv-hsl-fields').hidden = mode !== 'hsl';
+});
+
+document.getElementById('colorconv-calc').addEventListener('click', () => {
+  const mode = document.getElementById('colorconv-mode').value;
+
+  try {
+    let rgb;
+
+    if (mode === 'hex') {
+      rgb = hexToRgb(document.getElementById('colorconv-hex').value);
+    } else if (mode === 'rgb') {
+      const r = parseInt(document.getElementById('colorconv-r').value, 10);
+      const g = parseInt(document.getElementById('colorconv-g').value, 10);
+      const b = parseInt(document.getElementById('colorconv-b').value, 10);
+      rgb = { r, g, b };
+      rgbToHex(r, g, b); // validates range before use below
+    } else {
+      const h = parseFloat(document.getElementById('colorconv-h').value);
+      const s = parseFloat(document.getElementById('colorconv-s').value);
+      const l = parseFloat(document.getElementById('colorconv-l').value);
+      rgb = hslToRgb(h, s, l);
+    }
+
+    const hex = rgbToHex(rgb.r, rgb.g, rgb.b);
+    const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
+
+    document.getElementById('colorconv-result').innerHTML = `
+      <div class="headline">${hex}</div>
+      <div class="color-swatch" style="background:${hex};"></div>
+      <div>RGB: ${rgb.r}, ${rgb.g}, ${rgb.b}</div>
+      <div>HSL: ${hsl.h.toFixed(0)}&deg;, ${hsl.s.toFixed(0)}%, ${hsl.l.toFixed(0)}%</div>
+    `;
+  } catch (err) {
+    showError('colorconv-result', err.message);
+  }
+});
+
 // --- Number base converter ---
 document.getElementById('numbase-calc').addEventListener('click', () => {
   const value = document.getElementById('numbase-value').value.trim();
