@@ -6,6 +6,10 @@
   --muted: #9aa1ac;
   --accent: #4f8cff;
   --accent-hover: #6ea0ff;
+  /* Darker than --accent: solid-fill buttons need white-on-background contrast
+     of at least 4.5:1 (WCAG AA), which --accent alone (~3.2:1) doesn't meet. */
+  --accent-strong: #3169d6;
+  --accent-strong-hover: #285ab8;
   --danger: #ff6b6b;
 }
 
@@ -249,7 +253,7 @@ main:has(#calculator-index.active) {
 .calc-btn {
   width: 100%;
   padding: 0.75rem;
-  background: var(--accent);
+  background: var(--accent-strong);
   border: none;
   border-radius: 8px;
   color: #fff;
@@ -260,7 +264,7 @@ main:has(#calculator-index.active) {
 }
 
 .calc-btn:hover {
-  background: var(--accent-hover);
+  background: var(--accent-strong-hover);
 }
 
 .result {
@@ -643,9 +647,14 @@ main:has(#wendler.tab-panel.active) {
 }
 
 .wendler-cycle-tab.active {
-  background: var(--accent);
+  background: var(--accent-strong);
   color: #fff;
-  border-color: var(--accent);
+  border-color: var(--accent-strong);
+}
+
+.wendler-cycle-tab.active:hover {
+  background: var(--accent-strong-hover);
+  border-color: var(--accent-strong-hover);
 }
 
 .wendler-card {
