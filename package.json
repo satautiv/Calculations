@@ -4,9 +4,12 @@
   "private": true,
   "description": "Strength training calculators (One-Rep Max, Training %, Wilks Score, Plate Loading) served as a static site.",
   "scripts": {
-    "test": "jest"
+    "test": "jest",
+    "audit:a11y": "node scripts/a11y-audit.js"
   },
   "devDependencies": {
-    "jest": "^30.4.2"
+    "@axe-core/playwright": "^4.13.0",
+    "jest": "^30.4.2",
+    "playwright": "^1.62.1"
   }
 }

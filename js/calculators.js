@@ -49,10 +49,17 @@ function showView(calcId) {
   const isValidCalc = calcId && CALCULATOR_REGISTRY.some(c => c.id === calcId);
 
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById(isValidCalc ? calcId : 'calculator-index').classList.add('active');
+  const activeView = document.getElementById(isValidCalc ? calcId : 'calculator-index');
+  activeView.classList.add('active');
   document.getElementById('back-to-index').hidden = !isValidCalc;
 
   if (!isValidCalc) window.scrollTo(0, 0);
+
+  // Move focus into the new view so keyboard/screen-reader users land somewhere
+  // sensible instead of on a now-hidden (display:none) element from the old view.
+  const focusTarget = activeView.querySelector('h1, h2') || activeView;
+  if (!focusTarget.hasAttribute('tabindex')) focusTarget.setAttribute('tabindex', '-1');
+  focusTarget.focus();
 }
 
 function currentCalcIdFromHash() {
