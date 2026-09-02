@@ -14,6 +14,7 @@ const SUPPORTED_LANGUAGES = [
   { code: 'zh', name: '中文' },
   { code: 'hi', name: 'हिन्दी' },
   { code: 'de', name: 'Deutsch' },
+  { code: 'pt', name: 'Português' },
 ];
 
 const I18N_STORAGE_KEY = 'calc-suite-lang';
