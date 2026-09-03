@@ -906,6 +906,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Reformat a raw SQL query into consistently indented, consistently cased SQL, or minify it to one line.',
     keywords: ['sql', 'format', 'formatter', 'minify', 'pretty print', 'query', 'indent', 'developer'],
   },
+  {
+    id: 'svg-to-png-converter',
+    name: 'SVG to PNG/JPEG Converter',
+    category: 'Images & Media',
+    description: 'Convert an SVG image to a PNG or JPEG, with an optional custom size and background color.',
+    keywords: ['svg', 'png', 'jpeg', 'jpg', 'convert', 'rasterize', 'vector', 'image', 'export'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

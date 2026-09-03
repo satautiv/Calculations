@@ -1,6 +1,9 @@
 const {
   toggleFavoriteId,
   addRecentId,
+  formatFileSize,
+  IMAGE_MIME_EXTENSIONS,
+  imageOutputFilename,
   epleyOneRepMax,
   brzyckiOneRepMax,
   lombardiOneRepMax,
@@ -317,6 +320,52 @@ describe('addRecentId', () => {
     const input = ['a', 'b'];
     addRecentId(input, 'c', 8);
     expect(input).toEqual(['a', 'b']);
+  });
+});
+
+describe('formatFileSize', () => {
+  test('formats bytes under 1 KB as-is', () => {
+    expect(formatFileSize(512)).toBe('512 B');
+  });
+
+  test('formats kilobytes to 1 decimal', () => {
+    expect(formatFileSize(1536)).toBe('1.5 KB');
+  });
+
+  test('formats megabytes to 2 decimals', () => {
+    expect(formatFileSize(5 * 1024 ** 2)).toBe('5.00 MB');
+  });
+
+  test('formats gigabytes to 2 decimals', () => {
+    expect(formatFileSize(2 * 1024 ** 3)).toBe('2.00 GB');
+  });
+});
+
+describe('imageOutputFilename', () => {
+  test('swaps a known extension for the target MIME type', () => {
+    expect(imageOutputFilename('logo.svg', 'image/png')).toBe('logo.png');
+  });
+
+  test('appends an extension when the filename has none', () => {
+    expect(imageOutputFilename('logo', 'image/jpeg')).toBe('logo.jpg');
+  });
+
+  test('falls back to "image" for an empty base name', () => {
+    expect(imageOutputFilename('.svg', 'image/webp')).toBe('image.webp');
+  });
+
+  test('uses "bin" for an unrecognized MIME type', () => {
+    expect(imageOutputFilename('file.txt', 'application/octet-stream')).toBe('file.bin');
+  });
+});
+
+describe('IMAGE_MIME_EXTENSIONS', () => {
+  test('maps the three supported canvas export types', () => {
+    expect(IMAGE_MIME_EXTENSIONS).toEqual({
+      'image/png': 'png',
+      'image/jpeg': 'jpg',
+      'image/webp': 'webp',
+    });
   });
 });
 

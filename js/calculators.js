@@ -7859,3 +7859,110 @@ document.getElementById('sql-formatter-calc').addEventListener('click', () => {
     showError('sql-formatter-result', err.message);
   }
 });
+
+// --- Image tools: shared helpers (canvas/File-API driven, reused by every
+// image-conversion calculator below) ---
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not load this file as an image.')); };
+    img.src = url;
+  });
+}
+
+function canvasToBlob(canvas, mimeType, quality) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob((blob) => {
+      if (blob) resolve(blob); else reject(new Error('Could not export the image.'));
+    }, mimeType, quality);
+  });
+}
+
+// Draws `img` onto a new canvas at `width`x`height`, optionally filling a
+// background color first (needed before drawing onto a JPEG export, which
+// has no alpha channel - without this, transparent areas render inconsistently
+// across browsers instead of a predictable flattened color).
+function drawImageToCanvas(img, width, height, backgroundColor) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext('2d');
+  if (backgroundColor) {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(0, 0, width, height);
+  }
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas;
+}
+
+// Renders a preview + stats + Download button into an image tool's result
+// div. The object URL is stashed on the element's dataset and revoked before
+// a new one replaces it, so repeated Calculate clicks don't leak blob URLs.
+function renderImageResult(resultElId, blob, filename, statsHtml) {
+  const el = document.getElementById(resultElId);
+  if (el.dataset.objectUrl) URL.revokeObjectURL(el.dataset.objectUrl);
+  const url = URL.createObjectURL(blob);
+  el.dataset.objectUrl = url;
+  el.innerHTML = `
+    <img class="image-preview" src="${url}" alt="">
+    ${statsHtml}
+    <button type="button" class="calc-btn secondary-btn image-download-btn">Download</button>
+  `;
+  el.querySelector('.image-download-btn').addEventListener('click', () => {
+    downloadFile(filename, blob, blob.type);
+  });
+}
+
+// --- SVG to PNG/JPEG Converter ---
+document.getElementById('svg2img-format').addEventListener('change', (e) => {
+  document.getElementById('svg2img-bg-field').hidden = e.target.value !== 'image/jpeg';
+});
+
+document.getElementById('svg2img-custom-size').addEventListener('change', (e) => {
+  document.getElementById('svg2img-width-field').hidden = !e.target.checked;
+  document.getElementById('svg2img-height-field').hidden = !e.target.checked;
+});
+
+document.getElementById('svg2img-calc').addEventListener('click', async () => {
+  const file = document.getElementById('svg2img-file').files[0];
+  if (!file) {
+    showError('svg2img-result', 'Choose an SVG file.');
+    return;
+  }
+
+  const format = document.getElementById('svg2img-format').value;
+  const useCustomSize = document.getElementById('svg2img-custom-size').checked;
+  const customWidth = parseInt(document.getElementById('svg2img-width').value, 10);
+  const customHeight = parseInt(document.getElementById('svg2img-height').value, 10);
+
+  if (useCustomSize && (!customWidth || customWidth <= 0 || !customHeight || customHeight <= 0)) {
+    showError('svg2img-result', 'Enter a valid custom width and height.');
+    return;
+  }
+
+  try {
+    const img = await loadImageFromFile(file);
+
+    if (!useCustomSize && (!img.naturalWidth || !img.naturalHeight)) {
+      showError('svg2img-result', 'Could not detect this SVG\'s size - check "Use a custom size" and enter a width and height.');
+      return;
+    }
+
+    const width = useCustomSize ? customWidth : img.naturalWidth;
+    const height = useCustomSize ? customHeight : img.naturalHeight;
+    const backgroundColor = format === 'image/jpeg' ? document.getElementById('svg2img-bg').value : null;
+
+    const canvas = drawImageToCanvas(img, width, height, backgroundColor);
+    const blob = await canvasToBlob(canvas, format);
+    const filename = imageOutputFilename(file.name, format);
+
+    renderImageResult('svg2img-result', blob, filename, `
+      <div class="headline">${width}&times;${height} ${format === 'image/jpeg' ? 'JPEG' : 'PNG'}</div>
+      <div>File size: ${formatFileSize(blob.size)}</div>
+    `);
+  } catch (err) {
+    showError('svg2img-result', err.message);
+  }
+});
