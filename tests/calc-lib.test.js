@@ -1,4 +1,6 @@
 const {
+  toggleFavoriteId,
+  addRecentId,
   epleyOneRepMax,
   brzyckiOneRepMax,
   lombardiOneRepMax,
@@ -281,6 +283,42 @@ const {
   formatSql,
   minifySql,
 } = require('../js/calc-lib');
+
+describe('toggleFavoriteId', () => {
+  test('adds an id that is not yet favorited', () => {
+    expect(toggleFavoriteId(['orm'], 'wilks')).toEqual(['orm', 'wilks']);
+  });
+
+  test('removes an id that is already favorited', () => {
+    expect(toggleFavoriteId(['orm', 'wilks'], 'orm')).toEqual(['wilks']);
+  });
+
+  test('does not mutate the input array', () => {
+    const input = ['orm'];
+    toggleFavoriteId(input, 'wilks');
+    expect(input).toEqual(['orm']);
+  });
+});
+
+describe('addRecentId', () => {
+  test('adds a new id to the front', () => {
+    expect(addRecentId(['a', 'b'], 'c', 8)).toEqual(['c', 'a', 'b']);
+  });
+
+  test('moves an existing id to the front instead of duplicating it', () => {
+    expect(addRecentId(['a', 'b', 'c'], 'b', 8)).toEqual(['b', 'a', 'c']);
+  });
+
+  test('caps the result at maxLength', () => {
+    expect(addRecentId(['a', 'b', 'c'], 'd', 3)).toEqual(['d', 'a', 'b']);
+  });
+
+  test('does not mutate the input array', () => {
+    const input = ['a', 'b'];
+    addRecentId(input, 'c', 8);
+    expect(input).toEqual(['a', 'b']);
+  });
+});
 
 describe('epleyOneRepMax', () => {
   test('returns weight unchanged for 1 rep', () => {

@@ -14,7 +14,7 @@ test.describe('calculator index', () => {
 
     await page.fill('#calc-search', 'Wilks');
 
-    const visibleCards = page.locator('.calc-card:not([hidden])');
+    const visibleCards = page.locator('.calc-card-wrap:not([hidden])');
     await expect(visibleCards).toHaveCount(1);
     await expect(visibleCards.first()).toContainText('Wilks');
     await expect(page.locator('#calc-no-results')).toBeHidden();
@@ -25,7 +25,7 @@ test.describe('calculator index', () => {
 
     await page.fill('#calc-search', 'zzzznonexistentcalculatorzzzz');
 
-    await expect(page.locator('.calc-card:not([hidden])')).toHaveCount(0);
+    await expect(page.locator('.calc-card-wrap:not([hidden])')).toHaveCount(0);
     await expect(page.locator('#calc-no-results')).toBeVisible();
   });
 
@@ -33,7 +33,7 @@ test.describe('calculator index', () => {
     await page.goto('/index.html');
 
     await page.fill('#calc-search', 'Wilks');
-    await page.locator('.calc-card:not([hidden])').first().click();
+    await page.locator('.calc-card-wrap:not([hidden]) .calc-card').first().click();
 
     await expect(page).toHaveURL(/#calc\/wilks$/);
     await expect(page.locator('#wilks')).toHaveClass(/active/);
