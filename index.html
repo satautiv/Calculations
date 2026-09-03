@@ -4277,6 +4277,39 @@
     <button class="calc-btn" id="sql-formatter-calc">Calculate</button>
     <div class="result" id="sql-formatter-result"></div>
   </section>
+
+  <section id="svg-to-png-converter" class="view tab-panel">
+    <h2>SVG to PNG/JPEG Converter</h2>
+    <p class="hint">Converts an SVG image to a PNG or JPEG file entirely in your browser - nothing is uploaded anywhere. JPEG has no transparency, so a background color is used to flatten any transparent areas first.</p>
+    <div class="field">
+      <label for="svg2img-file">SVG file</label>
+      <input type="file" id="svg2img-file" accept="image/svg+xml,.svg">
+    </div>
+    <div class="field">
+      <label for="svg2img-format">Output format</label>
+      <select id="svg2img-format">
+        <option value="image/png" selected>PNG</option>
+        <option value="image/jpeg">JPEG</option>
+      </select>
+    </div>
+    <div class="field" id="svg2img-bg-field" hidden>
+      <label for="svg2img-bg">Background color</label>
+      <input type="color" id="svg2img-bg" value="#ffffff">
+    </div>
+    <div class="field-checkbox">
+      <label><input type="checkbox" id="svg2img-custom-size"> Use a custom size</label>
+    </div>
+    <div class="field" id="svg2img-width-field" hidden>
+      <label for="svg2img-width">Width (px)</label>
+      <input type="number" id="svg2img-width" min="1" step="1" placeholder="e.g. 512">
+    </div>
+    <div class="field" id="svg2img-height-field" hidden>
+      <label for="svg2img-height">Height (px)</label>
+      <input type="number" id="svg2img-height" min="1" step="1" placeholder="e.g. 512">
+    </div>
+    <button class="calc-btn" id="svg2img-calc">Calculate</button>
+    <div class="result" id="svg2img-result"></div>
+  </section>
 </main>
 
 <footer>

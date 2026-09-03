@@ -5901,10 +5901,40 @@ function addRecentId(recentIds, id, maxLength) {
   return [id, ...recentIds.filter((existing) => existing !== id)].slice(0, maxLength);
 }
 
+// --- Image tools: shared pure helpers (canvas/File-API plumbing itself lives
+// in calculators.js, untestable in Node without a DOM/canvas polyfill) ---
+
+// Human-readable file size, e.g. 1536 -> "1.5 KB". Binary (1024-based) units,
+// labeled KB/MB/GB per the common (if not strictly SI-correct) web convention.
+function formatFileSize(bytes) {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
+  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(2)} MB`;
+  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
+}
+
+const IMAGE_MIME_EXTENSIONS = {
+  'image/png': 'png',
+  'image/jpeg': 'jpg',
+  'image/webp': 'webp',
+};
+
+// Swaps (or appends) a filename's extension to match the target MIME type's
+// canonical extension, so a downloaded "logo.svg" converted to PNG is
+// offered as "logo.png" rather than keeping the misleading original suffix.
+function imageOutputFilename(originalFilename, mimeType) {
+  const extension = IMAGE_MIME_EXTENSIONS[mimeType] || 'bin';
+  const base = originalFilename.replace(/\.[^./\\]+$/, '') || 'image';
+  return `${base}.${extension}`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     toggleFavoriteId,
     addRecentId,
+    formatFileSize,
+    IMAGE_MIME_EXTENSIONS,
+    imageOutputFilename,
     epleyOneRepMax,
     brzyckiOneRepMax,
     lombardiOneRepMax,
