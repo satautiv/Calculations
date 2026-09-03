@@ -5956,6 +5956,28 @@ function percentScaledDimensions(originalWidth, originalHeight, percent) {
   };
 }
 
+// Parses a base64-encoded data URI ("data:<mime>;base64,<data>") into its
+// MIME type and payload (internal whitespace in the payload stripped, since
+// a pasted/wrapped base64 string may have line breaks); returns null for
+// anything else - a raw base64 string with no prefix, a URL-encoded
+// (non-base64) data URI, or unrelated text.
+function parseDataUri(str) {
+  const match = /^data:([^;,]+);base64,([\s\S]*)$/.exec(str.trim());
+  if (!match) return null;
+  return { mimeType: match[1], base64: match[2].replace(/\s+/g, '') };
+}
+
+// Whether `str` looks like valid base64: only base64-alphabet characters,
+// correctly padded, and a length that's a multiple of 4. A structural check,
+// not proof the decoded bytes form a valid image.
+function isLikelyBase64(str) {
+  return str.length > 0 && str.length % 4 === 0 && /^[A-Za-z0-9+/]*={0,2}$/.test(str);
+}
+
+function buildDataUri(mimeType, base64Data) {
+  return `data:${mimeType};base64,${base64Data}`;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     toggleFavoriteId,
@@ -5967,6 +5989,9 @@ if (typeof module !== 'undefined' && module.exports) {
     heightForWidth,
     widthForHeight,
     percentScaledDimensions,
+    parseDataUri,
+    isLikelyBase64,
+    buildDataUri,
     epleyOneRepMax,
     brzyckiOneRepMax,
     lombardiOneRepMax,

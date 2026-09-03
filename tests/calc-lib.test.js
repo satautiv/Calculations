@@ -8,6 +8,9 @@ const {
   heightForWidth,
   widthForHeight,
   percentScaledDimensions,
+  parseDataUri,
+  isLikelyBase64,
+  buildDataUri,
   epleyOneRepMax,
   brzyckiOneRepMax,
   lombardiOneRepMax,
@@ -418,6 +421,62 @@ describe('percentScaledDimensions', () => {
 
   test('floors at 1px so a large downscale never produces a zero-sized canvas', () => {
     expect(percentScaledDimensions(10, 10, 1)).toEqual({ width: 1, height: 1 });
+  });
+});
+
+describe('parseDataUri', () => {
+  test('parses a well-formed base64 data URI', () => {
+    expect(parseDataUri('data:image/png;base64,iVBORw0KGgo=')).toEqual({
+      mimeType: 'image/png',
+      base64: 'iVBORw0KGgo=',
+    });
+  });
+
+  test('strips internal whitespace from a wrapped base64 payload', () => {
+    expect(parseDataUri('data:image/png;base64,iVBO\nRw0K Ggo=')).toEqual({
+      mimeType: 'image/png',
+      base64: 'iVBORw0KGgo=',
+    });
+  });
+
+  test('returns null for a raw base64 string with no prefix', () => {
+    expect(parseDataUri('iVBORw0KGgo=')).toBeNull();
+  });
+
+  test('returns null for a non-base64 (URL-encoded) data URI', () => {
+    expect(parseDataUri('data:image/svg+xml,%3Csvg%3E%3C%2Fsvg%3E')).toBeNull();
+  });
+
+  test('returns null for unrelated text', () => {
+    expect(parseDataUri('not a data uri at all')).toBeNull();
+  });
+});
+
+describe('isLikelyBase64', () => {
+  test('accepts a valid padded base64 string', () => {
+    expect(isLikelyBase64('iVBORw0KGgo=')).toBe(true);
+  });
+
+  test('accepts a valid base64 string with no padding needed', () => {
+    expect(isLikelyBase64('YWJjZA==')).toBe(true);
+  });
+
+  test('rejects a string with invalid characters', () => {
+    expect(isLikelyBase64('not_base64!!')).toBe(false);
+  });
+
+  test('rejects a string whose length is not a multiple of 4', () => {
+    expect(isLikelyBase64('abcde')).toBe(false);
+  });
+
+  test('rejects an empty string', () => {
+    expect(isLikelyBase64('')).toBe(false);
+  });
+});
+
+describe('buildDataUri', () => {
+  test('builds a base64 data URI from a MIME type and payload', () => {
+    expect(buildDataUri('image/png', 'iVBORw0KGgo=')).toBe('data:image/png;base64,iVBORw0KGgo=');
   });
 });
 

@@ -760,6 +760,13 @@ const CALCULATOR_REGISTRY = [
     keywords: ['base64', 'encode', 'decode', 'developer', 'utf-8', 'url-safe', 'basic auth'],
   },
   {
+    id: 'base64-image-converter',
+    name: 'Base64 <-> Image Converter',
+    category: 'Developer',
+    description: 'Encode an image to a base64 data URI for inlining in CSS/HTML, or decode one back into a downloadable image.',
+    keywords: ['base64', 'image', 'data uri', 'data url', 'encode', 'decode', 'inline', 'css', 'html', 'developer'],
+  },
+  {
     id: 'number-base-converter',
     name: 'Number Base Converter',
     category: 'Developer',

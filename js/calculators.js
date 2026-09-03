@@ -8130,3 +8130,86 @@ document.getElementById('imgformat-calc').addEventListener('click', async () => 
     showError('imgformat-result', err.message);
   }
 });
+
+// --- Base64 <-> Image Converter ---
+function readFileAsDataUri(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read this file.'));
+    reader.readAsDataURL(file);
+  });
+}
+
+document.getElementById('b64img-mode').addEventListener('change', (e) => {
+  const isDecode = e.target.value === 'decode';
+  document.getElementById('b64img-file-field').hidden = isDecode;
+  document.getElementById('b64img-input-field').hidden = !isDecode;
+  document.getElementById('b64img-mime-field').hidden = !isDecode;
+});
+
+document.getElementById('b64img-calc').addEventListener('click', async () => {
+  const mode = document.getElementById('b64img-mode').value;
+
+  if (mode === 'encode') {
+    const file = document.getElementById('b64img-file').files[0];
+    if (!file) {
+      showError('b64img-result', 'Choose an image file.');
+      return;
+    }
+
+    try {
+      const dataUri = await readFileAsDataUri(file);
+      const parsed = parseDataUri(dataUri);
+
+      document.getElementById('b64img-result').innerHTML = `
+        <div class="headline">Encoded size: ${formatFileSize(dataUri.length)}</div>
+        <div class="field">
+          <label>Data URI</label>
+          <textarea rows="6" readonly>${escapeHtml(dataUri)}</textarea>
+        </div>
+        <div class="field">
+          <label>Raw base64 (no data: prefix)</label>
+          <textarea rows="6" readonly>${escapeHtml(parsed ? parsed.base64 : '')}</textarea>
+        </div>
+      `;
+    } catch (err) {
+      showError('b64img-result', err.message);
+    }
+    return;
+  }
+
+  const rawInput = document.getElementById('b64img-input').value.trim();
+  if (!rawInput) {
+    showError('b64img-result', 'Paste a data URI or base64 string.');
+    return;
+  }
+
+  const parsed = parseDataUri(rawInput);
+  let dataUri;
+
+  if (parsed) {
+    dataUri = rawInput;
+  } else {
+    const cleaned = rawInput.replace(/\s+/g, '');
+    if (!isLikelyBase64(cleaned)) {
+      showError('b64img-result', 'This does not look like valid base64 - check for typos or missing characters.');
+      return;
+    }
+    dataUri = buildDataUri(document.getElementById('b64img-mime').value, cleaned);
+  }
+
+  try {
+    const response = await fetch(dataUri);
+    if (!response.ok) throw new Error();
+    const blob = await response.blob();
+    const filename = imageOutputFilename('image', blob.type);
+
+    renderImageResult('b64img-result', blob, filename, `
+      <div class="headline">Decoded image</div>
+      <div>File size: ${formatFileSize(blob.size)}</div>
+    `);
+  } catch (err) {
+    showError('b64img-result', 'Could not decode this as an image - check the data is valid and complete.');
+  }
+});
