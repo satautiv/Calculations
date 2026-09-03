@@ -221,6 +221,43 @@ main:has(#calculator-index.active) {
   margin-top: -0.25rem;
 }
 
+.how-it-works {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.how-it-works summary {
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.how-it-works summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.how-it-works p,
+.how-it-works ul {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.how-it-works p {
+  margin: 0.75rem 0 0;
+}
+
+.how-it-works ul {
+  margin: 0.5rem 0 0;
+  padding-left: 1.25rem;
+}
+
+.how-it-works li + li {
+  margin-top: 0.4rem;
+}
+
 .field {
   margin-bottom: 1rem;
 }

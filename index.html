@@ -48,6 +48,17 @@
     </div>
     <button class="calc-btn" id="orm-calc">Calculate</button>
     <div class="result" id="orm-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Each formula estimates your one-rep max (1RM) from a lighter, multi-rep set, but they were derived from different research datasets, so they don't agree perfectly — averaging all four (as the result above does) is more robust than trusting any single one.</p>
+      <ul>
+        <li><strong>Epley:</strong> 1RM = weight × (1 + reps ÷ 30) — simple and widely used, but tends to run high at higher rep counts.</li>
+        <li><strong>Brzycki:</strong> 1RM = weight × 36 ÷ (37 − reps) — assumes a near-linear fatigue curve; the formula breaks down at 37 reps (division by zero), so it's left out above 36.</li>
+        <li><strong>Lombardi:</strong> 1RM = weight × reps^0.10 — a power-law curve that estimates more conservatively than Epley or Brzycki.</li>
+        <li><strong>Mayhew et al.:</strong> 1RM = 100 × weight ÷ (52.2 + 41.9 × e^(−0.055 × reps)) — from a regression on bench-press data, flattening out at high rep counts.</li>
+      </ul>
+      <p>All four are estimates, not measurements — actual 1RM depends on technique, fatigue, and the specific lift, and accuracy drops noticeably above about 10–12 reps.</p>
+    </details>
   </section>
 
   <section id="percent" class="view tab-panel">
@@ -190,6 +201,11 @@
     </div>
     <button class="calc-btn" id="compound-calc">Calculate</button>
     <div class="result" id="compound-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Future value is calculated with the standard compound interest formula: A = P × (1 + r/n)^(n×t), where P is your principal, r is the annual interest rate as a decimal, n is how many times per year interest compounds, and t is the number of years.</p>
+      <p>Compounding more frequently (monthly instead of annually, say) produces a slightly higher return for the same nominal rate, because each period's interest starts earning its own interest sooner. This calculator models a single lump-sum deposit only — it doesn't add any regular contributions on top; for that, use the Investment/DCA Growth calculator instead.</p>
+    </details>
   </section>
 
   <section id="recipe-scaling" class="view tab-panel">
@@ -346,6 +362,11 @@
 
     <button class="calc-btn" id="baker-calc">Calculate</button>
     <div class="result" id="baker-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Baker's percentage expresses every ingredient's weight as a percentage of the total flour weight, which is always defined as 100% — even when a recipe blends multiple flours, their combined weight is the 100% baseline. Converting weights to percentages, or percentages back to weights, is a straightforward proportion: percentage = ingredient weight ÷ total flour weight × 100.</p>
+      <p>Because everything scales off flour rather than total dough weight, baker's percentages make it easy to scale a recipe up or down, or compare hydration and other ratios across recipes of completely different sizes, without recalculating each ingredient by hand.</p>
+    </details>
   </section>
 
   <section id="loan-amortization" class="view tab-panel">
@@ -1435,6 +1456,11 @@
 
     <button class="calc-btn" id="stop-calc">Calculate</button>
     <div class="result" id="stop-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Total stopping distance is the sum of two separate phases: reaction distance (speed × reaction time, since the car keeps moving at a constant speed while the driver perceives and reacts to a hazard) plus braking distance (speed² ÷ (2 × deceleration), from the constant-deceleration kinematics of coming to a stop).</p>
+      <p>Braking distance grows with the <em>square</em> of speed, not linearly — doubling your speed quadruples the distance needed to stop, all else being equal. The deceleration values used for dry (7.5 m/s²), wet (5 m/s²), and icy (2 m/s²) surfaces are rough, commonly-cited averages for typical passenger-car braking, not a substitute for a specific vehicle's actual tested performance.</p>
+    </details>
   </section>
 
   <section id="gear-ratio-rpm" class="view tab-panel">
@@ -1905,6 +1931,11 @@
     </div>
     <button class="calc-btn" id="sunrise-calc">Calculate</button>
     <div class="result" id="sunrise-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>This uses the same closed-form solar-position approximation behind NOAA's solar calculator (the "sunrise equation"): from the day of the year it derives the sun's declination and the equation of time, combines those with your latitude to find the hour angle at which the sun crosses the horizon, then converts that to sunrise and sunset clock times for your longitude and UTC offset. It calculates for solar noon rather than tracking the sun continuously through the day, which keeps the math simple while staying accurate to within a couple of minutes for most latitudes.</p>
+      <p>Near the poles the sun can stay above the horizon all day (polar day) or below it entirely (polar night) for parts of the year — the calculator detects both cases and reports them explicitly rather than showing a nonsensical time.</p>
+    </details>
   </section>
 
   <section id="moon-phase-calculator" class="view tab-panel">
@@ -1916,6 +1947,11 @@
     </div>
     <button class="calc-btn" id="moonphase-calc">Calculate</button>
     <div class="result" id="moonphase-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>The moon completes one full cycle of phases — a synodic month — in about 29.53 days on average. This calculator counts how many days have elapsed since a known reference new moon (2000-01-06), takes the remainder after dividing by that synodic month length, and uses the resulting fraction of the cycle to name the current phase and estimate illumination as a smooth cosine curve (0% at new moon, 100% at full moon).</p>
+      <p>Because the real lunar orbit is slightly elliptical — the moon speeds up and slows down over the course of a month — this simplified method is accurate to roughly a day, not the ephemeris-level precision of a full astronomical calculation.</p>
+    </details>
   </section>
 
   <section id="warmup-sets-calculator" class="view tab-panel">
@@ -2422,6 +2458,11 @@
     </div>
     <button class="calc-btn" id="bmi-calc">Calculate</button>
     <div class="result" id="bmi-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Body Mass Index is weight in kilograms divided by height in meters squared (BMI = kg ÷ m²) — weight and height are converted to those units first regardless of which units you entered them in. The result is compared against the standard World Health Organization adult bands: under 18.5 is classified underweight, 18.5–24.9 normal weight, 25–29.9 overweight, and 30 or above obese.</p>
+      <p>BMI doesn't account for muscle mass, bone density, age, or sex, so it can misclassify very muscular or very lean people — it's a population-level screening tool, not a diagnosis of individual body composition.</p>
+    </details>
   </section>
 
   <section id="lean-body-mass-calculator" class="view tab-panel">
@@ -2914,6 +2955,11 @@
     </div>
     <button class="calc-btn" id="concrete-calc">Calculate</button>
     <div class="result" id="concrete-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>Volume comes from the shape you're pouring — length × width × thickness for a rectangular slab, footing, or column, or π × (diameter ÷ 2)² × height for a cylindrical pour like a post hole — all in meters, giving cubic meters. A waste percentage is added on top (spillage, uneven subgrade, and over-excavation routinely eat 5–10% extra), and the padded volume is divided by a bag's stated yield and rounded up, since you can't buy a fraction of a bag.</p>
+      <p>For larger pours, the calculator also compares that bagged-concrete cost against a ready-mix delivery quote, since ready-mix usually beats bags on both cost and labor once you're pouring more than roughly a cubic meter or two.</p>
+    </details>
   </section>
 
   <section id="heart-rate-zone-calculator" class="view tab-panel">
@@ -3981,6 +4027,11 @@
     </div>
     <button class="calc-btn" id="cidr-calc">Calculate</button>
     <div class="result" id="cidr-result"></div>
+    <details class="how-it-works">
+      <summary>How this works</summary>
+      <p>A CIDR prefix like /26 defines a subnet mask — the count of leading 1 bits — that splits an IPv4 address into a fixed network portion and a variable host portion. Applying that mask to your address with a bitwise AND gives the network address; flipping the mask and OR-ing it in gives the broadcast address (the highest address in the range). Everything in between is usable for hosts.</p>
+      <p>That's why a /24 gives 254 usable hosts (2⁸ − 2, for its 8 host bits) rather than the full 256: the all-zeros host address identifies the network itself, and the all-ones address is reserved for broadcast. The two exceptions are /31 (point-to-point links, where both addresses are usable per RFC 3021) and /32 (a single host, with no separate network or broadcast address at all).</p>
+    </details>
   </section>
 
   <section id="ipv4-ipv6-converter" class="view tab-panel">
