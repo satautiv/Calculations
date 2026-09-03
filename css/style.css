@@ -114,6 +114,49 @@ main:has(#calculator-index.active) {
   font-size: 1.2rem;
 }
 
+.legal-page h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1rem;
+}
+
+.legal-page p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.legal-page a {
+  color: var(--accent);
+}
+
+.legal-page a:hover,
+.legal-page a:focus-visible {
+  text-decoration: underline;
+}
+
+.site-title-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+footer {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 1.25rem 2.5rem;
+  text-align: center;
+}
+
+footer a {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+footer a:hover,
+footer a:focus-visible {
+  color: var(--accent);
+}
+
 .search-wrap {
   margin-bottom: 2rem;
 }

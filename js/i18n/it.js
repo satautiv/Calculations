@@ -923,6 +923,7 @@ registerTranslations("it", {
   "Price per rail (optional)": "Prezzo per traversa (opzionale)",
   "Price per screw (optional)": "Prezzo per vite (opzionale)",
   "Principal": "Capitale",
+  "Privacy Policy": "Informativa sulla Privacy",
   "Project a car's resale value over time using a declining-balance or straight-line depreciation model.": "Proietta il valore di rivendita di un'auto nel tempo utilizzando un modello di ammortamento a quote decrescenti o a quote costanti.",
   "Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.": "Proietta il valore di rivendita di un'auto nel tempo utilizzando un modello di ammortamento a quote decrescenti (% annuo) o a quote costanti (valore residuo sulla vita utile).",
   "Project how a lump sum plus regular contributions grows over time.": "Proietta come una somma forfettaria più contributi regolari cresce nel tempo.",

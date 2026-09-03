@@ -36,11 +36,15 @@ function startServer() {
   await page.goto(`${base}/index.html`);
   const ids = await page.evaluate(() => CALCULATOR_REGISTRY.map(c => c.id));
 
-  const targets = [{ name: 'homepage', hash: '' }, ...ids.map(id => ({ name: id, hash: `#calc/${id}` }))];
+  const targets = [
+    { name: 'homepage', path: 'index.html' },
+    ...ids.map(id => ({ name: id, path: `index.html#calc/${id}` })),
+    { name: 'privacy', path: 'privacy.html' },
+  ];
   let failures = 0;
 
   for (const t of targets) {
-    await page.goto(`${base}/index.html${t.hash}`);
+    await page.goto(`${base}/${t.path}`);
     await page.waitForTimeout(100);
     const results = await new AxeBuilder({ page }).analyze();
     const bad = results.violations.filter(v => v.impact === 'critical' || v.impact === 'serious');
