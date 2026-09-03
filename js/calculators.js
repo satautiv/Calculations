@@ -8098,3 +8098,35 @@ document.getElementById('imgresize-calc').addEventListener('click', async () => 
     showError('imgresize-result', err.message);
   }
 });
+
+// --- Image Format Converter ---
+const IMAGE_FORMAT_LABELS = { 'image/png': 'PNG', 'image/jpeg': 'JPEG', 'image/webp': 'WebP' };
+
+document.getElementById('imgformat-format').addEventListener('change', (e) => {
+  document.getElementById('imgformat-bg-field').hidden = e.target.value !== 'image/jpeg';
+});
+
+document.getElementById('imgformat-calc').addEventListener('click', async () => {
+  const file = document.getElementById('imgformat-file').files[0];
+  if (!file) {
+    showError('imgformat-result', 'Choose an image file.');
+    return;
+  }
+
+  const format = document.getElementById('imgformat-format').value;
+  const backgroundColor = format === 'image/jpeg' ? document.getElementById('imgformat-bg').value : null;
+
+  try {
+    const img = await loadImageFromFile(file);
+    const canvas = drawImageToCanvas(img, img.naturalWidth, img.naturalHeight, backgroundColor);
+    const blob = await canvasToBlob(canvas, format);
+    const filename = imageOutputFilename(file.name, format);
+
+    renderImageResult('imgformat-result', blob, filename, `
+      <div class="headline">${IMAGE_FORMAT_LABELS[format]}</div>
+      <div>File size: ${formatFileSize(blob.size)}</div>
+    `);
+  } catch (err) {
+    showError('imgformat-result', err.message);
+  }
+});
