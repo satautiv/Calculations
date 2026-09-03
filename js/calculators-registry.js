@@ -920,6 +920,13 @@ const CALCULATOR_REGISTRY = [
     description: "Reduce an image's file size by re-encoding it as JPEG or WebP at a chosen quality.",
     keywords: ['image', 'compress', 'compression', 'jpeg', 'webp', 'file size', 'optimize', 'shrink'],
   },
+  {
+    id: 'image-resizer',
+    name: 'Image Resizer',
+    category: 'Images & Media',
+    description: 'Resize an image to a target pixel size or percentage scale, keeping its original format.',
+    keywords: ['image', 'resize', 'resizer', 'scale', 'dimensions', 'width', 'height', 'aspect ratio'],
+  },
 ];
 
 if (typeof module !== 'undefined') {

@@ -5,6 +5,9 @@ const {
   IMAGE_MIME_EXTENSIONS,
   imageOutputFilename,
   compressionSavingsPercent,
+  heightForWidth,
+  widthForHeight,
+  percentScaledDimensions,
   epleyOneRepMax,
   brzyckiOneRepMax,
   lombardiOneRepMax,
@@ -381,6 +384,40 @@ describe('compressionSavingsPercent', () => {
 
   test('returns 0 when the size is unchanged', () => {
     expect(compressionSavingsPercent(1000, 1000)).toBe(0);
+  });
+});
+
+describe('heightForWidth', () => {
+  test('scales height proportionally to a new width', () => {
+    expect(heightForWidth(1000, 500, 400)).toBe(200);
+  });
+
+  test('rounds to the nearest whole pixel', () => {
+    expect(heightForWidth(300, 200, 100)).toBe(67);
+  });
+});
+
+describe('widthForHeight', () => {
+  test('scales width proportionally to a new height', () => {
+    expect(widthForHeight(1000, 500, 200)).toBe(400);
+  });
+
+  test('rounds to the nearest whole pixel', () => {
+    expect(widthForHeight(300, 200, 100)).toBe(150);
+  });
+});
+
+describe('percentScaledDimensions', () => {
+  test('halves dimensions at 50%', () => {
+    expect(percentScaledDimensions(800, 600, 50)).toEqual({ width: 400, height: 300 });
+  });
+
+  test('doubles dimensions at 200%', () => {
+    expect(percentScaledDimensions(800, 600, 200)).toEqual({ width: 1600, height: 1200 });
+  });
+
+  test('floors at 1px so a large downscale never produces a zero-sized canvas', () => {
+    expect(percentScaledDimensions(10, 10, 1)).toEqual({ width: 1, height: 1 });
   });
 });
 
