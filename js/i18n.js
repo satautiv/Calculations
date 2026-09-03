@@ -54,6 +54,12 @@ function translatableLeafElements(root) {
   const leaves = [];
   root.querySelectorAll('*').forEach(el => {
     if (el.closest('.result')) return;
+    // translate="no" is the standard HTML attribute for "don't translate this" -
+    // used here for elements whose text is live JS-updated state (e.g. a slider's
+    // current value), not static UI copy. Without this, applyTranslations() would
+    // capture the *first-rendered* value as the "source" text on first run, then
+    // reset the element back to that stale value on every later language switch.
+    if (el.closest('[translate="no"]')) return;
     if (el.children.length === 0 && el.textContent.trim()) leaves.push(el);
   });
   return leaves;

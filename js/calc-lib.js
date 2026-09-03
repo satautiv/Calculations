@@ -5928,6 +5928,13 @@ function imageOutputFilename(originalFilename, mimeType) {
   return `${base}.${extension}`;
 }
 
+// Percentage size reduction from `originalBytes` to `compressedBytes`;
+// negative when re-encoding made the file larger (e.g. quality set very
+// high, or the source was already efficiently compressed).
+function compressionSavingsPercent(originalBytes, compressedBytes) {
+  return ((originalBytes - compressedBytes) / originalBytes) * 100;
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     toggleFavoriteId,
@@ -5935,6 +5942,7 @@ if (typeof module !== 'undefined' && module.exports) {
     formatFileSize,
     IMAGE_MIME_EXTENSIONS,
     imageOutputFilename,
+    compressionSavingsPercent,
     epleyOneRepMax,
     brzyckiOneRepMax,
     lombardiOneRepMax,

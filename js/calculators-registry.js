@@ -913,6 +913,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Convert an SVG image to a PNG or JPEG, with an optional custom size and background color.',
     keywords: ['svg', 'png', 'jpeg', 'jpg', 'convert', 'rasterize', 'vector', 'image', 'export'],
   },
+  {
+    id: 'image-compressor',
+    name: 'Image Compressor',
+    category: 'Images & Media',
+    description: "Reduce an image's file size by re-encoding it as JPEG or WebP at a chosen quality.",
+    keywords: ['image', 'compress', 'compression', 'jpeg', 'webp', 'file size', 'optimize', 'shrink'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
