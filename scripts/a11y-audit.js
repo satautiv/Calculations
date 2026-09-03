@@ -1,7 +1,6 @@
 // Accessibility audit: scans every calculator panel (plus the homepage) with
 // axe-core and fails if any critical/serious violation is found. Not wired
-// into CI yet — see issue #450 for adding a real Playwright test suite to CI;
-// this script is meant to be run locally (`npm run audit:a11y`) until then.
+// into CI yet — this script is meant to be run locally (`npm run audit:a11y`).
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
