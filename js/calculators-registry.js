@@ -927,6 +927,13 @@ const CALCULATOR_REGISTRY = [
     description: 'Resize an image to a target pixel size or percentage scale, keeping its original format.',
     keywords: ['image', 'resize', 'resizer', 'scale', 'dimensions', 'width', 'height', 'aspect ratio'],
   },
+  {
+    id: 'image-format-converter',
+    name: 'Image Format Converter',
+    category: 'Images & Media',
+    description: 'Convert an image between PNG, JPEG, and WebP, flattening transparency onto a background color for JPEG output.',
+    keywords: ['image', 'convert', 'converter', 'format', 'png', 'jpeg', 'jpg', 'webp', 'transparency'],
+  },
 ];
 
 if (typeof module !== 'undefined') {
