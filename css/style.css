@@ -215,6 +215,32 @@ main:has(#calculator-index.active) {
   font-size: 0.85rem;
 }
 
+.suggest-calculator {
+  margin-top: 2rem;
+  padding: 1.25rem;
+  text-align: center;
+  background: var(--panel);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+}
+
+.suggest-calculator p {
+  margin: 0 0 0.75rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.suggest-calculator-link {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.suggest-calculator-link:hover,
+.suggest-calculator-link:focus-visible {
+  text-decoration: underline;
+}
+
 .hint {
   color: var(--muted);
   font-size: 0.85rem;
