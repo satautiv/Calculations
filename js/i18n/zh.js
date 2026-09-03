@@ -925,6 +925,7 @@ registerTranslations("zh", {
   "Price per rail (optional)": "每根横栏价格（可选）",
   "Price per screw (optional)": "每颗螺丝价格（可选）",
   "Principal": "本金",
+  "Privacy Policy": "隐私政策",
   "Project a car's resale value over time using a declining-balance or straight-line depreciation model.": "使用余额递减法或直线法折旧模型，预测汽车转售价值随时间的变化。",
   "Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.": "使用余额递减法（每年百分比）或直线法（按使用年限计算残值）折旧模型，预测汽车转售价值随时间的变化。",
   "Project how a lump sum plus regular contributions grows over time.": "预测一笔整存资金加上定期缴存额随时间的增长情况。",

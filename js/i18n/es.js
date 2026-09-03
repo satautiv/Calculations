@@ -922,6 +922,7 @@ registerTranslations("es", {
   "Price per rail (optional)": "Precio por riel (opcional)",
   "Price per screw (optional)": "Precio por tornillo (opcional)",
   "Principal": "Capital",
+  "Privacy Policy": "Política de Privacidad",
   "Project a car's resale value over time using a declining-balance or straight-line depreciation model.": "Proyecta el valor de reventa de un automóvil a lo largo del tiempo usando un modelo de depreciación de saldo decreciente o de línea recta.",
   "Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.": "Proyecta el valor de reventa de un automóvil a lo largo del tiempo usando un modelo de depreciación de saldo decreciente (% anual) o de línea recta (valor residual sobre la vida útil).",
   "Project how a lump sum plus regular contributions grows over time.": "Proyecta cómo crece una suma global más aportes regulares a lo largo del tiempo.",

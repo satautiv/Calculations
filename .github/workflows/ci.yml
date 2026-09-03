@@ -63,6 +63,7 @@ jobs:
         run: |
           mkdir -p dist
           cp index.html dist/
+          cp privacy.html dist/
           cp manifest.json dist/
           cp sw.js dist/
           cp -r css dist/

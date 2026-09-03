@@ -926,6 +926,7 @@ registerTranslations('de', {
   "Price per rail (optional)": "Preis pro Riegel (optional)",
   "Price per screw (optional)": "Preis pro Schraube (optional)",
   "Principal": "Kapitalbetrag",
+  "Privacy Policy": "Datenschutzerklärung",
   "Project a car's resale value over time using a declining-balance or straight-line depreciation model.": "Prognostizieren Sie den Wiederverkaufswert eines Autos im Zeitverlauf anhand eines degressiven oder linearen Abschreibungsmodells.",
   "Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.": "Prognostizieren Sie den Wiederverkaufswert eines Autos im Zeitverlauf mit einem degressiven (% pro Jahr) oder linearen (Restwert über die Nutzungsdauer) Abschreibungsmodell.",
   "Project how a lump sum plus regular contributions grows over time.": "Prognostizieren Sie, wie eine Einmalzahlung zzgl. regelmäßiger Beiträge im Zeitverlauf wächst.",

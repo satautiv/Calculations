@@ -924,6 +924,7 @@ registerTranslations("fr", {
   "Price per rail (optional)": "Prix par rail (optionnel)",
   "Price per screw (optional)": "Prix par vis (optionnel)",
   "Principal": "Capital",
+  "Privacy Policy": "Politique de Confidentialité",
   "Project a car's resale value over time using a declining-balance or straight-line depreciation model.": "Projetez la valeur de revente d'une voiture dans le temps à l'aide d'un modèle d'amortissement dégressif ou linéaire.",
   "Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.": "Projetez la valeur de revente d'une voiture dans le temps à l'aide d'un modèle d'amortissement dégressif (% par an) ou linéaire (valeur résiduelle sur la durée de vie utile).",
   "Project how a lump sum plus regular contributions grows over time.": "Projetez comment un montant forfaitaire plus des contributions régulières évoluent dans le temps.",

@@ -925,6 +925,7 @@ registerTranslations('hi', {
   "Price per rail (optional)": "प्रति रेल कीमत (वैकल्पिक)",
   "Price per screw (optional)": "प्रति स्क्रू कीमत (वैकल्पिक)",
   "Principal": "मूलधन",
+  "Privacy Policy": "गोपनीयता नीति",
   "Project a car's resale value over time using a declining-balance or straight-line depreciation model.": "डिक्लाइनिंग-बैलेंस या स्ट्रेट-लाइन डेप्रिसिएशन मॉडल का उपयोग करके समय के साथ कार के पुनर्विक्रय मूल्य का अनुमान लगाएं।",
   "Project a car's resale value over time using either a declining-balance (% per year) or straight-line (residual value over useful life) depreciation model.": "डिक्लाइनिंग-बैलेंस (% प्रति वर्ष) या स्ट्रेट-लाइन (उपयोगी जीवन में अवशिष्ट मूल्य) डेप्रिसिएशन मॉडल में से किसी एक का उपयोग करके समय के साथ कार के पुनर्विक्रय मूल्य का अनुमान लगाएं।",
   "Project how a lump sum plus regular contributions grows over time.": "समय के साथ एकमुश्त राशि और नियमित योगदान कैसे बढ़ते हैं, इसका अनुमान लगाएं।",
