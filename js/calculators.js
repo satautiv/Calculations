@@ -7966,3 +7966,42 @@ document.getElementById('svg2img-calc').addEventListener('click', async () => {
     showError('svg2img-result', err.message);
   }
 });
+
+// --- Image Compressor ---
+document.getElementById('imgcompress-format').addEventListener('change', (e) => {
+  document.getElementById('imgcompress-bg-field').hidden = e.target.value !== 'image/jpeg';
+});
+
+document.getElementById('imgcompress-quality').addEventListener('input', (e) => {
+  document.getElementById('imgcompress-quality-value').textContent = e.target.value;
+});
+
+document.getElementById('imgcompress-calc').addEventListener('click', async () => {
+  const file = document.getElementById('imgcompress-file').files[0];
+  if (!file) {
+    showError('imgcompress-result', 'Choose an image file.');
+    return;
+  }
+
+  const format = document.getElementById('imgcompress-format').value;
+  const quality = parseInt(document.getElementById('imgcompress-quality').value, 10) / 100;
+  const backgroundColor = format === 'image/jpeg' ? document.getElementById('imgcompress-bg').value : null;
+
+  try {
+    const img = await loadImageFromFile(file);
+    const canvas = drawImageToCanvas(img, img.naturalWidth, img.naturalHeight, backgroundColor);
+    const blob = await canvasToBlob(canvas, format, quality);
+    const filename = imageOutputFilename(file.name, format);
+    const savings = compressionSavingsPercent(file.size, blob.size);
+    const savingsLabel = savings >= 0
+      ? `${savings.toFixed(0)}% smaller`
+      : `${Math.abs(savings).toFixed(0)}% larger`;
+
+    renderImageResult('imgcompress-result', blob, filename, `
+      <div class="headline">${savingsLabel}</div>
+      <div>${formatFileSize(file.size)} &rarr; ${formatFileSize(blob.size)}</div>
+    `);
+  } catch (err) {
+    showError('imgcompress-result', err.message);
+  }
+});

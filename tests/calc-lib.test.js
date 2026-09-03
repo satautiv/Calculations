@@ -4,6 +4,7 @@ const {
   formatFileSize,
   IMAGE_MIME_EXTENSIONS,
   imageOutputFilename,
+  compressionSavingsPercent,
   epleyOneRepMax,
   brzyckiOneRepMax,
   lombardiOneRepMax,
@@ -366,6 +367,20 @@ describe('IMAGE_MIME_EXTENSIONS', () => {
       'image/jpeg': 'jpg',
       'image/webp': 'webp',
     });
+  });
+});
+
+describe('compressionSavingsPercent', () => {
+  test('returns a positive percentage when the file shrank', () => {
+    expect(compressionSavingsPercent(1000, 250)).toBe(75);
+  });
+
+  test('returns a negative percentage when the file grew', () => {
+    expect(compressionSavingsPercent(1000, 1200)).toBeCloseTo(-20, 5);
+  });
+
+  test('returns 0 when the size is unchanged', () => {
+    expect(compressionSavingsPercent(1000, 1000)).toBe(0);
   });
 });
 
