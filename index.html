@@ -4336,6 +4336,42 @@
     <button class="calc-btn" id="imgcompress-calc">Calculate</button>
     <div class="result" id="imgcompress-result"></div>
   </section>
+
+  <section id="image-resizer" class="view tab-panel">
+    <h2>Image Resizer</h2>
+    <p class="hint">Resizes an image to a target pixel size or a percentage scale, entirely in your browser, keeping the source file's format. Upscaling beyond the original resolution just stretches existing pixels - there's no way to add detail that wasn't there.</p>
+    <div class="field">
+      <label for="imgresize-file">Image file</label>
+      <input type="file" id="imgresize-file" accept="image/*">
+    </div>
+    <p class="hint" id="imgresize-original-size" translate="no" hidden></p>
+    <div class="field">
+      <label for="imgresize-mode">Resize by</label>
+      <select id="imgresize-mode">
+        <option value="pixels" selected>Pixel dimensions</option>
+        <option value="percent">Percentage</option>
+      </select>
+    </div>
+    <div id="imgresize-pixels-fields">
+      <div class="field">
+        <label for="imgresize-width">Width (px)</label>
+        <input type="number" id="imgresize-width" min="1" step="1" placeholder="e.g. 800">
+      </div>
+      <div class="field">
+        <label for="imgresize-height">Height (px)</label>
+        <input type="number" id="imgresize-height" min="1" step="1" placeholder="e.g. 600">
+      </div>
+      <div class="field-checkbox">
+        <label><input type="checkbox" id="imgresize-lock-aspect" checked> Lock aspect ratio</label>
+      </div>
+    </div>
+    <div class="field" id="imgresize-percent-field" hidden>
+      <label for="imgresize-percent">Scale (%)</label>
+      <input type="number" id="imgresize-percent" min="1" step="1" value="50" placeholder="e.g. 50">
+    </div>
+    <button class="calc-btn" id="imgresize-calc">Calculate</button>
+    <div class="result" id="imgresize-result"></div>
+  </section>
 </main>
 
 <footer>

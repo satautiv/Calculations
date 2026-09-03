@@ -5935,6 +5935,27 @@ function compressionSavingsPercent(originalBytes, compressedBytes) {
   return ((originalBytes - compressedBytes) / originalBytes) * 100;
 }
 
+// Aspect-ratio-locked resize: given the source dimensions and a new width,
+// returns the height that preserves the original aspect ratio (rounded,
+// since canvas dimensions must be whole pixels).
+function heightForWidth(originalWidth, originalHeight, newWidth) {
+  return Math.round((newWidth * originalHeight) / originalWidth);
+}
+
+function widthForHeight(originalWidth, originalHeight, newHeight) {
+  return Math.round((newHeight * originalWidth) / originalHeight);
+}
+
+// Scales dimensions by a percentage (50 -> half size, 200 -> double size),
+// floored at 1px so a large enough downscale percentage can't produce a
+// zero-sized (invalid) canvas.
+function percentScaledDimensions(originalWidth, originalHeight, percent) {
+  return {
+    width: Math.max(1, Math.round((originalWidth * percent) / 100)),
+    height: Math.max(1, Math.round((originalHeight * percent) / 100)),
+  };
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     toggleFavoriteId,
@@ -5943,6 +5964,9 @@ if (typeof module !== 'undefined' && module.exports) {
     IMAGE_MIME_EXTENSIONS,
     imageOutputFilename,
     compressionSavingsPercent,
+    heightForWidth,
+    widthForHeight,
+    percentScaledDimensions,
     epleyOneRepMax,
     brzyckiOneRepMax,
     lombardiOneRepMax,

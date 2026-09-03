@@ -8005,3 +8005,96 @@ document.getElementById('imgcompress-calc').addEventListener('click', async () =
     showError('imgcompress-result', err.message);
   }
 });
+
+// --- Image Resizer ---
+document.getElementById('imgresize-file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  const originalSizeEl = document.getElementById('imgresize-original-size');
+
+  if (!file) {
+    originalSizeEl.hidden = true;
+    return;
+  }
+
+  try {
+    const img = await loadImageFromFile(file);
+    e.target.dataset.naturalWidth = img.naturalWidth;
+    e.target.dataset.naturalHeight = img.naturalHeight;
+    originalSizeEl.textContent = `Original size: ${img.naturalWidth}×${img.naturalHeight}`;
+    originalSizeEl.hidden = false;
+    document.getElementById('imgresize-width').value = img.naturalWidth;
+    document.getElementById('imgresize-height').value = img.naturalHeight;
+  } catch (err) {
+    originalSizeEl.hidden = true;
+  }
+});
+
+document.getElementById('imgresize-mode').addEventListener('change', (e) => {
+  const isPercent = e.target.value === 'percent';
+  document.getElementById('imgresize-pixels-fields').hidden = isPercent;
+  document.getElementById('imgresize-percent-field').hidden = !isPercent;
+});
+
+document.getElementById('imgresize-width').addEventListener('input', (e) => {
+  if (!document.getElementById('imgresize-lock-aspect').checked) return;
+  const fileInput = document.getElementById('imgresize-file');
+  const naturalWidth = parseInt(fileInput.dataset.naturalWidth, 10);
+  const naturalHeight = parseInt(fileInput.dataset.naturalHeight, 10);
+  const newWidth = parseInt(e.target.value, 10);
+  if (!naturalWidth || !naturalHeight || !newWidth) return;
+  document.getElementById('imgresize-height').value = heightForWidth(naturalWidth, naturalHeight, newWidth);
+});
+
+document.getElementById('imgresize-height').addEventListener('input', (e) => {
+  if (!document.getElementById('imgresize-lock-aspect').checked) return;
+  const fileInput = document.getElementById('imgresize-file');
+  const naturalWidth = parseInt(fileInput.dataset.naturalWidth, 10);
+  const naturalHeight = parseInt(fileInput.dataset.naturalHeight, 10);
+  const newHeight = parseInt(e.target.value, 10);
+  if (!naturalWidth || !naturalHeight || !newHeight) return;
+  document.getElementById('imgresize-width').value = widthForHeight(naturalWidth, naturalHeight, newHeight);
+});
+
+document.getElementById('imgresize-calc').addEventListener('click', async () => {
+  const file = document.getElementById('imgresize-file').files[0];
+  if (!file) {
+    showError('imgresize-result', 'Choose an image file.');
+    return;
+  }
+
+  const mode = document.getElementById('imgresize-mode').value;
+
+  try {
+    const img = await loadImageFromFile(file);
+    let width;
+    let height;
+
+    if (mode === 'percent') {
+      const percent = parseFloat(document.getElementById('imgresize-percent').value);
+      if (!percent || percent <= 0) {
+        showError('imgresize-result', 'Enter a valid percentage greater than zero.');
+        return;
+      }
+      ({ width, height } = percentScaledDimensions(img.naturalWidth, img.naturalHeight, percent));
+    } else {
+      width = parseInt(document.getElementById('imgresize-width').value, 10);
+      height = parseInt(document.getElementById('imgresize-height').value, 10);
+      if (!width || width <= 0 || !height || height <= 0) {
+        showError('imgresize-result', 'Enter a valid width and height.');
+        return;
+      }
+    }
+
+    const format = IMAGE_MIME_EXTENSIONS[file.type] ? file.type : 'image/png';
+    const canvas = drawImageToCanvas(img, width, height, null);
+    const blob = await canvasToBlob(canvas, format);
+    const filename = imageOutputFilename(file.name, format);
+
+    renderImageResult('imgresize-result', blob, filename, `
+      <div class="headline">${width}&times;${height}</div>
+      <div>File size: ${formatFileSize(blob.size)}</div>
+    `);
+  } catch (err) {
+    showError('imgresize-result', err.message);
+  }
+});
