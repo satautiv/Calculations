@@ -5,11 +5,16 @@
   "description": "Strength training calculators (One-Rep Max, Training %, Wilks Score, Plate Loading) served as a static site.",
   "scripts": {
     "test": "jest",
+    "test:e2e": "playwright test",
     "audit:a11y": "node scripts/a11y-audit.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.62.1",
     "jest": "^30.4.2",
     "playwright": "^1.62.1"
+  },
+  "jest": {
+    "testPathIgnorePatterns": ["/node_modules/", "/tests/e2e/"]
   }
 }
