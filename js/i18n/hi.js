@@ -47,6 +47,7 @@ registerTranslations('hi', {
   "Add sales tax/VAT to a pre-tax price, or work backwards from a tax-inclusive price to find the pre-tax amount and the tax portion.": "टैक्स-पूर्व मूल्य में बिक्री कर/VAT जोड़ें, या कर-सहित मूल्य से पीछे की ओर गणना करके टैक्स-पूर्व राशि और कर भाग पता करें।",
   "Add tax to a pre-tax price": "टैक्स-पूर्व मूल्य में कर जोड़ें",
   "Add the calories contributed by each ingredient and the number of servings the recipe makes.": "प्रत्येक सामग्री से मिलने वाली कैलोरी और रेसिपी से बनने वाली सर्विंग्स की संख्या जोड़ें।",
+  "Add to favorites": "पसंदीदा में जोड़ें",
   "Add up per-day costs across the whole trip plus one-off fixed costs, to get a total projected trip cost and average cost per day.": "पूरी यात्रा के प्रति-दिन खर्चों के साथ एक बार के निश्चित खर्चों को जोड़कर कुल अनुमानित यात्रा लागत और प्रति दिन औसत लागत प्राप्त करें।",
   "Add, subtract, multiply, or divide two fractions, with the result simplified to lowest terms, a mixed-number form, and a decimal equivalent.": "दो भिन्नों को जोड़ें, घटाएं, गुणा करें, या भाग दें, परिणाम को सरलतम रूप, मिश्रित संख्या रूप, और दशमलव समतुल्य में प्राप्त करें।",
   "Add, subtract, multiply, or divide two fractions. The result is simplified to lowest terms, with a mixed-number form and decimal equivalent.": "दो भिन्नों को जोड़ें, घटाएं, गुणा करें, या भाग दें। परिणाम को सरलतम रूप में, मिश्रित संख्या रूप और दशमलव समतुल्य के साथ दिखाया जाता है।",
@@ -538,6 +539,7 @@ registerTranslations('hi', {
   "FIRE Calculator": "FIRE कैलकुलेटर",
   "Fahrenheit (°F)": "फ़ारेनहाइट (°F)",
   "Fat (%)": "वसा (%)",
+  "Favorites": "पसंदीदा",
   "Feet": "फ़ीट",
   "Feet (ft)": "फ़ीट (ft)",
   "Female": "महिला",
@@ -950,6 +952,7 @@ registerTranslations('hi', {
   "Reaction time (seconds)": "प्रतिक्रिया समय (सेकंड)",
   "Ready-mix delivery fee (optional)": "रेडी-मिक्स डिलीवरी शुल्क (वैकल्पिक)",
   "Ready-mix price per m³ (optional)": "रेडी-मिक्स कीमत प्रति m³ (वैकल्पिक)",
+  "Recently Used": "हाल ही में उपयोग किए गए",
   "Recipe Scaling": "रेसिपी स्केलिंग",
   "Recipe Scaling Calculator": "रेसिपी स्केलिंग कैलकुलेटर",
   "Recommend an emergency fund size from your essential monthly expenses.": "आपके आवश्यक मासिक खर्चों के आधार पर आपातकालीन फंड का आकार सुझाएं।",
@@ -963,6 +966,7 @@ registerTranslations('hi', {
   "Regex Tester": "रेगेक्स टेस्टर",
   "Regex pattern (without enclosing slashes)": "रेगेक्स पैटर्न (बिना घेरने वाले स्लैश के)",
   "Relative humidity (%)": "सापेक्ष आर्द्रता (%)",
+  "Remove from favorites": "पसंदीदा से हटाएं",
   "Rent growth rate (%/year)": "किराया वृद्धि दर (%/वर्ष)",
   "Rent vs Buy": "किराया बनाम खरीद",
   "Rent vs Buy Calculator": "किराया बनाम खरीद कैलकुलेटर",
@@ -1522,5 +1526,5 @@ registerTranslations('hi', {
   "× Multiply": "× गुणा",
   "÷ Divide": "÷ भाग",
   "← All calculators": "← सभी कैलकुलेटर",
-  "− Subtract": "− घटाना",
+  "− Subtract": "− घटाना"
 });

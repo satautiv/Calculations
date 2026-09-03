@@ -47,6 +47,7 @@ registerTranslations('pt', {
   "Add sales tax/VAT to a pre-tax price, or work backwards from a tax-inclusive price to find the pre-tax amount and the tax portion.": "Adicione o imposto sobre vendas/IVA a um preço sem imposto, ou faça o cálculo inverso a partir de um preço com imposto incluído para encontrar o valor sem imposto e a parcela do imposto.",
   "Add tax to a pre-tax price": "Adicionar imposto a um preço sem imposto",
   "Add the calories contributed by each ingredient and the number of servings the recipe makes.": "Some as calorias de cada ingrediente e o número de porções que a receita rende.",
+  "Add to favorites": "Adicionar aos favoritos",
   "Add up per-day costs across the whole trip plus one-off fixed costs, to get a total projected trip cost and average cost per day.": "Some os custos diários de toda a viagem mais os custos fixos únicos, para obter o custo total projetado da viagem e o custo médio por dia.",
   "Add, subtract, multiply, or divide two fractions, with the result simplified to lowest terms, a mixed-number form, and a decimal equivalent.": "Some, subtraia, multiplique ou divida duas frações, com o resultado simplificado à forma irredutível, na forma de número misto e em equivalente decimal.",
   "Add, subtract, multiply, or divide two fractions. The result is simplified to lowest terms, with a mixed-number form and decimal equivalent.": "Some, subtraia, multiplique ou divida duas frações. O resultado é simplificado à forma irredutível, com a forma de número misto e o equivalente decimal.",
@@ -539,6 +540,7 @@ registerTranslations('pt', {
   "FIRE Calculator": "Calculadora FIRE",
   "Fahrenheit (°F)": "Fahrenheit (°F)",
   "Fat (%)": "Gordura (%)",
+  "Favorites": "Favoritos",
   "Feet": "Pés",
   "Feet (ft)": "Pés (ft)",
   "Female": "Feminino",
@@ -952,6 +954,7 @@ registerTranslations('pt', {
   "Reaction time (seconds)": "Tempo de reação (segundos)",
   "Ready-mix delivery fee (optional)": "Taxa de entrega de concreto usinado (opcional)",
   "Ready-mix price per m³ (optional)": "Preço do concreto usinado por m³ (opcional)",
+  "Recently Used": "Usados Recentemente",
   "Recipe Scaling": "Redimensionamento de Receita",
   "Recipe Scaling Calculator": "Calculadora de Redimensionamento de Receita",
   "Recommend an emergency fund size from your essential monthly expenses.": "Recomenda o tamanho do fundo de emergência com base nas suas despesas mensais essenciais.",
@@ -965,6 +968,7 @@ registerTranslations('pt', {
   "Regex Tester": "Testador de Regex",
   "Regex pattern (without enclosing slashes)": "Padrão de regex (sem as barras delimitadoras)",
   "Relative humidity (%)": "Umidade relativa (%)",
+  "Remove from favorites": "Remover dos favoritos",
   "Rent growth rate (%/year)": "Taxa de crescimento do aluguel (%/ano)",
   "Rent vs Buy": "Alugar vs Comprar",
   "Rent vs Buy Calculator": "Calculadora de Alugar vs Comprar",
@@ -1524,5 +1528,5 @@ registerTranslations('pt', {
   "× Multiply": "× Multiplicar",
   "÷ Divide": "÷ Dividir",
   "← All calculators": "← Todas as calculadoras",
-  "− Subtract": "− Subtrair",
+  "− Subtract": "− Subtrair"
 });

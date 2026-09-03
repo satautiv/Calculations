@@ -1,4 +1,34 @@
 // --- Calculator index, search, and hash-based routing ---
+const FAVORITES_STORAGE_KEY = 'calc-suite-favorites';
+const RECENT_STORAGE_KEY = 'calc-suite-recent';
+const RECENT_MAX_LENGTH = 8;
+
+function getFavoriteIds() {
+  return JSON.parse(localStorage.getItem(FAVORITES_STORAGE_KEY)) || [];
+}
+
+function saveFavoriteIds(ids) {
+  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(ids));
+}
+
+function getRecentIds() {
+  return JSON.parse(localStorage.getItem(RECENT_STORAGE_KEY)) || [];
+}
+
+function saveRecentIds(ids) {
+  localStorage.setItem(RECENT_STORAGE_KEY, JSON.stringify(ids));
+}
+
+function toggleFavorite(id) {
+  saveFavoriteIds(toggleFavoriteId(getFavoriteIds(), id));
+  renderCalculatorIndex();
+  filterCalculatorIndex(document.getElementById('calc-search').value);
+}
+
+function recordRecentCalc(id) {
+  saveRecentIds(addRecentId(getRecentIds(), id, RECENT_MAX_LENGTH));
+}
+
 function groupCalculatorsByCategory(calculators) {
   const groups = new Map();
   calculators.forEach(calc => {
@@ -8,23 +38,44 @@ function groupCalculatorsByCategory(calculators) {
   return groups;
 }
 
-function renderCalculatorIndex() {
-  const groups = groupCalculatorsByCategory(CALCULATOR_REGISTRY);
-  const html = [...groups.entries()].map(([category, calcs]) => `
+function calcCardHtml(c, isFavorite) {
+  const searchText = (c.name + ' ' + t(c.name) + ' ' + c.description + ' ' + t(c.description) + ' ' + c.category + ' ' + t(c.category) + ' ' + c.keywords.join(' ')).toLowerCase();
+  const favoriteLabel = isFavorite ? t('Remove from favorites') : t('Add to favorites');
+  return `
+    <div class="calc-card-wrap" data-search-text="${searchText}">
+      <button class="calc-card" data-calc-id="${c.id}">
+        <h3>${t(c.name)}</h3>
+        <p>${t(c.description)}</p>
+      </button>
+      <button type="button" class="calc-favorite-btn${isFavorite ? ' active' : ''}" data-calc-id="${c.id}" aria-pressed="${isFavorite}" aria-label="${favoriteLabel}">${isFavorite ? '★' : '☆'}</button>
+    </div>
+  `;
+}
+
+function calcGroupHtml(category, calcs, favoriteIds) {
+  if (calcs.length === 0) return '';
+  return `
     <div class="category-group" data-category="${category}">
       <h2 class="category-title">${t(category)}</h2>
       <div class="calc-grid">
-        ${calcs.map(c => `
-          <button class="calc-card" data-calc-id="${c.id}" data-search-text="${(c.name + ' ' + t(c.name) + ' ' + c.description + ' ' + t(c.description) + ' ' + c.category + ' ' + t(c.category) + ' ' + c.keywords.join(' ')).toLowerCase()}">
-            <h3>${t(c.name)}</h3>
-            <p>${t(c.description)}</p>
-          </button>
-        `).join('')}
+        ${calcs.map(c => calcCardHtml(c, favoriteIds.includes(c.id))).join('')}
       </div>
     </div>
-  `).join('');
+  `;
+}
 
-  document.getElementById('calc-categories').innerHTML = html;
+function renderCalculatorIndex() {
+  const favoriteIds = getFavoriteIds();
+  const recentIds = getRecentIds();
+  const groups = groupCalculatorsByCategory(CALCULATOR_REGISTRY);
+
+  const favorites = CALCULATOR_REGISTRY.filter(c => favoriteIds.includes(c.id));
+  const recents = recentIds.map(id => CALCULATOR_REGISTRY.find(c => c.id === id)).filter(Boolean);
+
+  const specialGroupsHtml = calcGroupHtml('Favorites', favorites, favoriteIds) + calcGroupHtml('Recently Used', recents, favoriteIds);
+  const categoryGroupsHtml = [...groups.entries()].map(([category, calcs]) => calcGroupHtml(category, calcs, favoriteIds)).join('');
+
+  document.getElementById('calc-categories').innerHTML = specialGroupsHtml + categoryGroupsHtml;
 }
 
 function filterCalculatorIndex(query) {
@@ -33,9 +84,9 @@ function filterCalculatorIndex(query) {
 
   document.querySelectorAll('.category-group').forEach(group => {
     let groupHasVisibleCard = false;
-    group.querySelectorAll('.calc-card').forEach(card => {
-      const matches = !term || card.dataset.searchText.includes(term);
-      card.hidden = !matches;
+    group.querySelectorAll('.calc-card-wrap').forEach(wrap => {
+      const matches = !term || wrap.dataset.searchText.includes(term);
+      wrap.hidden = !matches;
       if (matches) groupHasVisibleCard = true;
     });
     group.hidden = !groupHasVisibleCard;
@@ -47,6 +98,13 @@ function filterCalculatorIndex(query) {
 
 function showView(calcId) {
   const isValidCalc = calcId && CALCULATOR_REGISTRY.some(c => c.id === calcId);
+
+  if (isValidCalc) {
+    recordRecentCalc(calcId);
+  } else {
+    renderCalculatorIndex();
+    filterCalculatorIndex(document.getElementById('calc-search').value);
+  }
 
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   const activeView = document.getElementById(isValidCalc ? calcId : 'calculator-index');
@@ -73,6 +131,11 @@ window.addEventListener('hashchange', () => showView(currentCalcIdFromHash()));
 initI18n();
 
 document.getElementById('calc-categories').addEventListener('click', (e) => {
+  const favoriteBtn = e.target.closest('.calc-favorite-btn');
+  if (favoriteBtn) {
+    toggleFavorite(favoriteBtn.dataset.calcId);
+    return;
+  }
   const card = e.target.closest('.calc-card');
   if (!card) return;
   window.location.hash = `#calc/${encodeURIComponent(card.dataset.calcId)}`;

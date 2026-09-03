@@ -5888,8 +5888,23 @@ function minifySql(sql, options = {}) {
     .join(' ');
 }
 
+// Toggles `id` in `favoriteIds`, returning a new array (add if absent, remove if present).
+function toggleFavoriteId(favoriteIds, id) {
+  return favoriteIds.includes(id)
+    ? favoriteIds.filter((existing) => existing !== id)
+    : [...favoriteIds, id];
+}
+
+// Moves `id` to the front of `recentIds` (removing any earlier occurrence),
+// then caps the result to `maxLength` entries, most-recent-first.
+function addRecentId(recentIds, id, maxLength) {
+  return [id, ...recentIds.filter((existing) => existing !== id)].slice(0, maxLength);
+}
+
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
+    toggleFavoriteId,
+    addRecentId,
     epleyOneRepMax,
     brzyckiOneRepMax,
     lombardiOneRepMax,

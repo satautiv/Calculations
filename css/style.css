@@ -156,6 +156,14 @@ main:has(#calculator-index.active) {
   gap: 1rem;
 }
 
+.calc-card-wrap {
+  position: relative;
+}
+
+.calc-card-wrap[hidden] {
+  display: none;
+}
+
 .calc-card {
   display: block;
   width: 100%;
@@ -176,13 +184,29 @@ main:has(#calculator-index.active) {
   transform: translateY(-2px);
 }
 
-.calc-card[hidden] {
-  display: none;
-}
-
 .calc-card h3 {
   margin: 0 0 0.4rem;
+  padding-right: 1.5rem;
   font-size: 1rem;
+}
+
+.calc-favorite-btn {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  font-size: 1.15rem;
+  line-height: 1;
+  padding: 0.2rem;
+  cursor: pointer;
+}
+
+.calc-favorite-btn:hover,
+.calc-favorite-btn:focus-visible,
+.calc-favorite-btn.active {
+  color: var(--accent);
 }
 
 .calc-card p {

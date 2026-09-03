@@ -47,6 +47,7 @@ registerTranslations('de', {
   "Add sales tax/VAT to a pre-tax price, or work backwards from a tax-inclusive price to find the pre-tax amount and the tax portion.": "Fügen Sie einem Nettopreis Umsatzsteuer/Mehrwertsteuer hinzu, oder rechnen Sie von einem Bruttopreis rückwärts, um den Nettobetrag und den Steueranteil zu ermitteln.",
   "Add tax to a pre-tax price": "Steuer zu einem Nettopreis hinzufügen",
   "Add the calories contributed by each ingredient and the number of servings the recipe makes.": "Addieren Sie die Kalorien jeder Zutat und die Anzahl der Portionen, die das Rezept ergibt.",
+  "Add to favorites": "Zu Favoriten hinzufügen",
   "Add up per-day costs across the whole trip plus one-off fixed costs, to get a total projected trip cost and average cost per day.": "Addieren Sie die Tageskosten für die gesamte Reise sowie einmalige Fixkosten, um die geschätzten Gesamtkosten der Reise und die durchschnittlichen Kosten pro Tag zu erhalten.",
   "Add, subtract, multiply, or divide two fractions, with the result simplified to lowest terms, a mixed-number form, and a decimal equivalent.": "Addieren, subtrahieren, multiplizieren oder dividieren Sie zwei Brüche; das Ergebnis wird vollständig gekürzt sowie als gemischte Zahl und als Dezimalzahl angegeben.",
   "Add, subtract, multiply, or divide two fractions. The result is simplified to lowest terms, with a mixed-number form and decimal equivalent.": "Addieren, subtrahieren, multiplizieren oder dividieren Sie zwei Brüche. Das Ergebnis wird vollständig gekürzt und als gemischte Zahl sowie als Dezimalzahl angegeben.",
@@ -539,6 +540,7 @@ registerTranslations('de', {
   "FIRE Calculator": "FIRE-Rechner",
   "Fahrenheit (°F)": "Fahrenheit (°F)",
   "Fat (%)": "Fett (%)",
+  "Favorites": "Favoriten",
   "Feet": "Fuß",
   "Feet (ft)": "Fuß (ft)",
   "Female": "Weiblich",
@@ -951,6 +953,7 @@ registerTranslations('de', {
   "Reaction time (seconds)": "Reaktionszeit (Sekunden)",
   "Ready-mix delivery fee (optional)": "Liefergebühr für Fertigbeton (optional)",
   "Ready-mix price per m³ (optional)": "Preis für Fertigbeton pro m³ (optional)",
+  "Recently Used": "Zuletzt Verwendet",
   "Recipe Scaling": "Rezeptskalierung",
   "Recipe Scaling Calculator": "Rezeptskalierungsrechner",
   "Recommend an emergency fund size from your essential monthly expenses.": "Empfiehlt eine Notfallreserve basierend auf Ihren monatlichen Grundausgaben.",
@@ -964,6 +967,7 @@ registerTranslations('de', {
   "Regex Tester": "Regex-Tester",
   "Regex pattern (without enclosing slashes)": "Regex-Muster (ohne umschließende Schrägstriche)",
   "Relative humidity (%)": "Relative Luftfeuchtigkeit (%)",
+  "Remove from favorites": "Aus Favoriten entfernen",
   "Rent growth rate (%/year)": "Mietwachstumsrate (%/Jahr)",
   "Rent vs Buy": "Mieten vs. Kaufen",
   "Rent vs Buy Calculator": "Rechner: Mieten vs. Kaufen",
@@ -1523,5 +1527,5 @@ registerTranslations('de', {
   "× Multiply": "× Multiplizieren",
   "÷ Divide": "÷ Dividieren",
   "← All calculators": "← Alle Rechner",
-  "− Subtract": "− Subtrahieren",
+  "− Subtract": "− Subtrahieren"
 });
