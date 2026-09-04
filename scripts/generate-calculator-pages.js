@@ -4,7 +4,10 @@
 // index.html's shell (same css/js includes) that pre-sets location.hash before
 // js/calculators.js runs, so the existing hash router activates the right panel
 // with zero routing-logic changes, and injects per-calculator SEO metadata
-// (title, description, canonical, Open Graph). See issues #444/#445/#446.
+// (title, description, canonical, Open Graph). Also emits dist/sitemap.xml
+// listing every one of those URLs plus the homepage and privacy policy, so
+// crawlers can discover them without following links. See issues
+// #444/#445/#446/#447.
 const fs = require('fs');
 const path = require('path');
 const { CALCULATOR_REGISTRY } = require('../js/calculators-registry.js');
@@ -71,6 +74,19 @@ function buildPage(baseHtml, calc) {
   return html;
 }
 
+// Auto-generated from the registry (rather than hand-maintained) so it can't
+// drift out of date as calculators are added/removed - see #447.
+function buildSitemap() {
+  const urls = [
+    `${SITE_URL}/`,
+    `${SITE_URL}/privacy.html`,
+    ...CALCULATOR_REGISTRY.map(calc => `${SITE_URL}/calc/${calc.id}/`),
+  ];
+
+  const urlEntries = urls.map(url => `  <url>\n    <loc>${escapeHtml(url)}</loc>\n  </url>`).join('\n');
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urlEntries}\n</urlset>\n`;
+}
+
 function main() {
   const rawHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
   const baseHtml = toAbsoluteAssetPaths(rawHtml);
@@ -81,7 +97,10 @@ function main() {
     fs.writeFileSync(path.join(outDir, 'index.html'), buildPage(baseHtml, calc));
   }
 
-  console.log(`Generated ${CALCULATOR_REGISTRY.length} calculator pages in ${path.relative(ROOT, DIST)}/calc/`);
+  fs.mkdirSync(DIST, { recursive: true });
+  fs.writeFileSync(path.join(DIST, 'sitemap.xml'), buildSitemap());
+
+  console.log(`Generated ${CALCULATOR_REGISTRY.length} calculator pages and sitemap.xml in ${path.relative(ROOT, DIST)}/`);
 }
 
 main();
