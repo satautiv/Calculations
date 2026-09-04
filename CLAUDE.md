@@ -39,11 +39,15 @@ The site is an installable, offline-capable PWA. `manifest.json` (name, icons in
 
 `Dockerfile` serves the static files through `nginx:alpine`. `docker-compose.yml` builds it and publishes port 8080. No backend/app server exists yet — if a Python backend is added later, it should become its own service in `docker-compose.yml` alongside `web`, not folded into the nginx image.
 
+## Custom domain
+
+The site is served at `mycalcsuite.com` via GitHub Pages custom domain. The `CNAME` file at the repo root holds the apex domain and must be copied to `dist/` in the CI `deploy` job's "Prepare site" step (see below) alongside `index.html` — GitHub Pages resets the custom domain if it goes missing from a deploy. DNS is configured at the registrar (not in this repo): four `A` records at the apex pointing to GitHub Pages' IPs (`185.199.108.153`, `.109.153`, `.110.153`, `.111.153`), plus a `www` `CNAME` record pointing at `satautiv.github.io`. "Enforce HTTPS" in the repo's Pages settings should stay enabled once GitHub finishes provisioning the certificate.
+
 ## CI/CD (GitHub Actions, `.github/workflows/ci.yml`)
 
 - `test` job: runs `npm ci && npm test` on every push/PR to `main`.
 - `docker-build` job: verifies the `Dockerfile` still builds.
-- `deploy` job: on push to `main` only, copies `index.html`, `css/`, `js/` into `dist/` and publishes to GitHub Pages via `actions/deploy-pages`. Pages must be set to "GitHub Actions" as its source once in repo Settings.
+- `deploy` job: on push to `main` only, copies `index.html`, `css/`, `js/` (plus `privacy.html`, `manifest.json`, `sw.js`, `icons/`, and `CNAME`) into `dist/` and publishes to GitHub Pages via `actions/deploy-pages`. Pages must be set to "GitHub Actions" as its source once in repo Settings.
 - `.github/dependabot.yml` opens weekly PRs for npm, Docker base image, and GitHub Actions updates. A `pip` entry is pre-configured too — it's a no-op until a `requirements.txt` exists, so a future Python backend's dependencies get automatically audited/updated with no extra setup.
 
 ## Conventions
