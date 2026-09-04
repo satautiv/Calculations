@@ -64,6 +64,7 @@ jobs:
           mkdir -p dist
           cp index.html dist/
           cp privacy.html dist/
+          cp CNAME dist/
           cp manifest.json dist/
           cp sw.js dist/
           cp -r css dist/
