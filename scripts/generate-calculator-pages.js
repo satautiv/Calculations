@@ -4,10 +4,10 @@
 // index.html's shell (same css/js includes) that pre-sets location.hash before
 // js/calculators.js runs, so the existing hash router activates the right panel
 // with zero routing-logic changes, and injects per-calculator SEO metadata
-// (title, description, canonical, Open Graph). Also emits dist/sitemap.xml
-// listing every one of those URLs plus the homepage and privacy policy, so
-// crawlers can discover them without following links. See issues
-// #444/#445/#446/#447.
+// (title, description, canonical, Open Graph, JSON-LD structured data). Also
+// emits dist/sitemap.xml listing every one of those URLs plus the homepage
+// and privacy policy, so crawlers can discover them without following links.
+// See issues #444/#445/#446/#447/#448.
 const fs = require('fs');
 const path = require('path');
 const { CALCULATOR_REGISTRY } = require('../js/calculators-registry.js');
@@ -47,6 +47,22 @@ function buildPage(baseHtml, calc) {
   const canonical = `${SITE_URL}/calc/${calc.id}/`;
   const ogImage = `${SITE_URL}/icons/icon-512.png`;
 
+  // Same registry data as the meta tags above, just a different output format
+  // - lets search engines mark the page as a WebApplication rich result
+  // rather than a plain document. \u003c-escape any "<" (there's none in
+  // today's registry text, but a future description could add one) so a
+  // literal "</script>" can never terminate this tag early - see #448.
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: calc.name,
+    description: calc.description,
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any (runs in browser)',
+    url: canonical,
+  };
+  const jsonLdScript = `<script type="application/ld+json">${JSON.stringify(jsonLd).replace(/</g, '\\u003c')}</script>`;
+
   // js/i18n.js's applyTranslations() walks every leaf element in the whole
   // document (including <title>) and runs it through t(), which falls back to
   // the original text unchanged for anything not in a translation dictionary
@@ -61,6 +77,7 @@ function buildPage(baseHtml, calc) {
     `<meta property="og:description" content="${description}">`,
     `<meta property="og:url" content="${canonical}">`,
     `<meta property="og:image" content="${ogImage}">`,
+    jsonLdScript,
   ].join('\n');
 
   let html = baseHtml.replace(HOMEPAGE_HEAD_RE, head);
