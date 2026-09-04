@@ -3,7 +3,8 @@
 // same page behind a #calc/<id> hash. Each generated page is a full copy of
 // index.html's shell (same css/js includes) that pre-sets location.hash before
 // js/calculators.js runs, so the existing hash router activates the right panel
-// with zero routing-logic changes. See issue #444/#445.
+// with zero routing-logic changes, and injects per-calculator SEO metadata
+// (title, description, canonical, Open Graph). See issues #444/#445/#446.
 const fs = require('fs');
 const path = require('path');
 const { CALCULATOR_REGISTRY } = require('../js/calculators-registry.js');
@@ -31,15 +32,35 @@ function escapeHtml(str) {
   return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// Matches index.html's whole homepage <title>/description/OG block (from the
+// <title> down through the og:image tag it ends with) so it can be swapped
+// wholesale for the per-calculator equivalent - a plain <title> replace would
+// leave the homepage's description/OG tags sitting alongside the new ones.
+const HOMEPAGE_HEAD_RE = /<title>Calculator Suite<\/title>[\s\S]*?<meta property="og:image" content="https:\/\/mycalcsuite\.com\/icons\/icon-512\.png">/;
+
 function buildPage(baseHtml, calc) {
-  const title = escapeHtml(`${calc.name} Calculator | Calculator Suite`);
+  const title = escapeHtml(`${calc.name} — Calculator Suite`);
   const description = escapeHtml(calc.description);
   const canonical = `${SITE_URL}/calc/${calc.id}/`;
+  const ogImage = `${SITE_URL}/icons/icon-512.png`;
 
-  let html = baseHtml.replace(
-    '<title>Calculator Suite</title>',
-    `<title>${title}</title>\n<meta name="description" content="${description}">\n<link rel="canonical" href="${canonical}">`
-  );
+  // js/i18n.js's applyTranslations() walks every leaf element in the whole
+  // document (including <title>) and runs it through t(), which falls back to
+  // the original text unchanged for anything not in a translation dictionary
+  // - so this per-calculator title/OG text is safe to leave English-only, it
+  // just won't be a no-op lookup like the homepage's "Calculator Suite" title.
+  const head = [
+    `<title>${title}</title>`,
+    `<meta name="description" content="${description}">`,
+    `<link rel="canonical" href="${canonical}">`,
+    `<meta property="og:type" content="website">`,
+    `<meta property="og:title" content="${title}">`,
+    `<meta property="og:description" content="${description}">`,
+    `<meta property="og:url" content="${canonical}">`,
+    `<meta property="og:image" content="${ogImage}">`,
+  ].join('\n');
+
+  let html = baseHtml.replace(HOMEPAGE_HEAD_RE, head);
 
   // Setting the hash before js/calculators.js runs (rather than in a
   // hashchange listener) matters: calculators.js reads location.hash
