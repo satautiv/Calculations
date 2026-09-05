@@ -47,11 +47,15 @@ The site is an installable, offline-capable PWA. `manifest.json` (name, icons in
 
 The site is served at `mycalcsuite.com` via GitHub Pages custom domain. The `CNAME` file at the repo root holds the apex domain and must be copied to `dist/` in the CI `deploy` job's "Prepare site" step (see below) alongside `index.html` — GitHub Pages resets the custom domain if it goes missing from a deploy. DNS is configured at the registrar (not in this repo): four `A` records at the apex pointing to GitHub Pages' IPs (`185.199.108.153`, `.109.153`, `.110.153`, `.111.153`), plus a `www` `CNAME` record pointing at `satautiv.github.io`. "Enforce HTTPS" in the repo's Pages settings should stay enabled once GitHub finishes provisioning the certificate.
 
+## Monetization (Google AdSense)
+
+`ads.txt` at the repo root authorizes Google AdSense to sell ads on this domain (an anti-fraud requirement — without it, fill rates/revenue are reduced) and doubles as the site-ownership verification method chosen in AdSense (of the three methods AdSense offers — code snippet, `ads.txt`, meta tag — `ads.txt` was picked since the file is required either way, so it does double duty instead of adding a separate verification tag on top of it). Its content (`google.com, pub-<publisher-id>, DIRECT, f08c47fec0942fa0`) comes verbatim from the AdSense dashboard's "Sites" > "View ads.txt guidance", not something to hand-derive. Must be copied to `dist/` in the CI `deploy` job's "Prepare site" step (see below), same pattern as `robots.txt`/`CNAME`/`privacy.html`, or it 404s in production despite being merged to `main`. Part of epic #434; the actual ad placement slots (#438) and consent banner (#437) aren't built yet.
+
 ## CI/CD (GitHub Actions, `.github/workflows/ci.yml`)
 
 - `test` job: runs `npm ci && npm test` on every push/PR to `main`.
 - `docker-build` job: verifies the `Dockerfile` still builds.
-- `deploy` job: on push to `main` only, copies `index.html`, `css/`, `js/` (plus `privacy.html`, `robots.txt`, `manifest.json`, `sw.js`, `icons/`, and `CNAME`) into `dist/`, runs `scripts/generate-calculator-pages.js` to add the per-calculator pages and `sitemap.xml`, and publishes to GitHub Pages via `actions/deploy-pages`. Pages must be set to "GitHub Actions" as its source once in repo Settings.
+- `deploy` job: on push to `main` only, copies `index.html`, `css/`, `js/` (plus `privacy.html`, `robots.txt`, `ads.txt`, `manifest.json`, `sw.js`, `icons/`, and `CNAME`) into `dist/`, runs `scripts/generate-calculator-pages.js` to add the per-calculator pages and `sitemap.xml`, and publishes to GitHub Pages via `actions/deploy-pages`. Pages must be set to "GitHub Actions" as its source once in repo Settings.
 - `.github/dependabot.yml` opens weekly PRs for npm, Docker base image, and GitHub Actions updates. A `pip` entry is pre-configured too — it's a no-op until a `requirements.txt` exists, so a future Python backend's dependencies get automatically audited/updated with no extra setup.
 
 ## Conventions

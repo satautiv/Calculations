@@ -66,6 +66,7 @@ jobs:
           cp index.html dist/
           cp privacy.html dist/
           cp robots.txt dist/
+          cp ads.txt dist/
           cp CNAME dist/
           cp manifest.json dist/
           cp sw.js dist/
