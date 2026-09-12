@@ -12,7 +12,7 @@
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.62.1",
     "jest": "^30.5.1",
-    "playwright": "^1.62.1"
+    "playwright": "^1.63.0"
   },
   "jest": {
     "testPathIgnorePatterns": ["/node_modules/", "/tests/e2e/"]
