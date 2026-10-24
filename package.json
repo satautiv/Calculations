@@ -9,7 +9,7 @@
     "audit:a11y": "node scripts/a11y-audit.js"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.13.0",
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.63.0",
     "jest": "^30.5.1",
     "playwright": "^1.63.0"
